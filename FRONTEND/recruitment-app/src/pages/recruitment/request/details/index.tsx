@@ -1,0 +1,303 @@
+import { useCanValidateJobDescription, useGetRecruitmentRequestDetails, useHasJobDescription, useHasValidationInRecruitment } from "@/api/recruitment/service";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import RequestDetailsCard from "./components/RequestDetailsCard";
+import { ArrowLeft, Check, X } from "lucide-react";
+import "./../../details.css";
+import { useEffect, useState } from "react";
+import JobTabContent from "./components/JobTabContent";
+import { ButtonView } from "@/styles/table-styles";
+import Modal from "@/components/modal";
+import useValidateRequest from "../validation/hooks/use-validate-request";
+import type { AxiosError } from "axios";
+import Alert from "@/components/alert";
+import RefuseValidationForm, { type RequestValidationFormDTO } from "../validation/components/refuse-request-form";
+import RequestHistoricTab from "./components/RequestHistoricTab";
+import useValidateJobDescription from "../validation/hooks/use-validate-job-description";
+
+interface BackendError {
+  message?: string;
+}
+
+type TabKey = "request" | "historic" | "job";
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const deFormatRequestId = (id: string | null) => {
+  return id ? id.replace(/_/g, "/") : null;
+};
+
+const RequestDetails: React.FC = () => {
+  const {
+    formData,
+    setFormData,
+    validateForm,
+    submitValidation,
+    handleReset,
+    fieldErrors,
+    handleInputChange,
+  } = useValidateRequest();
+
+  const {
+    submitValidation: submitJobDescValidation,
+  } = useValidateJobDescription();
+
+  const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const [activeTab, setActiveTab] = useState<"request" | "historic" | "job">(() => {
+    const saved = sessionStorage.getItem("lastActiveDetailTab") as TabKey;
+    return saved ? saved : "request";
+  });
+  const [decision, setDecision] = useState<"Approuver" | "Refuser">();
+  
+  const [isValidationModalOpen, setIsValidationModalOpen] = useState<boolean>(false);
+  const [isRefuseFormOpen, setIsRefuseFormOpen] = useState<boolean>(false);
+  
+  const validatorId = searchParams.get("validateur") ?
+  String(searchParams.get("validateur")) : undefined;
+
+  const [validationType, setValidationType] = useState<"REQUEST" | "JOB" | null>(null);
+
+  useEffect(() => {
+    if (id) {
+      setFormData(prev => ({ ...prev, requestId: id || "" }));
+    }
+    if (validatorId) {
+      setFormData(prev => ({ ...prev, validatorId }));
+    }
+  }, [id, validatorId, setFormData]);
+  
+  const { data: validator} = useHasValidationInRecruitment(validatorId);
+  const { data: jobDescValidator} = useCanValidateJobDescription(validatorId);
+
+  const { data, isLoading } = useGetRecruitmentRequestDetails(id ?? "");
+  const { data: jobDescData } = useHasJobDescription(id ?? "");
+
+
+  const [alert, setAlert] = useState({
+    isOpen: false,
+    type: "info" as "success" | "info" | "error",
+    message: ""
+  });
+  const showError = (msg: string) => setAlert({ isOpen: true, type: "error", message: msg });
+
+  // status : "Approuver" ou "Refuser"
+  const handleValidateRequest = async (status: "Approuver" | "Refuser" | undefined) => {
+    if (!status) {
+      showError("Décision invalide."); return;
+    }
+
+    const updatedForm: RequestValidationFormDTO = {
+      ...formData,
+      status
+    };
+    if (!updatedForm.requestId || !updatedForm.validatorId) {
+      showError("Identifiants manquants. Veuillez recharger la page.");
+      return;
+    }
+
+    // Validation AVANT envoi
+    if (!validateForm(updatedForm)) {
+      showError("Veuillez corriger les erreurs.");
+      setFormData(updatedForm);
+      return;
+    }
+
+    try {
+      setFormData(updatedForm);
+      await submitValidation(updatedForm);
+
+      setAlert({
+        isOpen: true,
+        type: "success",
+        message: "Demande validée avec succès !"
+      });
+
+      handleReset();
+      setIsRefuseFormOpen(false);
+      setIsValidationModalOpen(false);
+
+    // Redirection après succès
+      navigate("/recrutement/a-valider");
+    } 
+    catch (err: unknown) {
+      const axiosError = err as AxiosError<BackendError>;
+      showError(
+        axiosError.response?.data?.message || "Erreur inconnue"
+      );
+    }
+  };
+
+
+// Validation du TDR
+  const handleValidateJobDescription = async () => {
+    try {
+      const payload = {
+        jobDescId: jobDescData?.id || "",
+        validatorId: validatorId || ""
+      };
+
+      await submitJobDescValidation(payload);
+
+      setAlert({
+        isOpen: true,
+        type: "success",
+        message: "TDR validé avec succès !"
+      });
+
+      navigate("/recrutement/a-valider");
+
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<BackendError>;
+      showError(axiosError.response?.data?.message || "Erreur inconnue");
+    }
+  };
+
+
+  if (isLoading || !data) return <p>Chargement...</p>;
+
+  return (<>
+    {alert.isOpen && (
+      <Alert type={alert.type} message={alert.message} isOpen={alert.isOpen}
+        onClose={() => {
+          setAlert(a => ({ ...a, isOpen: false }))
+        }}
+      />
+    )}
+
+    {(activeTab==="request" && isRefuseFormOpen && !isValidationModalOpen) && (
+      <RefuseValidationForm 
+        onClose={() => setIsRefuseFormOpen(false)}
+        onSubmit={handleValidateRequest}
+        handleReset={handleReset}
+        isSubmitting={false} 
+        handleInputChange={handleInputChange}
+        formData={formData} fieldErrors={fieldErrors} />
+    )}
+
+    <div className="request-page">
+      {/* TABS */}
+      <div className="tabs">
+        <button className={activeTab === "request" ? "tab active" : "tab"} 
+          onClick={() => {
+            setActiveTab("request"); 
+            sessionStorage.setItem("lastActiveDetailTab", "request");
+          }
+        }>
+          Demande
+        </button>
+        <button className={activeTab === "historic" ? "tab active" : "tab"} 
+          onClick={() => {
+            setActiveTab("historic");
+            sessionStorage.setItem("lastActiveDetailTab", "historic");
+          }}
+        >
+          Validations
+        </button>
+        <button className={activeTab === "job" ? "tab active" : "tab"} 
+          onClick={() => {
+            setActiveTab("job");
+            sessionStorage.setItem("lastActiveDetailTab", "job");
+          }}
+        >
+          Terme de référence
+        </button>
+      </div>
+
+    {/* Confirmation d'action */}
+      {(isValidationModalOpen && !isRefuseFormOpen) && (
+        <Modal 
+          type="success" 
+          title="Confirmer la validation"
+          message="Voulez-vous vraiment valider ?"
+          isOpen={isValidationModalOpen}
+          onClose={() => {setIsValidationModalOpen(false)}}
+          confirmAction={() => {
+            if (validationType === "REQUEST") {
+              handleValidateRequest(decision);
+            } 
+            else if (validationType === "JOB") {
+              handleValidateJobDescription();
+            }
+          }}
+          confirmLabel="Valider" cancelLabel="Annuler"
+          showActions={true}
+        />
+      )}
+
+    {/* CONTENT */}
+      {activeTab === "request" && (<>
+        <RequestDetailsCard
+          hasJobDescription={jobDescData?.hasJobDescription}
+          details={data.details}
+          validations={data.validations}
+        />
+      </>)}
+
+      {activeTab === "historic" && (
+        <RequestHistoricTab 
+         hasJobDescription={jobDescData?.hasJobDescription}
+         validations={data.validations}
+         tdrValidations={data.tdrValidations}/>
+      )}
+
+      {activeTab === "job" && (
+        <JobTabContent
+          requestId={data.details.id}
+          details={data.details}
+          requestStatus={data.details.status}
+          hasJobDescription={jobDescData?.hasJobDescription}
+        />
+      )}
+
+
+      {/* BOUTON RETOUR sticky en bas */}
+      <div className="request-footer">
+        <ButtonView style={{ background:"var(--info-bg)" }} onClick={() => navigate(-1)}>
+          <ArrowLeft size={18} /> Retour
+        </ButtonView>
+
+      {/* Validation Demande de recrutement */}
+        {(validator?.hasValidation===true) && (
+          <div className="right-footer">
+            <ButtonView style={{ background:"var(--primary-color)", color:"white" }}
+              onClick={() => {
+                setValidationType("REQUEST");      // 🔴 IMPORTANT
+                setDecision("Approuver");
+                setIsValidationModalOpen(true);
+                setIsRefuseFormOpen(false);
+              }}>
+              <Check size={18} /> Valider
+            </ButtonView>
+
+            <ButtonView style={{ background:"var(--danger-color)", color:"white" }}
+              onClick={() => {
+                setValidationType("REQUEST");
+                setDecision("Refuser");
+                setIsValidationModalOpen(false);
+                setIsRefuseFormOpen(true);
+              }}>
+              <X size={18} /> Refuser
+            </ButtonView>
+          </div>
+        )}
+
+        {/* Validation TDR */}
+        {(jobDescValidator?.hasValidation===true && activeTab==="job") && (
+          <div className="right-footer">
+            <ButtonView style={{ background:"var(--primary-color)", color:"white" }}
+              onClick={() => { 
+                setValidationType("JOB");          // 🔴 IMPORTANT
+                setIsValidationModalOpen(true);
+                setIsRefuseFormOpen(false);
+              }}>
+              <Check size={18} /> Valider
+            </ButtonView>
+          </div>
+        )}
+      </div>
+    </div>
+  </>);
+};
+
+export default RequestDetails;

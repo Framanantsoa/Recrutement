@@ -1,0 +1,53 @@
+# --- Fichiers communs à ignorer ---
+*.tmp
+*.bak
+*.swp
+*.suo
+*.user
+*.DS_Store
+*.zip
+Thumbs.db
+ehthumbs.db
+~$*.xlsx
+
+
+
+/FRONTEND/mission-app/node_modules/
+/FRONTEND/mission-app/build/
+/FRONTEND/mission-app/dist/
+/FRONTEND/mission-app/.env
+/FRONTEND/mission-app/.next/
+/FRONTEND/mission-app/.turbo/
+/FRONTEND/mission-app/.cache/
+/FRONTEND/mission-app/.eslintcache/
+# --- Node (React FRONTEND) ---
+/FRONTEND/rh-front/node_modules/
+/FRONTEND/rh-front/build/
+/FRONTEND/rh-front/dist/
+/FRONTEND/rh-front/.next/
+/FRONTEND/rh-front/.turbo/
+/FRONTEND/rh-front/.cache/
+/FRONTEND/rh-front/.eslintcache/
+
+# --- Visual Studio & .NET (BACKEND) ---
+
+/BACKEND/rh-backend/src/MyApp.Api/publish
+/BACKEND/rh-backend/src/MyApp.Api/bin
+/BACKEND/rh-backend/src/MyApp.Api/Migrations
+/BACKEND/rh-backend/src/MyApp.Api/obj
+/BACKEND/rh-backend/obj
+/BACKEND/rh-backend/.vs/
+/BACKEND/rh-backend/src/MyApp.Api/node_modules
+/BACKEND/rh-backend/src/MyApp.Api/.idea
+/TODO/Looping/*.lo1
+# --- Ignorer les fichiers de publication ---
+/FRONTEND/rh-front/.firebase/
+/BACKEND/rh-backend/wwwroot/dist/
+/BACKEND/rh-backend/wwwroot/lib/
+
+# --- Ignorer les fichiers de dépendances lock ---
+/FRONTEND/rh-front/yarn.lock
+/FRONTEND/rh-front/package-lock.json
+
+*.sln
+BACKEND/rh-backend/src/MyApp.Api/appsettings.json

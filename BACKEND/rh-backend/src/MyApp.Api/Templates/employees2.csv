@@ -1,10 +1,11 @@
-﻿1431;DUPONT;Jean;TNR;Directeur Général;DGE;DGE;Direction Générale;DGE;01/01/2020;;SUPPORT;Masculin;Français
-1182;RAKOTO;Marie;TNR;Directrice des Ressources Humaines;DRH;DRH;Direction des Ressources Humaines;DRH;01/01/2020;;SUPPORT;Féminin;Malagasy
-1425;MARTIN;Paul;TNR;Directeur Administratif et Financier;DAF;DAF;Direction Administrative et Financière;DAF;01/01/2020;;SUPPORT;Masculin;Français
-1386;RAZAFINDRAKOTO;Nicolas;TNR;Directeur des Systèmes d'Information;DSI;DSI;Direction des Systèmes d'Information;DSI;01/01/2020;;SUPPORT;Masculin;Malagasy
-1358;ANDRIANA;Luc;TNR;Chef de Département Développement RH et Rémunération;DRH;DRH;Direction des Ressources Humaines;DRH;01/01/2020;;SUPPORT;Masculin;Malagasy
-1383;RABEHARISOA;Sophie;TNR;Responsable Administratif RH et Recrutement;DRH;DRH;Direction des Ressources Humaines;DRH;01/01/2020;;SUPPORT;Féminin;Malagasy
-1418;RANDRIANARISOA;Eric;TNR;Chef de département Transformation Digitale;DSI;DSI;Direction des Systèmes d'Information;DSI;01/01/2020;;SUPPORT;Masculin;Malagasy
-1446;RAKOTONIRINA;Laura;TNR;Cheffe de Projet SI et Innovation;DSI;DSI;Direction des Systèmes d'Information;DSI;01/01/2020;;SUPPORT;Féminin;Malagasy
+﻿MAT;NOM;PRENOMS;SITE;FONCTION;SERVICE;DEPARTEMENT;DIRECTIONNAME;DIRECTION;DATE D'EMBAUCHE;DATE FIN CONTRAT;TYPE D'HEURE;GENRE;Nationalité
+1431;DUPONT;Jean;TNR;Directeur Général;DGE;DGE;Direction Générale;DGE;01/08/2024;;SUPPORT;Masculin;Français
+1182;RAKOTO;Marie;TNR;Directrice des Ressources Humaines;RESSOURCES HUMAINES;RESSOURCES HUMAINES;Direction des Ressources Humaines;DRH;01/02/2017;;SUPPORT;Féminin;Malagasy
+1425;MARTIN;Paul;TNR;Directeur Administratif et Financier;DAF;DAF;Direction Administrative et Financière;DAF;18/12/2023;;SUPPORT;Masculin;Camérounais
+1386;RAZAFINDRAKOTO;Nicolas;TNR;Directeur des Systèmes d'Information;SYSTEMES D'INFORMATION;SYSTEMES D'INFORMATION;Direction des Systèmes d'Information;DSI;15/05/2023;;SUPPORT;Masculin;Malagasy
+1358;ANDRIANA;Luc;TNR;Chef de Département Développement RH et Rémunération;DEVELOPPEMENT RH ET REMUNERATION;DEVELOPPEMENT RH ET REMUNERATION;Direction des Ressources Humaines;DRH;01/06/2022;;SUPPORT;Masculin;Malagasy
+1383;RABEHARISOA;Sophie;TNR;Responsable Administrative et Recrutement;DEVELOPPEMENT RH;DEVELOPPEMENT RH;Direction des Ressources Humaines;DRH;16/03/2023;;SUPPORT;Féminin;Malagasy
+1418;RANDRIANARISOA;Eric;TNR;Chef de Département Transformation Digitale;TRANSFORMATION DIGITALE;TRANSFORMATION DIGITALE;Direction des Systèmes d'Information;DSI;04/03/2024;;SUPPORT;Masculin;Malagasy
+1446;RAKOTONIRINA;Laura;TNR;Cheffe de Projet SI et Innovation;TRANSFORMATION DIGITALE;TRANSFORMATION DIGITALE;Direction des Systèmes d'Information;DSI;27/01/2025;;SUPPORT;Féminin;Malagasy
 1024;BAKOMALALA;Honorine;TNR;Assistante Comptable;FINANCES ET COMPTABILITE;COMPTABILITE ET FACTURATION;Direction Administrative et Financière;DAF;01/03/1991;;SUPPORT;Féminin;Malagasy
-1416;RAZANAKOTO;Hery;TNR;Chef Comptable;DAF;DAF;Direction Administrative et Financière;DAF;01/01/2020;;SUPPORT;Masculin;Malagasy
+1416;RAZANAKOTO;Hery;TNR;Chef Comptable;FINANCES ET COMPTABILITE;COMPTABILITE ET FACTURATION;Direction Administrative et Financière;DAF;19/02/2024;;SUPPORT;Masculin;Malagasy

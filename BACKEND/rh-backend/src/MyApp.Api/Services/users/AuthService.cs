@@ -97,7 +97,7 @@ public class AuthService : IAuthService
             ["00222"] = ("1234", "felana.ratsimbazafy@ravinala-airports.aero"),
             ["00354"] = ("1234", "tahiana.rakotondrasoa@ravinala-airports.aero"),
 
-        // OTHER
+        // TEST
             ["01431"] = ("1234", "jean.dupont@gmail.com"),
             ["01182"] = ("1234", "marie.rakoto@gmail.com"),
             ["01425"] = ("1234", "paul.martin@gmail.com"),

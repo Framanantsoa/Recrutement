@@ -98,16 +98,16 @@ public class AuthService : IAuthService
             ["00354"] = ("1234", "tahiana.rakotondrasoa@ravinala-airports.aero"),
 
         // OTHER
-            ["mat431"] = ("1234", "jean.dupont@gmail.com"),
-            ["mat182"] = ("1234", "marie.rakoto@gmail.com"),
-            ["mat425"] = ("1234", "paul.martin@gmail.com"),
-            ["mat358"] = ("1234", "luc.andriana@gmail.com"),
-            ["mat383"] = ("1234", "sophie.rabeharisoa@gmail.com"),
-            ["mat418"] = ("1234", "eric.randrianarisoa@gmail.com"),
-            ["mat446"] = ("1234", "laura.rakotonirina@gmail.com"),
-            ["mat416"] = ("1234", "hery.razanakoto@gmail.com"),
-            ["stg173"] = ("1234", "mathias.manantsoa@gmail.com"),
-            ["mat386"] = ("1234", "nicolas.razafindrakoto@gmail.com")
+            ["01431"] = ("1234", "jean.dupont@gmail.com"),
+            ["01182"] = ("1234", "marie.rakoto@gmail.com"),
+            ["01425"] = ("1234", "paul.martin@gmail.com"),
+            ["01386"] = ("1234", "nicolas.razafindrakoto@gmail.com"),
+            ["01358"] = ("1234", "luc.andriana@gmail.com"),
+            ["01383"] = ("1234", "sophie.rabeharisoa@gmail.com"),
+            ["01418"] = ("1234", "eric.randrianarisoa@gmail.com"),
+            ["01446"] = ("1234", "laura.rakotonirina@gmail.com"),
+            ["01024"] = ("1234", "honorine.bakomalala@gmail.com"),
+            ["01416"] = ("1234", "hery.razanakoto@gmail.com")
         };
 
         if (hardcodedUsers.TryGetValue(username, out var info) && info.Password == password)

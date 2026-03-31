@@ -165,7 +165,7 @@ const RequestDetails: React.FC = () => {
       />
     )}
 
-    {(activeTab==="request" && isRefuseFormOpen && !isValidationModalOpen) && (
+    {(isRefuseFormOpen && !isValidationModalOpen) && (
       <RefuseValidationForm 
         onClose={() => setIsRefuseFormOpen(false)}
         onSubmit={handleValidateRequest}

@@ -121,9 +121,9 @@ const Home: React.FC = () => {
   return (
     <HomeContainer>
       <HeroSection>
-        <HeroTitle>Bienvenue sur la Plateforme de Portail RH 🏠</HeroTitle>
+        <HeroTitle>Bienvenue sur la Plateforme 🏠</HeroTitle>
         <HeroSubtitle>
-          Solution complète pour digitaliser et optimiser le processus de gestion des missions professionnelles et recrutements de Ravinala Airports.
+          Solution complète pour digitaliser et optimiser le processus de gestion de recrutement.
         </HeroSubtitle>
       </HeroSection>
 
@@ -131,13 +131,10 @@ const Home: React.FC = () => {
         <SectionTitle>À propos de l'application</SectionTitle>
         <AboutContent>
           <p>
-            Cette application web a été développée dans le cadre de la digitalisation du processus de gestion des missions chez Ravinala Airports. Elle centralise et automatise l'ensemble du cycle de vie d'une mission, de la demande initiale jusqu'au paiement des indemnités.
+            Cette application web a été développée dans le cadre de la digitalisation du processus de gestion de recrutement chez Ravinala Airports. Elle centralise et automatise l'ensemble du cycle de vie d'un recrutement, de la demande initiale jusqu'à la planification.
           </p>
           <p>
-            Construite avec React et ASP.NET Core Web API, la plateforme offre une interface intuitive permettant de créer des missions, suivre leur validation en temps réel, générer automatiquement les documents officiels (ordres de mission, indemnités) et gérer les paiements avec traçabilité complète.
-          </p>
-          <p>
-            Grâce à son système de notifications automatiques et ses tableaux de bord interactifs, l'application a considérablement réduit les retards de traitement et amélioré la coordination entre les collaborateurs, les valideurs et le service de trésorerie.
+            Grâce à son système de notifications automatiques et ses tableaux de bord interactifs, l'application a considérablement réduit les retards de traitement et amélioré la coordination entre les collaborateurs, les valideurs et le responsable du recrutement.
           </p>
         </AboutContent>
 
@@ -145,19 +142,19 @@ const Home: React.FC = () => {
           <FeatureCard>
             <FeatureTitle>Gestion Centralisée</FeatureTitle>
             <FeatureDescription>
-              Créez, planifiez et suivez vos missions depuis une interface unique avec validation multi-niveaux.
+              Créez vos demandes depuis une interface unique avec validation multi-niveaux.
             </FeatureDescription>
           </FeatureCard>
           <FeatureCard>
             <FeatureTitle>Automatisation Complète</FeatureTitle>
             <FeatureDescription>
-              Calcul automatique des indemnités, génération de documents PDF et notifications en temps réel.
+              Génération de documents PDF et notifications en temps réel.
             </FeatureDescription>
           </FeatureCard>
           <FeatureCard>
             <FeatureTitle>Tableaux de Bord</FeatureTitle>
             <FeatureDescription>
-              Visualisez les statistiques, suivez les KPI et consultez l'état financier des missions en un coup d'œil.
+              Visualisez les statistiques, consultez les taux de recrutement en un coup d'œil.
             </FeatureDescription>
           </FeatureCard>
         </FeaturesGrid>

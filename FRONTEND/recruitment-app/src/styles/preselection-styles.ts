@@ -64,7 +64,7 @@ export const PreselectionRow = styled.div`
   }
 `;
 
-export const PreselectionCriterionName = styled.div`
+export const PreselectionCriteriaName = styled.div`
   font-weight: var(--font-weight-medium);
 `;
 

@@ -13,8 +13,8 @@ import { ButtonView } from "@/styles/table-styles";
 
 import {
   useSearchCriteria,
-  useUpdateCriterionCoefficient,
-  type PreselectionCriterionDTO,
+  useUpdateCriteriaCoefficient,
+  type PreselectionCriteriaDTO,
 } from "@/api/recruitment/preselection/service";
 
 import PreselectionHeader from "./components/PreselectionHeader";
@@ -25,14 +25,14 @@ const PreselectionSetting: React.FC = () => {
   const navigate = useNavigate();
 
   const { data, isLoading } = useSearchCriteria();
-  const updateCoefficient = useUpdateCriterionCoefficient();
+  const updateCoefficient = useUpdateCriteriaCoefficient();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [value, setValue] = useState<number>(0);
 
   if (isLoading) return <div>Chargement...</div>;
 
-  const settings: PreselectionCriterionDTO = data?.data || {
+  const settings: PreselectionCriteriaDTO = data?.data || {
     criteria: [],
     totalScore: 0
   };

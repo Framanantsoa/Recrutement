@@ -452,8 +452,9 @@ BEGIN
 END;
 GO
 
+
 -- 9. Exécution des procédures principales
 EXEC sp_upsert_all_validators_main;
 GO
-EXEC sp_reset_validators_flow;
-GO
+-- EXEC sp_reset_validators_flow;
+-- GO

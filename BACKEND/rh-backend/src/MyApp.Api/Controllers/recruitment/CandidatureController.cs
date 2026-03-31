@@ -97,7 +97,7 @@ public class CandidatureController(ICandidatureService s1)
 
         id = id.Replace("_", "/");
         try {
-            await _service.UpdateCriterionPoints(id, data.CriterionId, data.Points);
+            await _service.UpdateCriteriaPoints(id, data.CriteriaId, data.Points);
             return Ok(new { data = (object?)null,
              status = 200, message = "Candidature mise à jour avec succès" });
         }

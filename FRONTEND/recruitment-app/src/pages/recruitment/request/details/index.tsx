@@ -21,7 +21,7 @@ interface BackendError {
 type TabKey = "request" | "historic" | "job";
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const deFormatRequestId = (id: string | null) => {
+export const deformatParam = (id: string | null) => {
   return id ? id.replace(/_/g, "/") : null;
 };
 

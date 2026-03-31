@@ -19,7 +19,7 @@ import DraftRequestCards from "./components/draft-planing-card";
 import DraftPlaningFilters, { type PlaningFiltersState } from "./components/planing-filters";
 import { formatDate } from "date-fns";
 import type { TabValidationKey } from "./components/planing-tabs";
-import { formatRequestId } from "../../request/form";
+import { formatParam } from "../../request/form";
 import PlaningTabs from "./components/planing-tabs";
 
 interface AlertState {
@@ -39,6 +39,7 @@ const DraftPlaningList: React.FC = () => {
     const validatorId = validator?.userId || "";
 
 // Gestion des habilitations
+
     const {data: tdrValidator} = useCanValidateJobDescription(validatorId);
     const canViewJobDescriptions = tdrValidator?.hasValidation;
     
@@ -138,7 +139,7 @@ const DraftPlaningList: React.FC = () => {
                 </TableHeader>
 
                 <DraftRequestCards
-                    data={requests}
+                    requests={requests}
                     isLoading={isLoading}
                     totalEntries={totalCount}
                     currentPage={page}
@@ -147,7 +148,7 @@ const DraftPlaningList: React.FC = () => {
                     handlePageSizeChange={handlePageSizeChange}
                     formatDate={(date) => formatDate(new Date(date), "dd/MM/yyyy à HH:mm")}
                     handleRowClick={(id) => {
-                        navigate(`/recrutement/demandes/${formatRequestId(id)}/details?validateur=${userId}`);
+                        navigate(`/recrutement/demandes/${formatParam(id)}/details?validateur=${userId}`);
                     }}
                 />
             </>)}

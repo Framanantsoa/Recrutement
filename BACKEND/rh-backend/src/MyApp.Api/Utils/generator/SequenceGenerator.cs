@@ -11,6 +11,7 @@ namespace MyApp.Api.Utils.generator
     {
         string GenerateSequence(string sequenceName, string prefix, int suffixLength = 6, string separator = "-");
         Task<int> GetNextValueAsync(string sequenceKey);
+        Task<string> GenerateObjectId(string key, string prefix, int padNumber=6, string separator="-");
     }
 
     public class SequenceGenerator : ISequenceGenerator
@@ -182,6 +183,14 @@ namespace MyApp.Api.Utils.generator
             await _context.SaveChangesAsync();
 
             return sequence.CurrentValue;
+        }
+
+
+        public async Task<string> GenerateObjectId(string key, string prefix,
+         int padNumber=6, string separator="-") {
+            var number = await this.GetNextValueAsync(key);
+
+            return $"{prefix}{separator}{number.ToString().PadLeft(padNumber, '0')}";
         }
     }
 }

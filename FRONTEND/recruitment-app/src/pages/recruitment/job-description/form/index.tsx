@@ -32,7 +32,7 @@ import FormationExperienceStep from "./components/experience-step";
 import SkillStep from "./components/skill-step";
 import { useAddJobDescription, useGetJobDescription, useGetPostTypes, useUpdateJobDescription } from "@/api/recruitment/service";
 import { useNavigate } from "react-router-dom";
-import { formatRequestId } from "../../request/form";
+import { formatParam } from "../../request/form";
 
 interface JobDescriptionFormProps {
     isOpen: boolean;
@@ -80,8 +80,8 @@ const JobDescriptionForm: React.FC<JobDescriptionFormProps> = ({
                 experiences: jobToEdit.experiences,
                 softSkills: jobToEdit.softSkills,
                 skills: jobToEdit.skills,
+                postTypeId: jobToEdit.postTypeId,
                 creatorId: userId,
-                postTypeId: jobToEdit.postTypeId
             });
         }
     }, [mode, jobToEdit, setFormData, userId]);
@@ -103,7 +103,8 @@ const JobDescriptionForm: React.FC<JobDescriptionFormProps> = ({
 
     if (!isOpen) return null;
 
-    const showError = (message: string) => setAlert({ isOpen: true, type: "error", message });
+    const showError = (message: string) =>
+        setAlert({ isOpen: true, type: "error", message });
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -123,7 +124,7 @@ const JobDescriptionForm: React.FC<JobDescriptionFormProps> = ({
 
             if (mode === "edit") {
                 await updateJobDescription.mutateAsync(formData);
-                navigate(`/recrutement/demandes/${formatRequestId(requestId)}/details`);
+                navigate(`/recrutement/demandes/${formatParam(requestId)}/details`);
             
                 onFormSuccess("success", "TDR mise à jour avec succès !");
                 setAlert({
@@ -133,7 +134,7 @@ const JobDescriptionForm: React.FC<JobDescriptionFormProps> = ({
                 });
             } else {
                 await createJobDescription.mutateAsync(formData);
-                navigate(`/recrutement/demandes/${formatRequestId(requestId)}/details`);
+                navigate(`/recrutement/demandes/${formatParam(requestId)}/details`);
 
                 onFormSuccess("success", "TDR créée avec succès !");
                 setAlert({

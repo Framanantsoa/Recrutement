@@ -21,7 +21,7 @@ import { formatDate } from "date-fns";
 import type { TabValidationKey } from "./components/validation-tabs";
 import ValidationTabs from "./components/validation-tabs";
 import DraftJobCards from "./components/draft-job-card";
-import { formatRequestId } from "../form";
+import { formatParam } from "../form";
 
 // Types pour filtres
 interface FiltersState {
@@ -193,7 +193,7 @@ const DraftRequestList: React.FC = () => {
                     handlePageSizeChange={handlePageSizeChange}
                     formatDate={(date) => formatDate(new Date(date), "dd/MM/yyyy à HH:mm")}
                     handleRowClick={(id) => {
-                        navigate(`/recrutement/demandes/${formatRequestId(id)}/details?validateur=${userId}`);
+                        navigate(`/recrutement/demandes/${formatParam(id)}/details?validateur=${userId}`);
                     }}
                 />
             </>)}
@@ -213,7 +213,7 @@ const DraftRequestList: React.FC = () => {
                     handlePageSizeChange={handlePageSizeChange}
                     formatDate={(date) => formatDate(new Date(date), "dd/MM/yyyy à HH:mm")}
                     handleRowClick={(requestId) => {
-                        navigate(`/recrutement/demandes/${formatRequestId(requestId)}/details?validateur=${userId}`);
+                        navigate(`/recrutement/demandes/${formatParam(requestId)}/details?validateur=${userId}`);
                         sessionStorage.setItem("lastActiveDetailTab", "job");
                     }}
                 />

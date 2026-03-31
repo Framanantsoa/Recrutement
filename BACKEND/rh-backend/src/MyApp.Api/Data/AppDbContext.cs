@@ -140,17 +140,8 @@ namespace MyApp.Api.Data
 
             modelBuilder.Entity<PendedRequestToValidate>().HasNoKey();      
 
-            modelBuilder.Entity<LangageSpeaking>()
-                .Property(p => p.Points)
-                .HasPrecision(15,2);
-
-            modelBuilder.Entity<LevelEducation>()
-                .Property(p => p.Points)
-                .HasPrecision(15,2);
-
-            modelBuilder.Entity<PreselectionCriterion>()
-                .Property(p => p.Coefficient)
-                .HasPrecision(15,2);      
+            modelBuilder.Entity<PreselectionCriteria>()
+                .ToTable(tb => tb.HasTrigger("trg_update_definitive_scale"));  
         }
         
 
@@ -176,17 +167,22 @@ namespace MyApp.Api.Data
         public DbSet<JobDescriptionSoftSkill> JobDescriptionSoftSkills {get; set;}
         public DbSet<Skill> Skills { get; set; }
 
-        public DbSet<Candidature> Candidatures { get; set;}
-        public DbSet<PreselectionCriterion> PreselectionCriterions { get; set;}
         public DbSet<Langage> Langages { get; set;}
         public DbSet<SpeakingLevel> SpeakingLevels { get; set;}
         public DbSet<LangageSpeaking> LangagesSpeakings { get; set;}
-        public DbSet<CandidatureDetail> CandidaturesDetails { get; set;}
-        public DbSet<ExperiencePoints> ExperiencePoints { get; set; }
-        public DbSet<CandidatureTreatment> CandidatureTreatments { get; set;}
+        public DbSet<Candidature> Candidatures { get; set;}
         public DbSet<CandidatureComment> CandidatureComments { get; set;}
+        public DbSet<CandidatureDetail> CandidaturesDetails { get; set; }
+        public DbSet<CandidatureLangage> CandidatureLangages { get; set;}
         public DbSet<CandidatureFormation> CandidatureFormations { get; set; }
-        public DbSet<CandidaturePoint> CandidaturePoints { get; set; }
+        public DbSet<CandidatureScore> CandidatureScores { get; set; }
+        public DbSet<PreselectionCriteria> PreselectionCriterias { get; set; }
+        public DbSet<JobDescriptionCriteria> JobDescriptionCriterias { get; set; }
+        public DbSet<JobCriteriaExperience> JobCriteriaExperiences { get; set; }
+        public DbSet<JobCriteriaFormation> JobCriteriaFormations { get; set; }
+        public DbSet<JobCriteriaLevelEducation> JobCriteriaLevelEducations { get; set; }
+        public DbSet<JobCriteriaPresentation> JobCriteriaPresentations { get; set; }
+        public DbSet<JobCriteriaSpeaking> JobCriteriaSpeakings { get; set; }
 
         public DbSet<Planing> Planings { get; set; }
         public DbSet<JobInterview> JobInterviews { get; set; }

@@ -39,7 +39,7 @@ interface RecruitmentRequestFormProps {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const formatRequestId = (id: string | null) => {
+export const formatParam = (id: string | null) => {
   return id?.replace(/\//g, "_") ?? null;
 };
 
@@ -138,7 +138,7 @@ const RecruitmentRequestForm: React.FC<RecruitmentRequestFormProps> = ({
                 onClose();
                 
                 const createReqId = resp.data;
-                navigate(`/recrutement/demandes/${formatRequestId(requestId??createReqId)}/details`);
+                navigate(`/recrutement/demandes/${formatParam(requestId??createReqId)}/details`);
             } 
             catch (error: unknown) {
                 if (axios.isAxiosError(error)) {

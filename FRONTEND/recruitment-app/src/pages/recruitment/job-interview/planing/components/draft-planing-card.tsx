@@ -25,11 +25,11 @@ import {
 
 import Pagination from "@/components/pagination";
 import { Loading, NoDataMessage } from "@/styles/table-styles";
+import type { RequestDetailsDTO } from "@/api/recruitment/service";
 import RecruitmentStatusTag from "@/components/recruitment-status";
-import type { PlaningItemDTO } from "@/api/recruitment/interview/service";
 
-interface DraftPlaningCardsProps {
-    data: PlaningItemDTO[];
+interface DraftRequestCardsProps {
+    requests: RequestDetailsDTO[];
     isLoading: boolean;
     totalEntries: number;
     currentPage: number;
@@ -40,8 +40,8 @@ interface DraftPlaningCardsProps {
     handleRowClick: (id: string) => void;
 }
 
-const DraftRequestCards: React.FC<DraftPlaningCardsProps> = ({
-    data,
+const DraftRequestCards: React.FC<DraftRequestCardsProps> = ({
+    requests,
     isLoading,
     totalEntries,
     currentPage,
@@ -90,9 +90,9 @@ const DraftRequestCards: React.FC<DraftPlaningCardsProps> = ({
             >
                 {isLoading ? (
                     <Loading>Chargement des données...</Loading>
-                ) : data.length > 0 ? (
+                ) : requests.length > 0 ? (
                     <>
-                        {data.map((req) => (
+                        {requests.map((req) => (
                             <Card key={req.id} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
 
                                 {renderValidationIndicator(req.validationLevel)}
@@ -108,7 +108,7 @@ const DraftRequestCards: React.FC<DraftPlaningCardsProps> = ({
                                 </CardHeader>
 
                                 <CardInfo style={{ gap: "0.4rem", flex: 1 }}>
-
+.
                                     {/* SITES */}
                                     <div style={{
                                         display: "flex",

@@ -37,4 +37,6 @@ public class JobDescription : BaseEntity
     public List<JobDescriptionSoftSkill> SoftSkills { get; set; } = [];
     public List<Skill> Skills { get; set; } = [];
     public List<JobDescriptionValidation> Validations { get; set; } = [];
+    
+    public JobDescriptionCriteria? Criteria { get; set; }
 }

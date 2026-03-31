@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { useGetJobDescriptionDetails, type RequestDetailsDTO } from "@/api/recruitment/service";
 import { exportJobDescriptionToPDF } from "../../utils/pdfExport";
-import { FaFilePdf, FaList, FaPen } from "react-icons/fa";
+import { FaFilePdf, FaList, FaPen, FaPenAlt } from "react-icons/fa";
 import LabelValue from "../../request/details/components/LabelValue";
 import LabelList from "./components/LabelList";
 import { ButtonConfirm, ButtonConfirmSecondary } from "@/styles/table-styles";
@@ -9,7 +9,8 @@ import LabelValueList from "./components/LabelValueList";
 import { formatDate } from "date-fns";
 import RecruitmentStatusTag from "@/components/recruitment-status";
 import { useNavigate } from "react-router-dom";
-import { formatRequestId } from "../../request/form";
+import { formatParam } from "../../request/form";
+import PreselectionCriteriaForm from "../../candidature/criteria-form";
 
 interface Props {
   requestId: string;
@@ -20,6 +21,8 @@ interface Props {
 const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit }) => {
   const navigate = useNavigate();
   const { data, isLoading, error } = useGetJobDescriptionDetails(requestId);
+
+  const [isCriteriaOpen, setIsCriteriaOpen] = useState(false);
 
   // const userData = JSON.parse(localStorage.getItem("user") || "{}");
   // const userId = userData?.userId || "";
@@ -36,7 +39,7 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit }) => {
   const createdAt = new Date(job.createdAt + "Z");
   const createdAtDateStr = formatDate(createdAt, "dd/MM/yyyy à HH:mm");
 
-  return (
+  return (<>
     <div className="request-details-vertical">
 
       {/* ===== STICKY HEADER ===== */}
@@ -56,24 +59,31 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit }) => {
               </ButtonConfirm>
             {/* )} */}
 
-            {(job.lastStatus.toLowerCase() === "en attente") && (
+            {job.lastStatus.toLowerCase() === "en attente" ? (
               <ButtonConfirmSecondary
                 className="tdr-btn"
                 onClick={() => onEdit(job.id)}
               >
                 <FaPen /> Modifier
               </ButtonConfirmSecondary>
+            )
+             : job.criteria === null ? (
+              <ButtonConfirmSecondary
+                onClick={() => { setIsCriteriaOpen(true) }}
+              >
+                <FaPenAlt /> Définir les critères
+              </ButtonConfirmSecondary>
+            )
+             : (
+              <ButtonConfirm
+                onClick={() => {
+                  navigate(`/recrutement/candidatures/tdr/${formatParam(job.id)}`)
+                }}
+              >
+                <FaList /> Voir les candidatures
+              </ButtonConfirm>
             )}
-
-            <ButtonConfirm
-              onClick={() => {
-                const jobId = formatRequestId(job.id)
-                navigate(`/recrutement/candidatures/tdr/${jobId}`)
-              }
-            }>
-              <FaList /> Voir les candidatures
-            </ButtonConfirm>
-
+            
             <LabelValue label="Statut">
               <RecruitmentStatusTag status={job.lastStatus}/>
             </LabelValue>
@@ -123,8 +133,40 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit }) => {
           label="Compétences requises" items={job.skills} 
         />
       </section>
+
+    {/* ===== CRITÈRES DE SÉLECTION ===== */}
+      {(job.criteria != null) && (
+        <section className="details-section">
+          <h3>Critères de présélection (minimum requis)</h3>
+
+          <LabelValue
+            label="Niveau d'études"
+            value={job.criteria.minLevelEducation}
+          />
+
+          <LabelValue
+            label="Expérience professionnel"
+            value={`${job.criteria.minExperienceYears.toString()} ans`}
+          />
+
+          {job.criteria.speakingCriteria.length > 0 && (
+            <LabelValueList
+              label="Compétences linguistiques"
+              items={job.criteria.speakingCriteria.map(
+                sc => `${sc.langage} - ${sc.level}`
+              )}
+            />
+          )}
+        </section>
+      )}
     </div>
-  );
+
+    <PreselectionCriteriaForm
+      isOpen={isCriteriaOpen}
+      jobId={job.id}
+      onClose={() => setIsCriteriaOpen(false)}
+    />
+  </>);
 };
 
 export default JobDetailsCard;

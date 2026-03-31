@@ -1,5 +1,4 @@
-import type { User } from "@/api/users/services";
-import { formatRequestId } from "@/pages/recruitment/request/form";
+import { formatParam } from "@/pages/recruitment/request/form";
 import api from "@/utils/axios-config";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
@@ -15,15 +14,6 @@ export interface PlaningFormDTO {
     dateTime: string;
 }
 
-export interface PlaningItemDTO {
-    id: string;
-    candidatureId: string;
-    validatorId: string;
-    dateTime: string;
-    validator: User;
-}
-
-
 export const useCanUserPlanJobInterview = (userId: string, jobId: string) => {
     const queryKey = [...CAN_PLAN_BASE_KEY, { userId, jobId }] as const;
 
@@ -32,7 +22,7 @@ export const useCanUserPlanJobInterview = (userId: string, jobId: string) => {
         queryFn: async () => {
             try {
                 const response = await api.get(
-                    `${apiBaseUrl}/users/${userId}/can-plan/${formatRequestId(jobId)}`
+                    `${apiBaseUrl}/users/${userId}/can-plan/${formatParam(jobId)}`
                 );
 
                 return response.data.data;
@@ -57,7 +47,7 @@ export const useCanUserPlanJobInterviewByCandidature = (userId: string, candId: 
         queryFn: async () => {
             try {
                 const response = await api.get(
-                    `${apiBaseUrl}/users/${userId}/can-plan-candidature/${formatRequestId(candId)}`
+                    `${apiBaseUrl}/users/${userId}/can-plan-candidature/${formatParam(candId)}`
                 );
 
                 return response.data.data;
@@ -88,36 +78,5 @@ export const useAddJobInterviewPlaning = () => {
                 queryKey: PLANINGS_BASE_KEY
             });
         }
-    });
-};
-
-
-export const useSearchPlaningInterviews = (
-    userId: string, year: number, month: number
-) => {
-    const queryKey = [...PLANINGS_BASE_KEY, { userId, year, month }] as const;
-
-    return useQuery<{ planings:PlaningItemDTO[]; totalCount:number }, Error>({
-        queryKey,
-        queryFn: async () => {
-            try {
-                const response = await api.get(`${apiBaseUrl}/users/${userId}`, {
-                    params: { year, month },
-                });
-                const apiData = response.data.data;
-
-                return {
-                    planings: apiData.planings,
-                    totalCount: apiData.totalCount
-                };
-            } 
-            catch (error) {
-                if (axios.isAxiosError(error) && error.response) {
-                    throw new Error(error.response.data?.message || 'Erreur serveur');
-                }
-                throw error;
-            }
-        },
-        enabled: !!userId
     });
 };

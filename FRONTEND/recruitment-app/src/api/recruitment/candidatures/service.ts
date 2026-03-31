@@ -1,8 +1,8 @@
-import { formatRequestId } from "@/pages/recruitment/request/form";
+import { formatParam } from "@/pages/recruitment/request/form";
 import api from "@/utils/axios-config";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import type { PreselectionCriterionDTO } from "../preselection/service";
+import type { PreselectionCriteriaDTO } from "../preselection/service";
 import type { CreateRequestResponse } from "../service";
 import type { User } from "@/api/auth/services";
 
@@ -40,13 +40,13 @@ interface LangageSkillDTO {
 }
 
 interface CandidatureNoteUpadateFormDTO {
-    criterionId: string;
+    criteriaId: string;
     points: number;
 }
 
-interface CandidaturePoint {
+interface CandidatureScore {
     id: string;
-    criterionId: string;
+    criteriaId: string;
     points: number;
 }
 
@@ -65,7 +65,7 @@ export interface CandidatureDetailsDTO {
     formations: string[];
     totalScore: number;
 
-    points: CandidaturePoint[];
+    points: CandidatureScore[];
 
     sendingDateTime: string;
     isTreated: boolean;
@@ -109,7 +109,7 @@ export const useSearchCandidatures = (
         queryKey,
         queryFn: async () => {
             try {
-                const response = await api.get(`/api/recruitment/candidatures/job-descriptions/${formatRequestId(jobDescId)}`, {
+                const response = await api.get(`/api/recruitment/candidatures/job-descriptions/${formatParam(jobDescId)}`, {
                     params: { ...filters, page, pageSize },
                 });
 
@@ -136,11 +136,11 @@ export const useSearchCandidatures = (
 export const useSearchCandidatureDetails = (id: string) => {
     const queryKey = [...CANDIDATURE_DETAILS_KEY, { id }] as const;
 
-    return useQuery<{criteria: PreselectionCriterionDTO, details: CandidatureDetailsDTO}, Error>({
+    return useQuery<{criteria: PreselectionCriteriaDTO, details: CandidatureDetailsDTO}, Error>({
         queryKey,
         queryFn: async () => {
             try {
-                const response = await api.get(`/api/recruitment/candidatures/${formatRequestId(id)}`, {});
+                const response = await api.get(`/api/recruitment/candidatures/${formatParam(id)}`, {});
                 const details = response.data.data.details;
                 const criteria = response.data.data.criteria;
 
@@ -163,7 +163,7 @@ export const useAssignNoteForCandidat = (id?: string) => {
 
     return useMutation<CreateRequestResponse, Error, CandidatureNoteUpadateFormDTO>({
         mutationFn: async (data) => 
-            await api.put(`/api/recruitment/candidatures/${formatRequestId(id!)}`, data)
+            await api.put(`/api/recruitment/candidatures/${formatParam(id!)}`, data)
             .then(r => r.data),
 
         onSuccess: () => queryClient.invalidateQueries({ 
@@ -179,7 +179,7 @@ export const useFinishCandidatureTreatment = (id?: string) => {
 
     return useMutation<CreateRequestResponse, Error>({
         mutationFn: async () => 
-            await api.put(`/api/recruitment/candidatures/${formatRequestId(id!)}/finish`)
+            await api.put(`/api/recruitment/candidatures/${formatParam(id!)}/finish`)
             .then(r => r.data),
 
         onSuccess: () => queryClient.invalidateQueries({ 
@@ -257,7 +257,7 @@ export const useUpdateCandidatureComment = () => {
             data: CandidatureCommentFormDTO
         }) => {
             return await api.put(
-                `/api/recruitment/candidatures/comments/${formatRequestId(commentId)}`,
+                `/api/recruitment/candidatures/comments/${formatParam(commentId)}`,
                 data
             );
         },
@@ -278,7 +278,7 @@ export const useDeleteCandidatureComment = () => {
             candidatureId: string
         }) => {
             return await api.delete(
-                `/api/recruitment/candidatures/comments/${formatRequestId(commentId)}`
+                `/api/recruitment/candidatures/comments/${formatParam(commentId)}`
             );
         },
         onSuccess: (_, variables) => {

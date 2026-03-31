@@ -3,23 +3,25 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyApp.Api.Entities.recruitment;
 
-[Table("candidatures_langages")]
-public class CandidatureLangage
+[Table("job_criteria_speakings")]
+public class JobCriteriaSpeaking
 {
     [Key]
-    [Column("candidature_langage_id")]
+    [Column("id")]
     public string Id { get; set; } = null!;
 
-    [Column("candidature_detail_id")]
-    public string CandidatureDetailId { get; set; } = null!;
+    [Column("job_criteria_id")]
+    public string JobCriteriaId { get; set; } = null!;
 
     [Column("langage_speaking_id")]
     public string LangageSpeakingId { get; set; } = null!;
 
+    [Column("points")]
+    public decimal Points { get; set; }
 
-// RELATIONS
-    [ForeignKey(nameof(CandidatureDetailId))]
-    public CandidatureDetail CandidatureDetail { get; set; } = null!;
+    // RELATIONS
+    [ForeignKey(nameof(JobCriteriaId))]
+    public JobDescriptionCriteria JobCriteria { get; set; } = null!;
 
     [ForeignKey(nameof(LangageSpeakingId))]
     public LangageSpeaking LangageSpeaking { get; set; } = null!;

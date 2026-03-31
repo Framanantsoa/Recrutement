@@ -34,12 +34,13 @@ public class Candidature : BaseEntity
     [ForeignKey(nameof(JobDescriptionId))]
     public JobDescription JobDescription { get; set; } = null!;
 
+    [Column("is_preselected")]
+    public bool? IsPreselected { get; set; }
+
 // =============================
 // Navigation properties
 // =============================
-    public ICollection<CandidatureDetail> CandidatureDetails { get; set; }
-        = new List<CandidatureDetail>();
-
-    public ICollection<CandidatureFormation> CandidatureFormations { get; set; }
-        = new List<CandidatureFormation>();
+    public ICollection<CandidatureDetail> CandidatureDetails { get; set; } = [];
+    public ICollection<CandidatureFormation> CandidatureFormations { get; set; } = [];
+    public ICollection<CandidatureScore> CandidatureScores { get; set; } = [];
 }

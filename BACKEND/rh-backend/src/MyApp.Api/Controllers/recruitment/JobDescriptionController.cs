@@ -22,8 +22,8 @@ public class JobDescriptionController(IJobDescriptionService service)
         // }
 
         try {
-            await _service.AddJobDescription(data);
-            return Ok(new { data = (object?)null, status = 200, message = "Fiche de poste créée avec succès" });
+            var jobId = await _service.AddJobDescription(data);
+            return Ok(new { data = jobId, status = 200, message = "Fiche de poste créée avec succès" });
         }
         catch(ArgumentException ex) {
             return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });

@@ -1,3 +1,5 @@
+using System.Drawing;
+using DocuSign.eSign.Model;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Api.Data;
 using MyApp.Api.Entities.recruitment;
@@ -11,17 +13,17 @@ public interface ICandidatureRepository
     Task<string> GenerateCandidatureId(string direction, int year);
     Task AddAsync(Candidature candidature, string department);
     Task AddCandidatureDetailAsync(CandidatureDetail detail);
-    Task AddCandidatureTreatmentAsync(CandidatureTreatment treatment);
+    Task AddCandidatureLangageAsync(CandidatureLangage treatment);
     Task AddCandidatureFormationAsync(CandidatureFormation param);
     Task<IEnumerable<Candidature>> GetByJobDescriptionIdAsync(string jobDescId,
      CandidatureFiltersDTO filters, int page, int pageSize);
     Task<Candidature?> GetCandidatureById(string id);
     Task<CandidatureDetailsDTO?> GetCandidatureDetails(string id);
-    Task AssignCandidaturePointsAsync(string candidatureId);
-    Task UpdateCriterionPoints(string candidatureId, string criterionId, decimal newPoints);
+    Task UpdateCriteriaPoints(string candidatureId, string criteriaId, decimal newPoints);
     Task<LangageSpeaking?> GetLangageSpeakingByIdsAsync(string langageId, string levelId);
-    Task<List<CandidaturePoint>> GetCandidatPointsAsync(string id);
     Task FinishCandidatureTreatment(string candidatureId);
+
+    Task<decimal> GetLevelEducationPoint(Candidature cad, JobDescriptionCriteria criteria);
 
 // COMMENTAIRES
     Task AddCandidatureCommentAsync(CandidatureComment comment);
@@ -87,45 +89,30 @@ public class CandidatureRepository(AppDbContext context,
 
     public async Task<string> GenerateCandidatureId(string direction, int year) {
         var key = $"CAD_{direction}_{year}";
-        var number = await _seq.GetNextValueAsync(key);
+        string lastYear = (year%100).ToString("D2");
 
     // Ex : CAD-DRH/260001
-        return $"CAD-{direction}/{year % 100}{number.ToString().PadLeft(4, '0')}";
+        return await _seq.GenerateObjectId(key, $"CAD-{direction}/{lastYear}", 4, "");
     }
 
     private async Task<string> GenerateCandidatureDetailId() {
-        var key = "CAD_DETAIL";
-        var number = await _seq.GetNextValueAsync(key);
-
-        return $"CADDET-{number.ToString().PadLeft(6, '0')}";
+        return await _seq.GenerateObjectId("CAD_DET", "DET/CAD");
     }
 
-    private async Task<string> GenerateCandidatureTreatmentId() {
-        var key = "CAD_TREATMENT";
-        var number = await _seq.GetNextValueAsync(key);
-
-        return $"CADTR-{number.ToString().PadLeft(6, '0')}";
+    private async Task<string> GenerateCandidatureLangageId() {
+        return await _seq.GenerateObjectId("CAD_LANG", "CAD/LANG");
     }
 
     private async Task<string> GenerateCandidatureFormationId() {
-        var key = "CAD_FORM";
-        var number = await _seq.GetNextValueAsync(key);
-
-        return $"CADFR-{number.ToString().PadLeft(6, '0')}";
+        return await _seq.GenerateObjectId("CAD_FORM", "CAD/FOR");
     }
 
-    private async Task<string> GenerateCandidaturePointId() {
-        var key = "CAD_POINT";
-        var number = await _seq.GetNextValueAsync(key);
-
-        return $"CADPT-{number.ToString().PadLeft(6, '0')}";
+    private async Task<string> GenerateCandidatureScoreId() {
+        return await _seq.GenerateObjectId("CAD_POINT", "CAD/PTS");
     }
 
     private async Task<string> GenerateCandidatureCommentId() {
-        var key = "CAD_COMM";
-        var number = await _seq.GetNextValueAsync(key);
-
-        return $"COM/CAD-{number.ToString().PadLeft(6, '0')}";
+        return await _seq.GenerateObjectId("CAD_COMM", "COM/CAD");
     }
 
 
@@ -145,9 +132,9 @@ public class CandidatureRepository(AppDbContext context,
         await _dbCtx.CandidaturesDetails.AddAsync(detail);
     }
 
-    public async Task AddCandidatureTreatmentAsync(CandidatureTreatment treatment) {
-        treatment.Id = await GenerateCandidatureTreatmentId();
-        await _dbCtx.CandidatureTreatments.AddAsync(treatment);
+    public async Task AddCandidatureLangageAsync(CandidatureLangage treatment) {
+        treatment.Id = await GenerateCandidatureLangageId();
+        await _dbCtx.CandidatureLangages.AddAsync(treatment);
     }
 
     public async Task AddCandidatureFormationAsync(CandidatureFormation param) {
@@ -155,9 +142,9 @@ public class CandidatureRepository(AppDbContext context,
         await _dbCtx.CandidatureFormations.AddAsync(param);
     }
 
-    public async Task AddCandidaturePointAsync(CandidaturePoint param) {
-        param.Id = await GenerateCandidaturePointId();
-        await _dbCtx.CandidaturePoints.AddAsync(param);
+    public async Task AddCandidatureScoreAsync(CandidatureScore param) {
+        param.Id = await GenerateCandidatureScoreId();
+        await _dbCtx.CandidatureScores.AddAsync(param);
     }
 
 
@@ -171,19 +158,19 @@ public class CandidatureRepository(AppDbContext context,
     }
 
 
-    public async Task UpdateCriterionPoints(string candidatureId,
-     string criterionId, decimal newPoints) {
+    public async Task UpdateCriteriaPoints(string candidatureId,
+     string criteriaId, decimal newPoints) {
         var candidature = await _dbCtx.Candidatures.FirstOrDefaultAsync(c => 
          c.Id.Equals(candidatureId))
          ?? throw new ArgumentException("Candidature non trouvée");
 
-        var criterion = await _dbCtx.PreselectionCriterions.FirstOrDefaultAsync(p => 
-         p.Id.Equals(criterionId))
+        var criteria = await _dbCtx.PreselectionCriterias.FirstOrDefaultAsync(p => 
+         p.Id.Equals(criteriaId))
          ?? throw new ArgumentException("Critère de présélection non trouvé");
 
-        var canditatNote = await _dbCtx.CandidaturePoints.FirstOrDefaultAsync(cn =>
-         cn.CandidatureId==candidatureId && cn.CriterionId==criterionId)
-         ?? throw new ArgumentException("Note de candidature non trouvé");
+        var canditatNote = await _dbCtx.CandidatureScores.FirstOrDefaultAsync(cn =>
+         cn.CandidatureId==candidatureId && cn.CriteriaId==criteriaId)
+         ?? throw new ArgumentException("Note de candidature non trouvée");
 
         canditatNote.Points = newPoints;
         
@@ -192,11 +179,26 @@ public class CandidatureRepository(AppDbContext context,
 
 
     public async Task FinishCandidatureTreatment(string candidatureId) {
-        var candidature = await _dbCtx.Candidatures.FirstOrDefaultAsync(c => 
-         c.Id.Equals(candidatureId))
+        var candidature = await _dbCtx.Candidatures
+            .Include(c => c.CandidatureScores)
+            .FirstOrDefaultAsync(c => c.Id.Equals(candidatureId))
          ?? throw new ArgumentException("Candidature non trouvée");
 
         candidature.IsTreated = true;
+
+    // Condition de pénalisation
+        var points = candidature.CandidatureScores.Select(n => n.Points);
+        if(points.Any(p => p==0)) {
+            candidature.IsPreselected = false;
+        }
+        else {
+        // Définition du seuil : Candidat présélectionné > points 60%
+            decimal percentage = 60m;
+            decimal minThreshold = await _dbCtx.PreselectionCriterias.SumAsync(p =>
+             p.DefinitiveScale) * (percentage / 100m);
+
+            candidature.IsPreselected = points.Sum() >= minThreshold;
+        }
 
         await _dbCtx.SaveChangesAsync();
     }
@@ -205,6 +207,7 @@ public class CandidatureRepository(AppDbContext context,
     public async Task<Candidature?> GetCandidatureById(string id) {
         return await _dbCtx.Candidatures
             .Include(c => c.JobDescription)
+            .Include(c => c.CandidatureScores)
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id);
     }
@@ -223,16 +226,12 @@ public class CandidatureRepository(AppDbContext context,
                     .Select(cd => cd.LevelEducation.Name)
                     .FirstOrDefault(),
 
-                LevelEducationPoints = c.CandidatureDetails
-                    .Select(cd => cd.LevelEducation.Points)
-                    .FirstOrDefault(),
-
                 LangagesSkills = c.CandidatureDetails
-                    .Select(cd => cd.CandidatureTreatments.Select(ct => new LangageSkillDTO
+                    .Select(cd => cd.CandidatureLangages.Select(ct => new LangageSkillDTO
                     {
                         Langage = ct.LangageSpeaking.Langage.Name,
                         Level = ct.LangageSpeaking.SpeakingLevel.Name,
-                        Points = ct.LangageSpeaking.Points
+                        LevelCode = ct.LangageSpeaking.SpeakingLevel.Code,
                     }).ToList())
                     .FirstOrDefault(),
 
@@ -256,67 +255,10 @@ public class CandidatureRepository(AppDbContext context,
                 Formations = x.Formations,
 
                 SendingDateTime = x.c.CreatedAt,
-                IsTreated = x.c.IsTreated
+                IsTreated = x.c.IsTreated,
+                IsPreselected = x.c.IsPreselected
             })
             .FirstOrDefaultAsync();
-    }
-
-
-    public async Task<List<CandidaturePoint>> GetCandidatPointsAsync(string id) {
-        var points = await _dbCtx.CandidaturePoints.Where(c => c.CandidatureId == id)
-            .AsNoTracking().ToListAsync();
-        
-        return points;
-    }
-
-
-    public async Task AssignCandidaturePointsAsync(string candidatureId) {
-        try {
-            var candidature = await _dbCtx.Candidatures
-                .Where(c => c.Id == candidatureId)
-                .Select(c => new {
-                    c.Id,
-                    LevelPoints = c.CandidatureDetails
-                        .Select(cd => cd.LevelEducation.Points)
-                        .FirstOrDefault(),
-                    Years = c.CandidatureDetails
-                        .Select(cd => cd.YearsOfExperience)
-                        .FirstOrDefault(),
-                    LangPoints = c.CandidatureDetails
-                        .SelectMany(cd => cd.CandidatureTreatments)
-                        .Select(ct => ct.LangageSpeaking.Points)
-                        .ToList(),
-                })
-                .FirstOrDefaultAsync()
-                 ?? throw new ArgumentException("Candidature introuvable");
-
-        // 1. Niveau d’étude
-            decimal educationPoints = candidature.LevelPoints;
-        // 2. Expérience
-            decimal experiencePoints = await _dbCtx.ExperiencePoints
-                .Where(ep => ep.MinimumYear <= candidature.Years && ep.MaximumYear >= candidature.Years)
-                .Select(ep => ep.Points)
-                .FirstOrDefaultAsync();
-        // 3. Langues
-            decimal langPoints = candidature.LangPoints?.Sum() ?? 0;
-        // 4. Formations (manuelle → 0 au départ)
-            decimal formationPoints = 0;
-        // 5. CV (manuel → 0 au départ)
-            decimal cvPoints = 0;
-
-            var points = new List<CandidaturePoint> {
-                new() { Id = Guid.NewGuid().ToString(), CandidatureId = candidatureId, CriterionId = "CRIT_001", Points = educationPoints },
-                new() { Id = Guid.NewGuid().ToString(), CandidatureId = candidatureId, CriterionId = "CRIT_002", Points = formationPoints },
-                new() { Id = Guid.NewGuid().ToString(), CandidatureId = candidatureId, CriterionId = "CRIT_003", Points = experiencePoints },
-                new() { Id = Guid.NewGuid().ToString(), CandidatureId = candidatureId, CriterionId = "CRIT_004", Points = langPoints },
-                new() { Id = Guid.NewGuid().ToString(), CandidatureId = candidatureId, CriterionId = "CRIT_005", Points = cvPoints }
-            };
-
-            await _dbCtx.CandidaturePoints.AddRangeAsync(points);
-        }
-        catch (Exception) {
-           throw;
-        }
     }
 
 
@@ -333,10 +275,8 @@ public class CandidatureRepository(AppDbContext context,
     }
 
     public async Task<PaginatedResult<CandidatureComment>> GetPaginatedAsync(
-        string id,
-        int page,
-        int pageSize)
-    {
+        string id, int page, int pageSize
+    ) {
         var query = _dbCtx.CandidatureComments
             .Include(c => c.User)
             .Where(c => !c.IsDeleted && c.CandidatureId == id);
@@ -349,8 +289,7 @@ public class CandidatureRepository(AppDbContext context,
             .Take(pageSize)
             .ToListAsync();
 
-        return new PaginatedResult<CandidatureComment>
-        {
+        return new PaginatedResult<CandidatureComment> {
             List = list,
             TotalCount = totalCount
         };

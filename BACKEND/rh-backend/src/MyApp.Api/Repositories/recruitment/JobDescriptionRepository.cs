@@ -92,6 +92,7 @@ public class JobDescriptionRepository(AppDbContext ctx, ISequenceGenerator seq) 
             .Include(r => r.Experiences)
             .Include(r => r.SoftSkills)
             .Include(r => r.Skills)
+            .Include(r => r.Criteria)
             .Include(r => r.Request)
                 .ThenInclude(req => req.HierarchicalManager)
             .FirstOrDefaultAsync(r => r.Id == id) ?? 
@@ -108,6 +109,19 @@ public class JobDescriptionRepository(AppDbContext ctx, ISequenceGenerator seq) 
             .Include(r => r.Experiences)
             .Include(r => r.SoftSkills)
             .Include(r => r.Skills)
+            .Include(r => r.Criteria)
+                .ThenInclude(c => c!.CriteriaThreshold) // Niveau 1
+                    .ThenInclude(ct => ct.SpeakingThresholds) // Niveau 2
+                        .ThenInclude(st => st.MinSpeakingLevel) // Niveau 3
+                            .ThenInclude(msl => msl.Langage) // Niveau 4
+            .Include(r => r.Criteria)
+                .ThenInclude(c => c!.CriteriaThreshold)
+                    .ThenInclude(ct => ct.SpeakingThresholds)
+                        .ThenInclude(st => st.MinSpeakingLevel)
+                            .ThenInclude(msl => msl.SpeakingLevel) // Niveau 4
+            .Include(r => r.Criteria)
+                .ThenInclude(c => c!.CriteriaThreshold)
+                    .ThenInclude(ct => ct.MinLevelEducation)
             .FirstOrDefaultAsync(j => j.Request.Id == req.Id);
 
         return result;

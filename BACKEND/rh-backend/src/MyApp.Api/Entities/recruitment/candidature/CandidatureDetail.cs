@@ -30,6 +30,6 @@ public class CandidatureDetail
 // =============================
 // Navigation properties
 // ============================
-    public ICollection<CandidatureTreatment> CandidatureTreatments { get; set; }
-        = new List<CandidatureTreatment>();
+    public ICollection<CandidatureLangage> CandidatureLangages { get; set; }
+        = new List<CandidatureLangage>();
 }

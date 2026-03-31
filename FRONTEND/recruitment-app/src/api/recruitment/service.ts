@@ -4,7 +4,7 @@ import api from '@/utils/axios-config';
 import type { RecruitmentRequestForm } from '@/pages/recruitment/request/form/hooks/use-request-form';
 import type { JobDescriptionEditForm, JobDescriptionForm } from '@/pages/recruitment/job-description/form/hooks/use-job-form';
 import type { RequestValidationFormDTO } from '@/pages/recruitment/request/validation/components/refuse-request-form';
-import { formatRequestId } from '@/pages/recruitment/request/form';
+import { formatParam } from '@/pages/recruitment/request/form';
 // Base key pour React Query
 const SEARCH_REQUESTS_BASE_KEY = ['searchRequests'] as const;
 const SEARCH_REQUEST_DETAILS_BASE_KEY = ['searchRequestDetails'] as const;
@@ -14,7 +14,7 @@ const SEARCH_PENDED_REQUESTS_BASE_KEY = ['searchPendedRequests'] as const;
 const SEARCH_PENDED_JOB_DESCRIPTIONS_BASE_KEY = ['searchPendedJobDescriptions'] as const;
 const CHECK_ACCESS_BASE_KEY = ['isUserValidator'] as const;
 const HAS_JOB_DESC_BASE_KEY = ['hasJobDescription'] as const;
-const SEARCH_JOB_DESC_BASE_KEY = ['searchJobDescriptions'] as const;
+export const SEARCH_JOB_DESC_BASE_KEY = ['searchJobDescriptions'] as const;
 const SEARCH_POST_TYPES_KEY = ['searchPostTypes'] as const;
 
 // Types
@@ -52,6 +52,7 @@ export interface RequestDetailsDTO {
     id: string;
     post: string;
     effective:number;
+    applicantUserId: string;
     applicantUser: string;
     creator: string;
     hierarchicalManager: string;
@@ -131,6 +132,37 @@ export interface CreateRequestResponse {
     message: string;
 }
 
+export interface CriteriaThreshold {
+    id: string;
+    minLevelEducation: string;
+    minExperienceYears: number;
+    criteria: string;
+    coefficient: number;
+    definitiveScale: number;
+}
+
+export interface JobDescriptionCriteria {
+    id: string;
+    jobDescriptionId: string;
+    criteriaThresholdId: string;
+    criteriaThreshold: CriteriaThreshold;
+    createdAt: string;
+    updatedAt: string | null;
+}
+
+export interface SpeakingCriteriaDTO {
+    langage: string;
+    level: string;
+}
+
+export interface JobCriteriaDTO {
+    criteriaThresholdId: string;
+    minExperienceYears: number;
+    minLevelEducationId: string;
+    minLevelEducation: string;
+    speakingCriteria: SpeakingCriteriaDTO[];
+}
+
 export interface JobDescriptionDetails {
   id: string;
   post: string;
@@ -145,6 +177,7 @@ export interface JobDescriptionDetails {
   lastTitular: string | null;
   lastStatus: string;
   postTypeName: string;
+  criteria: JobCriteriaDTO | null;
 }
 
 
@@ -450,12 +483,19 @@ export const useGetAllSoftSkills = () => {
 
 export const useAddJobDescription = () => {
     const queryClient = useQueryClient();
-    return useMutation<CreateRequestResponse, Error, JobDescriptionForm>({
+
+    return useMutation<{data: string}, Error, JobDescriptionForm>({
         mutationFn: (data) => api.post('/api/recruitment/job-descriptions', data)
             .then(r => r.data),
-        onSuccess: () => queryClient.invalidateQueries({ 
-            queryKey: SEARCH_JOB_DESC_BASE_KEY 
-        }),
+
+        onSuccess: (response) => {
+            const id = response.data;
+
+        // Refetch du détail
+            queryClient.invalidateQueries({
+                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, id]
+            });
+        }
     });
 };
 
@@ -466,7 +506,7 @@ export const useGetJobDescriptionDetails = (id: string) => {
         queryKey,
         queryFn: async () => {
             try {
-                const response = await api.get(`/api/recruitment/job-descriptions/requests/${formatRequestId(id)}`);
+                const response = await api.get(`/api/recruitment/job-descriptions/requests/${formatParam(id)}`);
 
                 return response.data;
             } catch (error) {
@@ -487,7 +527,7 @@ export const useHasJobDescription = (id: string) => {
         queryKey,
         queryFn: async () => {
             try {
-                const response = await api.get(`/api/recruitment/job-descriptions/requests/${formatRequestId(id)}/has`);
+                const response = await api.get(`/api/recruitment/job-descriptions/requests/${formatParam(id)}/has`);
                 const respValue = response.data.data;
                 
                 return {hasJobDescription : respValue.value, id: respValue.id};
@@ -508,7 +548,7 @@ export const useGetRecruitmentRequest = (id?: string) => {
     return useQuery<RequestEditDTO, Error>({
         queryKey: ["getRecruitmentRequestById", id],
         queryFn: async () => {
-            const response = await api.get(`/api/recruitment/requests/${formatRequestId(id!)}`);
+            const response = await api.get(`/api/recruitment/requests/${formatParam(id!)}`);
             return response.data.data;
         },
         enabled: !!id, // ⛔️ n'appelle pas si id undefined
@@ -520,7 +560,7 @@ export const useUpdateRecruitmentRequest = (id?: string) => {
 
     return useMutation<CreateRequestResponse, Error, RecruitmentRequestForm>({
         mutationFn: async (data) => 
-            await api.put(`/api/recruitment/requests/${formatRequestId(id!)}`, data)
+            await api.put(`/api/recruitment/requests/${formatParam(id!)}`, data)
             .then(r => r.data),
 
         onSuccess: () => queryClient.invalidateQueries({ 
@@ -535,7 +575,7 @@ export const useGetJobDescription = (id: string | null) => {
     return useQuery<JobDescriptionEditForm, Error>({
         queryKey: ["getJobDescriptionById", id],
         queryFn: async () => {
-            const response = await api.get(`/api/recruitment/job-descriptions/${formatRequestId(id)}`);
+            const response = await api.get(`/api/recruitment/job-descriptions/${formatParam(id)}`);
             return response.data.data;
         },
         enabled: !!id, // ⛔️ n'appelle pas si id undefined
@@ -544,7 +584,7 @@ export const useGetJobDescription = (id: string | null) => {
 
 export const useUpdateJobDescription = (requestId : string | null) => {
     const queryClient = useQueryClient();
-    requestId = formatRequestId(requestId);
+    requestId = formatParam(requestId);
 
     return useMutation<CreateRequestResponse, Error, JobDescriptionForm>({
         mutationFn: async (data) => 

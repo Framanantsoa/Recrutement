@@ -86,14 +86,6 @@ CREATE TABLE job_descriptions_status(
    status_name VARCHAR(50)  NOT NULL,
    PRIMARY KEY(status_id)
 );
- 
-CREATE TABLE level_educations(
-   level_education_id VARCHAR(50) NOT NULL,
-   level_education_name VARCHAR(50)  NOT NULL,
-   points DECIMAL(5,2) NOT NULL
-    CHECK (points >= 0 AND points <= 5),
-   PRIMARY KEY(level_education_id)
-);
 
 CREATE TABLE posts_types(
    post_type_id VARCHAR(50) NOT NULL,
@@ -106,16 +98,16 @@ CREATE TABLE job_descriptions(
    job_description_id VARCHAR(50) NOT NULL,
    created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
    updated_at DATETIME2,
-   mission VARCHAR(max) NOT NULL,
+   mission VARCHAR(1000) NOT NULL,
    request_id VARCHAR(50) NOT NULL,
    PRIMARY KEY(job_description_id),
    UNIQUE(request_id),
    FOREIGN KEY(request_id) REFERENCES recruitment_requests(request_id)
 );
- 
+
 CREATE TABLE job_attributions(
    job_attribution_id VARCHAR(50) NOT NULL,
-   job_attribution VARCHAR(max)  NOT NULL,
+   job_attribution VARCHAR(1000)  NOT NULL,
    job_description_id VARCHAR(50) NOT NULL,
    PRIMARY KEY(job_attribution_id),
    FOREIGN KEY(job_description_id) REFERENCES job_descriptions(job_description_id)
@@ -136,7 +128,7 @@ CREATE TABLE job_validations(
  
 CREATE TABLE job_formations(
    job_formation_id VARCHAR(50) NOT NULL,
-   job_formation VARCHAR(max) NOT NULL,
+   job_formation VARCHAR(1000) NOT NULL,
    job_description_id VARCHAR(50) NOT NULL,
    PRIMARY KEY(job_formation_id),
    FOREIGN KEY(job_description_id) REFERENCES job_descriptions(job_description_id)
@@ -145,7 +137,7 @@ CREATE TABLE job_formations(
 CREATE TABLE job_experiences(
    job_experience_id VARCHAR(50) NOT NULL,
    job_experience_years SMALLINT NOT NULL DEFAULT 0,
-   job_experience_post VARCHAR(max)  NOT NULL,
+   job_experience_post VARCHAR(1000)  NOT NULL,
    job_description_id VARCHAR(50) NOT NULL,
    PRIMARY KEY(job_experience_id),
    FOREIGN KEY(job_description_id) REFERENCES job_descriptions(job_description_id)
@@ -154,7 +146,7 @@ CREATE TABLE job_experiences(
 CREATE TABLE job_soft_skills(
    job_soft_skill_id VARCHAR(50) NOT NULL,
    job_description_id VARCHAR(50) NOT NULL,
-   soft_skill VARCHAR(150) NOT NULL,
+   soft_skill VARCHAR(1000) NOT NULL,
    PRIMARY KEY(job_soft_skill_id),
    FOREIGN KEY(job_description_id) REFERENCES job_descriptions(job_description_id)
 );
@@ -162,7 +154,7 @@ CREATE TABLE job_soft_skills(
 CREATE TABLE job_skills(
    job_skill_id VARCHAR(50) NOT NULL,
    job_description_id VARCHAR(50) NOT NULL,
-   skill VARCHAR(max) NOT NULL,
+   skill VARCHAR(1000) NOT NULL,
    PRIMARY KEY(job_skill_id),
    FOREIGN KEY(job_description_id) REFERENCES job_descriptions(job_description_id)
 );
@@ -170,10 +162,15 @@ CREATE TABLE job_skills(
 -- -----------------------------
 --  Candidatures
 -- -----------------------------
+CREATE TABLE level_educations(
+   level_education_id VARCHAR(50) NOT NULL,
+   level_education_name VARCHAR(50)  NOT NULL,
+   PRIMARY KEY(level_education_id)
+);
+
 CREATE TABLE langages(
    langage_id VARCHAR(50) NOT NULL,
    langage_name VARCHAR(50)  NOT NULL,
-   is_other_langage BIT NOT NULL DEFAULT 1,
    created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
    updated_at DATETIME2,
    PRIMARY KEY(langage_id)
@@ -181,6 +178,7 @@ CREATE TABLE langages(
 
 CREATE TABLE speaking_levels(
    speaking_level_id VARCHAR(50) NOT NULL,
+   speaking_level_code VARCHAR(5)  NOT NULL,
    speaking_level_name VARCHAR(50)  NOT NULL,
    created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
    updated_at DATETIME2,
@@ -191,20 +189,80 @@ CREATE TABLE langages_speakings(
    langage_speaking_id VARCHAR(50) NOT NULL,
    langage_id VARCHAR(50) NOT NULL,
    speaking_level_id VARCHAR(50),
-   points DECIMAL(15,2) NOT NULL
-    CHECK (points >= 0 AND points <= 5),
    PRIMARY KEY(langage_speaking_id),
    FOREIGN KEY(langage_id) REFERENCES langages(langage_id),
    FOREIGN KEY(speaking_level_id) REFERENCES speaking_levels(speaking_level_id)
 );
 
-CREATE TABLE preselection_criterion(
-   preselection_criterion_id VARCHAR(50) NOT NULL,
-   criterion VARCHAR(max) NOT NULL,
-   coefficient DECIMAL(5,2) NOT NULL DEFAULT 1,
+CREATE TABLE preselection_criteria(
+   preselection_criteria_id VARCHAR(50) NOT NULL,
+   criteria VARCHAR(max) NOT NULL,
    created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
    updated_at DATETIME2,
-   PRIMARY KEY(preselection_criterion_id),
+   PRIMARY KEY(preselection_criteria_id)
+);
+
+CREATE TABLE job_criteria (
+   job_criteria_id VARCHAR(50) NOT NULL,
+   job_description_id VARCHAR(50) NOT NULL,
+   preselection_criteria_id VARCHAR(50) NOT NULL,
+   max_points DECIMAL(5,2) NOT NULL CHECK (max_points > 0 AND max_points <= 100),
+   created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+   updated_at DATETIME2,
+   PRIMARY KEY(job_criteria_id),
+   FOREIGN KEY(job_description_id) REFERENCES job_descriptions(job_description_id),
+   FOREIGN KEY(preselection_criteria_id) REFERENCES preselection_criteria(preselection_criteria_id),
+   UNIQUE(job_description_id, preselection_criteria_id)
+);
+
+-- Les 5 critères
+CREATE TABLE job_criteria_formations(
+   id VARCHAR(50) NOT NULL,
+   job_criteria_id VARCHAR(50) NOT NULL,
+   points DECIMAL(5,2) NOT NULL CHECK (points >= 0 AND points <= 100),
+   PRIMARY KEY(id),
+   FOREIGN KEY(job_criteria_id) REFERENCES job_criteria(job_criteria_id)
+);
+
+CREATE TABLE job_criteria_experiences(
+   id VARCHAR(50) NOT NULL,
+   job_criteria_id VARCHAR(50) NOT NULL,
+   min_year SMALLINT NOT NULL,
+   max_year SMALLINT NOT NULL,
+   points DECIMAL(5,2) NOT NULL CHECK (points >= 0 AND points <= 100),
+   PRIMARY KEY(id),
+   FOREIGN KEY(job_criteria_id) REFERENCES job_criteria(job_criteria_id),
+   CHECK (min_year <= max_year)
+);
+
+CREATE TABLE job_criteria_level_educations(
+   id VARCHAR(50) NOT NULL,
+   job_criteria_id VARCHAR(50) NOT NULL,
+   level_education_id VARCHAR(50) NOT NULL,
+   points DECIMAL(5,2) NOT NULL CHECK (points >= 0 AND points <= 100),
+   PRIMARY KEY(id),
+   FOREIGN KEY(job_criteria_id) REFERENCES job_criteria(job_criteria_id),
+   FOREIGN KEY(level_education_id) REFERENCES level_educations(level_education_id),
+   UNIQUE(job_criteria_id, level_education_id)
+);
+
+CREATE TABLE job_criteria_presentations(
+   id VARCHAR(50) NOT NULL,
+   job_criteria_id VARCHAR(50) NOT NULL,
+   points DECIMAL(5,2) NOT NULL CHECK (points >= 0 AND points <= 100),
+   PRIMARY KEY(id),
+   FOREIGN KEY(job_criteria_id) REFERENCES job_criteria(job_criteria_id)
+);
+
+CREATE TABLE job_criteria_speakings(
+   id VARCHAR(50) NOT NULL,
+   job_criteria_id VARCHAR(50) NOT NULL,
+   langage_speaking_id VARCHAR(50) NOT NULL,
+   points DECIMAL(5,2) NOT NULL CHECK (points >= 0 AND points <= 100),
+   PRIMARY KEY(id),
+   FOREIGN KEY(job_criteria_id) REFERENCES job_criteria(job_criteria_id),
+   FOREIGN KEY(langage_speaking_id) REFERENCES langages_speakings(langage_speaking_id),
+   UNIQUE(job_criteria_id, langage_speaking_id)
 );
 
 CREATE TABLE candidatures(
@@ -218,8 +276,18 @@ CREATE TABLE candidatures(
    updated_at DATETIME2,
    job_description_id VARCHAR(50) NOT NULL,
    is_treated BIT NOT NULL DEFAULT 0,
+   treated_at  DATETIME2,
+   is_preselected BIT,
    PRIMARY KEY(candidature_id),
    FOREIGN KEY(job_description_id) REFERENCES job_descriptions(job_description_id)
+);
+
+CREATE TABLE candidatures_formations(
+   candidature_formation_id VARCHAR(50) NOT NULL,
+   candidature_id VARCHAR(50) NOT NULL,
+   formation VARCHAR(max) NOT NULL,
+   PRIMARY KEY(candidature_formation_id),
+   FOREIGN KEY(candidature_id) REFERENCES candidatures(candidature_id)
 );
 
 CREATE TABLE candidatures_comments(
@@ -229,6 +297,8 @@ CREATE TABLE candidatures_comments(
    updated_at DATETIME2,
    user_id VARCHAR(250) NOT NULL,
    candidature_id VARCHAR(50) NOT NULL,
+   is_deleted BIT NOT NULL DEFAULT 0, 
+   deleted_at DATETIME2,
    PRIMARY KEY(comment_id),
    FOREIGN KEY(user_id) REFERENCES users(user_id),
    FOREIGN KEY(candidature_id) REFERENCES candidatures(candidature_id)
@@ -244,40 +314,24 @@ CREATE TABLE candidatures_details(
    FOREIGN KEY(level_education_id) REFERENCES level_educations(level_education_id)
 );
 
-CREATE TABLE candidatures_formations(
-   candidature_formation_id VARCHAR(50) NOT NULL,
-   candidature_id VARCHAR(50) NOT NULL,
-   formation VARCHAR(max) NOT NULL,
-   PRIMARY KEY(candidature_formation_id),
-   FOREIGN KEY(candidature_id) REFERENCES candidatures(candidature_id)
-);
-
-CREATE TABLE candidatures_treatments(
-   candidature_treatment_id VARCHAR(50) NOT NULL,
+CREATE TABLE candidatures_langages(
+   candidature_langage_id VARCHAR(50) NOT NULL,
    candidature_detail_id VARCHAR(50) NOT NULL,
    langage_speaking_id VARCHAR(50) NOT NULL,
-   PRIMARY KEY(candidature_treatment_id),
+   PRIMARY KEY(candidature_langage_id),
    FOREIGN KEY(candidature_detail_id) REFERENCES candidatures_details(candidature_detail_id),
    FOREIGN KEY(langage_speaking_id) REFERENCES langages_speakings(langage_speaking_id)
 );
 
-CREATE TABLE experiences_points(
-   experience_point_id  VARCHAR(50) NOT NULL,
-   minimum_year  SMALLINT NOT NULL DEFAULT 0,
-   maximum_year  SMALLINT NOT NULL DEFAULT 0,
-   points DECIMAL(15,2) NOT NULL
-    CHECK (points >= 0 AND points <= 5),
-   PRIMARY KEY(experience_point_id)
-);
-
-CREATE TABLE candidatures_points(
-   candidature_point_id  VARCHAR(50) NOT NULL,
+CREATE TABLE candidatures_scores (
+   candidature_score_id VARCHAR(50) NOT NULL,
    candidature_id VARCHAR(50) NOT NULL,
-   preselection_criterion_id  VARCHAR(50) NOT NULL,
-   points DECIMAL(15,2) NOT NULL
-    CHECK (points >= 0 AND points <= 5),
-   PRIMARY KEY(candidature_point_id),
-   FOREIGN KEY(candidature_id) REFERENCES candidatures(candidature_id)
+   job_criteria_id VARCHAR(50) NOT NULL,
+   points DECIMAL(5,2) NOT NULL,
+   total_score DECIMAL(10,2) NOT NULL DEFAULT 0,
+   PRIMARY KEY(candidature_score_id),
+   FOREIGN KEY(candidature_id) REFERENCES candidatures(candidature_id),
+   FOREIGN KEY(job_criteria_id) REFERENCES job_criteria(job_criteria_id)
 );
 
 -- -----------------------------
@@ -350,15 +404,6 @@ GO
 -- Job description
 ALTER TABLE job_descriptions ADD last_status VARCHAR(50);
 GO
-ALTER TABLE job_experiences
-ALTER COLUMN job_experience_post VARCHAR(max) NOT NULL;
-GO
-ALTER TABLE job_attributions
-ALTER COLUMN job_attribution VARCHAR(max) NOT NULL;
-GO
-ALTER TABLE job_soft_skills
-ALTER COLUMN soft_skill VARCHAR(max) NOT NULL;
-GO
 
 ALTER TABLE job_descriptions ADD post_type_id VARCHAR(50) NOT NULL;
 GO
@@ -367,29 +412,10 @@ ADD CONSTRAINT FK_JobDescriptions_PostTypes
 FOREIGN KEY (post_type_id) REFERENCES posts_types(post_type_id);
 GO
 
--- Candidature
-ALTER TABLE candidatures_formations
-ALTER COLUMN formation VARCHAR(max) NOT NULL;
-GO
-
-ALTER TABLE candidatures_comments
-ADD is_deleted BIT NOT NULL DEFAULT 0, deleted_at DATETIME2;
-GO
 
 -- =============================
 -- FUNCTIONS
 -- =============================
-
-CREATE VIEW v_postes_par_dir AS
-SELECT 
-    e.job_title AS poste,
-    d.department_name AS departement,
-    di.acronym AS direction
-FROM employees e
-JOIN department d ON e.department_id = d.department_id
-JOIN direction di ON e.direction_id = di.direction_id;
-GO
-
 CREATE FUNCTION dbo.fn_pending_recruitment_requests ( 
    @validator_id NVARCHAR(50) 
 ) 

@@ -11,6 +11,8 @@ const JobTabContent: React.FC<{
   requestStatus: string;
   hasJobDescription?: boolean;
 }> = ({ requestId, details, requestStatus, hasJobDescription }) => {
+  const userData = JSON.parse(localStorage.getItem("user") || "{}");
+  const userId = userData?.userId || "";
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [mode, setMode] = useState<"create" | "edit">("create");
@@ -44,9 +46,11 @@ const JobTabContent: React.FC<{
           <p className="text-note">La demande nécessite une validation complète.
           </p>
         ) : (
-          <ButtonPrimary className="primary-btn" onClick={openCreateForm}>
+          details.applicantUserId==userId && (
+            <ButtonPrimary className="primary-btn" onClick={openCreateForm}>
             <Plus /> Créer un terme de référence
           </ButtonPrimary>
+          )
         )}        
       </div>
     ) : (

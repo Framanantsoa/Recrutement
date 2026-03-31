@@ -3,13 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyApp.Api.Entities.recruitment;
 
-[Table("langages")]
-public class Langage : BaseEntity
+[Table("preselection_criteria")]
+public class PreselectionCriteria : BaseEntity
 {
     [Key]
-    [Column("langage_id")]
+    [Column("preselection_criteria_id")]
     public string Id { get; set; } = null!;
 
-    [Column("langage_name")]
-    public string Name { get; set; } = null!;
+    [Column("criteria")]
+    public string Criteria { get; set; } = null!;
 }

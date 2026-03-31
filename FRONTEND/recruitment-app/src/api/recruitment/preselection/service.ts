@@ -1,6 +1,8 @@
+import type { JobCriteriaForm } from "@/pages/recruitment/candidature/criteria-form/hooks/use-save-criteria";
 import api from "@/utils/axios-config";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { SEARCH_JOB_DESC_BASE_KEY } from "../service";
 
 interface ApiResponse<T> {
   data: T;
@@ -15,18 +17,19 @@ export interface LangageDTO {
 
 export interface SpeakingLevelDTO {
     id: string;
+    code: string;
     name: string;
 }
 
-export interface PreselectionCriterionItemDTO {
+export interface PreselectionCriteriaItemDTO {
     id: string;
-    criterion: string;
+    criteria: string;
     coefficient: number;
     score: number;
 }
 
-export interface PreselectionCriterionDTO {
-    criteria: PreselectionCriterionItemDTO[];
+export interface PreselectionCriteriaDTO {
+    criteria: PreselectionCriteriaItemDTO[];
     totalScore: number;
 }
 
@@ -38,7 +41,7 @@ const PRESELECTION_CRITERIA_BASE_KEY = ['criteria'] as const;
 export const useSearchLangages = () => {
     const queryKey = [...LANGAGE_BASE_KEY] as const;
 
-    return useQuery<LangageDTO[], Error>({
+    return useQuery<{data: LangageDTO[]}, Error>({
         queryKey,
         queryFn: async () => {
             try {
@@ -58,7 +61,7 @@ export const useSearchLangages = () => {
 export const useSearchSpeakingLevels = () => {
     const queryKey = [...SPEAKING_LEVEL_BASE_KEY] as const;
 
-    return useQuery<SpeakingLevelDTO[], Error>({
+    return useQuery<{data: SpeakingLevelDTO[]}, Error>({
         queryKey,
         queryFn: async () => {
             try {
@@ -78,11 +81,11 @@ export const useSearchSpeakingLevels = () => {
 export const useSearchCriteria = () => {
     const queryKey = [...PRESELECTION_CRITERIA_BASE_KEY] as const;
 
-    return useQuery<ApiResponse<PreselectionCriterionDTO>, Error>({
+    return useQuery<ApiResponse<PreselectionCriteriaDTO>, Error>({
         queryKey,
         queryFn: async () => {
             try {
-                const response = await api.get(`/api/recruitment/Preselections/criterions`);
+                const response = await api.get(`/api/recruitment/Preselections/criterias`);
                 return response.data;
             } catch (error) {
                 if (axios.isAxiosError(error) && error.response) {
@@ -95,15 +98,37 @@ export const useSearchCriteria = () => {
 };
 
 
-export const useUpdateCriterionCoefficient = () => {
+export const useUpdateCriteriaCoefficient = () => {
     const queryClient = useQueryClient();
 
-    return useMutation<ApiResponse<PreselectionCriterionDTO>, Error,
+    return useMutation<ApiResponse<PreselectionCriteriaDTO>, Error,
      { id: string; coefficient: number }>({
-        mutationFn: ({ id, coefficient }) => api.put(`/api/recruitment/Preselections/criterions/${id}`, { coefficient })
+        mutationFn: ({ id, coefficient }) => api.put(`/api/recruitment/Preselections/criterias/${id}`, { coefficient })
             .then(r => r.data),
         onSuccess: () => queryClient.invalidateQueries({ 
             queryKey: PRESELECTION_CRITERIA_BASE_KEY 
         }),
     });
 };
+
+
+export const useAddJobCriteria = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: JobCriteriaForm) =>
+            api.post(`/api/recruitment/Preselections/job-criteria`, data)
+             .then(r => r.data),
+
+        onSuccess: (_, variables) => {
+            const id = variables.jobDescId;
+
+        // Refetch du détail
+            queryClient.invalidateQueries({
+                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, id]
+            });
+        }
+    });
+};
+
+

@@ -30,7 +30,7 @@ interface Props {
         e: { target: { name: string; value: string | number | string[] } }
     ) => void;
 }
-    
+
 const AttributionStep: React.FC<Props> = ({
     requestId, post,
     formData, fieldErrors = {}, postTypes,
@@ -101,7 +101,9 @@ const AttributionStep: React.FC<Props> = ({
                                 <option value="" disabled>-- Sélectionner un type --</option>
 
                                 {postTypes.map((pt) => (
-                                    <option key={pt.id} value={pt.id}>{pt.name}</option>
+                                    <option key={pt.id} value={pt.id.toString()}>
+                                        {pt.name}
+                                    </option>
                                 ))}
                             </StyledSelect>
 

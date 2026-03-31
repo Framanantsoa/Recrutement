@@ -10,8 +10,8 @@ public interface ICandidatureService
      string jobDescId, CandidatureFiltersDTO filters, int page, int pageSize);
     Task AddCandidature(string jobId, CandidatureFormDTO data);
     Task FinishCandidatureTreatment(string candidatureId);
-    Task UpdateCriterionPoints(string candidatureId, string criterionId, decimal newPoints);
-    Task<(PreselectionCriterionDTO, CandidatureDetailsDTO)> GetCandidatureDetailsAsync(string id);
+    Task UpdateCriteriaPoints(string candidatureId, string criteriaId, decimal newPoints);
+    Task<(PreselectionCriteriaDTO, CandidatureDetailsDTO)> GetCandidatureDetailsAsync(string id);
     
     Task AddCandidatureComment(string cadId, CandidatureCommentFormDTO data);
     Task UpdateCandidatureComment(string cadId, CandidatureCommentFormDTO data);
@@ -35,14 +35,14 @@ public class CandidatureService(ICandidatureRepository rep,
         string jobDescId, CandidatureFiltersDTO filters, int page, int pageSize)
     {
         var candidaturesEntity = await _repo.GetByJobDescriptionIdAsync(jobDescId, filters, page, pageSize);
-        var criteria = await _preselectService.GetAllPreselectionCriterionAsync();
+        var criteria = await _preselectService.GetAllPreselectionCriteriaAsync();
 
         // calculer le score total pour chaque candidature
         var candidaturesDTO = new List<CandidatureDTO>();
         foreach (var c in candidaturesEntity) {
-            var points = await _repo.GetCandidatPointsAsync(c.Id);
+            var points = c.CandidatureScores;
             var totalScore = points
-                .Join(criteria.Criteria, p => p.CriterionId, c => c.Id, (p, c) => p.Points * c.Coefficient)
+                .Join(criteria.Criteria, p => p.CriteriaId, c => c.Id, (p, c) => p.Points * c.Coefficient)
                 .Sum();
 
             candidaturesDTO.Add(new CandidatureDTO {
@@ -54,18 +54,16 @@ public class CandidatureService(ICandidatureRepository rep,
                 CvUrl = c.CvUrl ?? "N/A",
                 SendingDateTime = c.CreatedAt,
                 IsTreated = c.IsTreated,
+                IsPreselected = c.IsPreselected,
                 TotalScore = totalScore,
                 MaxScore = criteria.TotalScore
             });
         }
 
-        // calculer la moyenne
-        decimal moyenne = criteria.TotalScore / 2;
-
-        // filtrer uniquement ceux au-dessus de la moyenne si onglet preselected
+        // filtrer uniquement ceux qui sont présélectionnés
         if (filters.IsPreselected) {
             candidaturesDTO = candidaturesDTO
-                .Where(c => c.TotalScore >= moyenne && c.IsTreated == true)
+                .Where(c => c.IsPreselected==true && c.IsTreated == true)
                 .OrderByDescending(c => c.TotalScore) // tri par score total
                 .ToList();
         }
@@ -88,25 +86,26 @@ public class CandidatureService(ICandidatureRepository rep,
     }
 
 
-    public async Task<(PreselectionCriterionDTO, CandidatureDetailsDTO)> GetCandidatureDetailsAsync(string id) {
+    public async Task<(PreselectionCriteriaDTO, CandidatureDetailsDTO)> GetCandidatureDetailsAsync(string id) {
         try {
             _logger.LogInformation("Récupération des détails de la candidature {Id}", id);
             
             var details = await _repo.GetCandidatureDetails(id);
-            var criteria = await _preselectService.GetAllPreselectionCriterionAsync();
+            var candidature = await _repo.GetCandidatureById(id);
+            var criteria = await _preselectService.GetAllPreselectionCriteriaAsync();
 
-            if (details == null) {
+            if (details == null || candidature == null) {
                 _logger.LogWarning("Candidature non trouvée pour l'ID {Id}", id);
                 throw new InvalidOperationException("Candidature non trouvée");
             }
 
-            var points = await _repo.GetCandidatPointsAsync(id);
+            var points = candidature.CandidatureScores;
             details.Points = points;
 
             // CALCUL DU TOTAL
             var totalScore = (
                 from p in points
-                join c in criteria.Criteria on p.CriterionId equals c.Id
+                join c in criteria.Criteria on p.CriteriaId equals c.Id
                 select p.Points * c.Coefficient
             ).Sum();
 
@@ -117,6 +116,29 @@ public class CandidatureService(ICandidatureRepository rep,
         } 
         catch (Exception ex) {
             _logger.LogError(ex, "Erreur lors de la récupération des détails de la candidature {Id}", id);
+            throw;
+        }
+    }
+
+
+    private async Task AssignCandidatureScoresAsync(Candidature candidature) {
+        try {
+            _logger.LogInformation("Définition automatique des notes de la candidature {id}", candidature.Id);
+            await _dbService.BeginTransactionAsync();
+
+        // Note auto du niveau d'étude
+        // Note auto des années d'exp.
+        // Note auto des compétences linguistiques
+
+        // Note manuel des formations
+        // Note manuel de la clarté CV + LM
+
+            await _dbService.CommitAsync();
+        }
+        catch (Exception ex) {
+            _logger.LogError(ex, "Erreur lors de la définition des nots");
+
+            await _dbService.RollbackAsync();
             throw;
         }
     }
@@ -159,11 +181,11 @@ public class CandidatureService(ICandidatureRepository rep,
                     continue; // Ignorer cette compétence linguistique
                 }
 
-                CandidatureTreatment treatment = new() {
+                CandidatureLangage treatment = new() {
                     CandidatureDetailId = detail.Id,
                     LangageSpeakingId = langageSpeaking.Id,
                 };
-                await _repo.AddCandidatureTreatmentAsync(treatment);
+                await _repo.AddCandidatureLangageAsync(treatment);
             }
 
         // Formations
@@ -176,7 +198,7 @@ public class CandidatureService(ICandidatureRepository rep,
             }
 
         // Insertion des notes
-            await _repo.AssignCandidaturePointsAsync(newCandidature.Id);
+            await this.AssignCandidatureScoresAsync(newCandidature);
 
             await _dbService.CommitAsync();
         } 
@@ -189,13 +211,13 @@ public class CandidatureService(ICandidatureRepository rep,
     }
 
 
-    public async Task UpdateCriterionPoints(string candidatureId,
-     string criterionId, decimal newPoints) {
+    public async Task UpdateCriteriaPoints(string candidatureId,
+     string criteriaId, decimal newPoints) {
         try {
             _logger.LogInformation("Mise à jour du note de la candidature {candidatureId}"
             , candidatureId);
 
-            await _repo.UpdateCriterionPoints(candidatureId, criterionId, newPoints);
+            await _repo.UpdateCriteriaPoints(candidatureId, criteriaId, newPoints);
         } 
         catch (Exception ex) {
             _logger.LogError(ex, "Erreur lors de la mise à jour du note");

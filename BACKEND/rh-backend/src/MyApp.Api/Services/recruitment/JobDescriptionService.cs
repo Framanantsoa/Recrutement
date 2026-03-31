@@ -16,7 +16,7 @@ public interface IJobDescriptionService
     Task<(List<JobDescriptionDetailsDTO>, int)> GetAllPendedJobDescriptions(
         FilterRequestListDTO filters, int page, int pageSize
     );
-    Task AddJobDescription(JobDescriptionFormDTO data);
+    Task<string> AddJobDescription(JobDescriptionFormDTO data);
     Task<JobDescriptionDTO?> GetJobDescription(string requestId);
     Task<(bool, string?)> HasJobDescription(string requestId);
     Task<JobDescriptionEditDTO?> GetJobDescriptionEditById(string id);
@@ -45,7 +45,7 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
     private readonly IUserRepository _userRepo = uRepo;
 
 
-    public async Task AddJobDescription(JobDescriptionFormDTO data) {
+    public async Task<string> AddJobDescription(JobDescriptionFormDTO data) {
         try {
             _log.LogInformation("Création d'un TDR en cours");
             await _unitOfWork.BeginTransactionAsync();
@@ -155,6 +155,8 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
         // LOG
             await _logService.LogAsync("INSERTION TDR", "termes_reference",
              request.Creator.UserId);
+
+            return jobDescription.Id;
         }
         catch (Exception ex) {
             // await _unitOfWork.RollbackAsync();
@@ -204,7 +206,25 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
             result.SoftSkills = jobDesc.SoftSkills.Select(s => s.SoftSkill).ToArray();
 
         // Skills
-            result.Skills = jobDesc.Skills.Select(s => s.Label).ToArray(); 
+            result.Skills = jobDesc.Skills.Select(s => s.Label).ToArray();
+
+        // Criterias
+            if (jobDesc.Criteria != null) {
+                result.Criteria = new JobCriteriaDTO 
+                {
+                    CriteriaThresholdId = jobDesc.Criteria.CriteriaThresholdId,
+                    MinExperienceYears = jobDesc.Criteria.CriteriaThreshold.MinExperienceYears,
+                    MinLevelEducationId = jobDesc.Criteria.CriteriaThreshold.MinLevelEducationId,
+                    MinLevelEducation = jobDesc.Criteria.CriteriaThreshold.MinLevelEducation.Name,
+                    SpeakingCriteria = jobDesc.Criteria.CriteriaThreshold.SpeakingThresholds
+                        .Select(sc => new SpeakingCriteriaDTO
+                        {
+                            Langage = sc.MinSpeakingLevel.Langage.Name,
+                            Level = sc.MinSpeakingLevel.SpeakingLevel.Name
+                        })
+                        .ToList()
+                };
+            }
 
             return result;   
         }
@@ -327,6 +347,7 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
             {
                 Id = jobDesc.Id,
                 RequestId = jobDesc.RequestId,
+                PostTypeId = jobDesc.PostTypeId,
                 Mission = jobDesc.Mission,
                 Attributions = jobDesc.Attributions.Select(a => a.Label).ToArray(),
                 Formations = jobDesc.Formations.Select(f => f.Formations).ToArray(),

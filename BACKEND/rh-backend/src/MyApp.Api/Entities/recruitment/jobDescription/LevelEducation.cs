@@ -12,7 +12,4 @@ public class LevelEducation
 
     [Column("level_education_name")]
     public string Name { get; set; } = null!;
-
-    [Column("points")]
-    public decimal Points { get; set; }
 }

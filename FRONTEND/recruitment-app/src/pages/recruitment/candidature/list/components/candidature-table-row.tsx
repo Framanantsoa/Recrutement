@@ -2,7 +2,7 @@ import React from "react";
 import { TableRow, TableCell, ButtonConfirm, ButtonConfirmSecondary } from "@/styles/table-styles";
 import { Link } from "react-router-dom";
 import type { CandidatureDTO } from "@/api/recruitment/candidatures/service";
-import { formatRequestId } from "@/pages/recruitment/request/form";
+import { formatParam } from "@/pages/recruitment/request/form";
 import { Check, Pin } from "lucide-react";
 import { useCanUserPlanJobInterviewByCandidature } from "@/api/recruitment/interview/service";
 
@@ -76,7 +76,7 @@ const CandidatureTableRow: React.FC<CandidatureTableRowProps> = ({
 
         <TableCell>
           <Link style={{ textDecoration: "none" }}
-            to={`/recrutement/candidatures/${formatRequestId(candidature.id)}/details`}>
+            to={`/recrutement/candidatures/${formatParam(candidature.id)}/details`}>
             {candidature.id}
           </Link>
         </TableCell>

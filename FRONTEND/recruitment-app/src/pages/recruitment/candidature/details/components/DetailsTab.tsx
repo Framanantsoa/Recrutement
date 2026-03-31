@@ -31,9 +31,9 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected }) => {
   const sendingDate = new Date(details.sendingDateTime + "Z"); // UTC
   const fSendingDate = formatDate(sendingDate, "dd/MM/yyyy 'à' HH:mm");
 
-  const getPoint = (criterionId: string): number => {
+  const getPoint = (criteriaId: string): number => {
     return (
-      details.points?.find((p) => p.criterionId === criterionId)?.points ?? 0
+      details.points?.find((p) => p.criteriaId === criteriaId)?.points ?? 0
     );
   };
 
@@ -42,11 +42,11 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected }) => {
     formation: getPoint("CRIT_002"),
   }));
 
-  const handleSave = (criterionId: string, val: number) => {
+  const handleSave = (criteriaId: string, val: number) => {
     if (!id) return;
 
     updateNote.mutate(
-      { criterionId, points: val },
+      { criteriaId, points: val },
       {
         onSuccess: () => {
           setAlert({

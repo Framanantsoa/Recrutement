@@ -711,7 +711,7 @@ public async Task<IEnumerable<Employee>> GetDistinctEmployeesAsync()
                     continue;
                 }
 
-                var siteEntity = sites.FirstOrDefault(s =>
+                var siteEntity = sites.FirstOrDefault(s => s.Code!=null &&
                     s.Code.Equals(site, StringComparison.OrdinalIgnoreCase));
 
                 if (siteEntity == null)

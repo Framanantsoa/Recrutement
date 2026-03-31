@@ -7,10 +7,10 @@ import {
 } from "@/styles/preselection-styles";
 
 import PreselectionRow from "./PreselectionRow";
-import type { PreselectionCriterionDTO } from "@/api/recruitment/preselection/service";
+import type { PreselectionCriteriaDTO } from "@/api/recruitment/preselection/service";
 
 interface Props {
-  settings: PreselectionCriterionDTO;
+  settings: PreselectionCriteriaDTO;
   editingId: string | null;
   value: number;
   setValue: (v: number) => void;
@@ -38,7 +38,7 @@ const PreselectionTableComponent: React.FC<Props> = ({
       {settings.criteria.map((c) => (
         <PreselectionRow
           key={c.id}
-          criterion={c}
+          criteria={c}
           editingId={editingId}
           value={value}
           setValue={setValue}

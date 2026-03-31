@@ -42,14 +42,16 @@ public class CandidatureDetailsDTO
     public IEnumerable<LangageSkillDTO> LangagesSkills { get; set; }
      = new List<LangageSkillDTO>();
 
-    public IEnumerable<CandidaturePoint> Points { get; set; }
-     = new List<CandidaturePoint>();
+    public IEnumerable<CandidatureScore> Scores { get; set; }
+     = new List<CandidatureScore>();
 
     public decimal TotalScore { get; set; }
     
 // Informations de traitement
     public DateTime SendingDateTime { get; set; }
     public bool IsTreated { get; set; }
+
+    public bool? IsPreselected { get; set; }
 }
 
 public class CandidatureDTO
@@ -64,14 +66,15 @@ public class CandidatureDTO
     public decimal TotalScore { get; set; }
     public bool IsTreated { get; set; }
     public DateTime SendingDateTime { get; set; }
+    public bool? IsPreselected { get; set; }
 }
 
 
 public class LangageSkillDTO
 {
     public string Langage { get; set; } = null!;
+    public string LevelCode { get; set; } = null!;
     public string Level { get; set; } = null!;
-    public decimal Points { get; set; }
 }
 
 public class LangageSkillFormDTO
@@ -88,7 +91,7 @@ public class PaginatedResult<T>
 
 public class CandidatureNoteUpdateFormDTO
 {
-    public string CriterionId { get; set; } = null!;
+    public string CriteriaId { get; set; } = null!;
     public decimal Points { get; set; }
 }
 

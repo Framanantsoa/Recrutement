@@ -97,15 +97,17 @@ DROP TABLE IF EXISTS business_sequences;
 DROP TABLE IF EXISTS candidatures_details;
 DROP TABLE IF EXISTS langages;
 DROP TABLE IF EXISTS speaking_levels;
-DROP TABLE IF EXISTS preselection_criterion;
-DROP TABLE IF EXISTS candidatures_treatments;
-DROP TABLE IF EXISTS preselection_criterion;
+DROP TABLE IF EXISTS candidatures_langages;
+DROP TABLE IF EXISTS preselection_criteria;
 DROP TABLE IF EXISTS langages_speakings;
 DROP TABLE IF EXISTS candidatures_formations;
 DROP TABLE IF EXISTS candidatures_points;
 DROP TABLE IF EXISTS experiences_points;
 DROP TABLE IF EXISTS job_interviews;
 DROP TABLE IF EXISTS planifications;
+DROP TABLE IF EXISTS criteria_thresholds;
+DROP TABLE IF EXISTS speaking_criteria_thresholds;
+DROP TABLE IF EXISTS job_descriptions_criteria;
 
 /* Réactiver les contraintes FK */
 EXEC sp_msforeachtable "ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL";

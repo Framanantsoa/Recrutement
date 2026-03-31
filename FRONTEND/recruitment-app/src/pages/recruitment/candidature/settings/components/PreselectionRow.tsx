@@ -4,16 +4,17 @@ import { Pencil } from "lucide-react";
 
 import {
   PreselectionRow,
-  PreselectionCriterionName,
+  PreselectionCriteriaName,
   PreselectionCoefficient,
   PreselectionScore,
   PreselectionActions,
   PreselectionEditButton,
   PreselectionSaveButton,
 } from "@/styles/preselection-styles";
-import type { PreselectionCriterionItemDTO } from "@/api/recruitment/preselection/service";
+import type { PreselectionCriteriaItemDTO } from "@/api/recruitment/preselection/service";
+
 interface Props {
-  criterion: PreselectionCriterionItemDTO;
+  criteria: PreselectionCriteriaItemDTO;
   editingId: string | null;
   value: number;
   setValue: (v: number) => void;
@@ -22,7 +23,7 @@ interface Props {
 }
 
 const PreselectionRowComponent: React.FC<Props> = ({
-  criterion,
+  criteria,
   editingId,
   value,
   setValue,
@@ -31,33 +32,33 @@ const PreselectionRowComponent: React.FC<Props> = ({
 }) => {
   return (
     <PreselectionRow>
-      <PreselectionCriterionName>
-        {criterion.criterion}
-      </PreselectionCriterionName>
+      <PreselectionCriteriaName>
+        {criteria.criteria}
+      </PreselectionCriteriaName>
 
       <PreselectionCoefficient>
-        {editingId === criterion.id ? (
+        {editingId === criteria.id ? (
           <input
             type="number"
             value={value}
             onChange={(e) => setValue(Number(e.target.value))}
           />
         ) : (
-          criterion.coefficient
+          criteria.coefficient
         )}
       </PreselectionCoefficient>
 
-      <PreselectionScore>{criterion.score} pts</PreselectionScore>
+      <PreselectionScore>{criteria.score} pts</PreselectionScore>
 
       <PreselectionActions>
-        {editingId === criterion.id ? (
+        {editingId === criteria.id ? (
           <PreselectionSaveButton onClick={save}>
             Enregistrer
           </PreselectionSaveButton>
         ) : (
           <PreselectionEditButton
             onClick={() =>
-              startEdit(criterion.id, criterion.coefficient)
+              startEdit(criteria.id, criteria.coefficient)
             }
           >
             <Pencil size={16} />

@@ -14,10 +14,8 @@ public class LangageSpeaking
     public string LangageId { get; set; } = null!;
 
     [Column("speaking_level_id")]
-    public string? SpeakingLevelId { get; set; }
+    public string SpeakingLevelId { get; set; } = null!;
 
-    [Column("points")]
-    public decimal Points { get; set; }
 
     [ForeignKey(nameof(LangageId))]
     public Langage Langage { get; set; } = null!;

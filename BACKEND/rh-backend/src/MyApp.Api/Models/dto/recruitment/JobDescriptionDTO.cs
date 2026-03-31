@@ -1,3 +1,5 @@
+using MyApp.Api.Entities.recruitment;
+
 namespace MyApp.Api.Models.dto.recruitment;
 
 public class JobDescriptionDTO
@@ -5,7 +7,7 @@ public class JobDescriptionDTO
 // Infos générales
     public string Id { get; set; } = null!;
     public string Post { get; set; } = null!;
-    public string[] Sites = null!;
+    public string[] Sites { get; set; } = null!;
     public string RequestId { get; set; } = null!;
     public string Mission { get; set; } = null!;
     public string[] Attributions { get; set; } = null!;
@@ -26,6 +28,9 @@ public class JobDescriptionDTO
 
 // Statut
     public string LastStatus { get; set; } = null!;
+
+// Criterias
+    public JobCriteriaDTO? Criteria { get; set; }
 }
 
 

@@ -10,6 +10,9 @@ public class SpeakingLevel : BaseEntity
     [Column("speaking_level_id")]
     public string Id { get; set; } = null!;
 
+    [Column("speaking_level_code")]
+    public string Code { get; set; } = null!;
+
     [Column("speaking_level_name")]
     public string Name { get; set; } = null!;
 }

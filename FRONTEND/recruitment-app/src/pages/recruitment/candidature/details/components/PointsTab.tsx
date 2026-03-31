@@ -1,19 +1,19 @@
 import React from "react";
 import type { CandidatureDetailsDTO } from "@/api/recruitment/candidatures/service";
-import type { PreselectionCriterionDTO } from "@/api/recruitment/preselection/service";
+import type { PreselectionCriteriaDTO } from "@/api/recruitment/preselection/service";
 
 interface Props {
-  criteria: PreselectionCriterionDTO;
+  criteria: PreselectionCriteriaDTO;
   details: CandidatureDetailsDTO;
 }
 
 const PointsTab: React.FC<Props> = ({ criteria, details }) => {
 
-  const getPointsByCriterionId = (criterionId?: string): number => {
-    if (!criterionId) return 0;
+  const getPointsByCriteriaId = (criteriaId?: string): number => {
+    if (!criteriaId) return 0;
 
     return (
-      details.points?.find((p) => p.criterionId === criterionId)?.points ?? 0
+      details.points?.find((p) => p.criteriaId === criteriaId)?.points ?? 0
     );
   };
 
@@ -53,13 +53,13 @@ const PointsTab: React.FC<Props> = ({ criteria, details }) => {
         <h3>Évaluation du candidat</h3>
 
         {criteria.criteria.map((crit) => {
-          const basePoints = getPointsByCriterionId(crit.id);
+          const basePoints = getPointsByCriteriaId(crit.id);
           const finalScore = basePoints * crit.coefficient;
 
           return (
             <ScoreRow
               key={crit.id}
-              label={crit.criterion}
+              label={crit.criteria}
               score={finalScore}
               max={crit.score}
             />

@@ -561,46 +561,29 @@ export interface EmployeeInformations {
 }
 
 export const useEmployeeInformations = (userId?:string) => {
-  const queryKey = [...USER_COLLABORATORS_MATRICULES_BASE_KEY, userId] as const;
-
-  return useQuery<EmployeeInformations, Error>({
-    queryKey,
+  return useQuery<EmployeeInformations | null, Error>({
+    queryKey: [USER_COLLABORATORS_MATRICULES_BASE_KEY, userId],
     queryFn: async () => {
-      if (!userId) {
-        throw new Error('matricule is required for fetching collaborators matricules');
-      }
-      try {
-        const resp1 = await api.get(`/api/User/${userId}/info`);
-        const userInfo = resp1.data.data[0] ?? {};
+      if (!userId) return null;
+      
+      const resp1 = await api.get(`/api/User/${userId}/info`);
+      const userInfo = resp1.data.data[0];
 
-        const [resp2] = await Promise.all([
-          api.get(`/api/User/${userInfo.matricule}/superior`),
-        ]);
-        const superiorInfo = resp2.data;
+      const resp2 = await api.get(`/api/User/${userInfo.matricule}/superior`);
+      const superiorInfo = resp2.data;
 
-        const [resp3] = await Promise.all([
-          api.get(`/api/Employee/matricule/${superiorInfo.matricule}`),
-        ]);
-        const employeeSupInfo = resp3.data.data;
+      const resp3 = await api.get(`/api/Employee/matricule/${superiorInfo.matricule}`);
+      const employeeSupInfo = resp3.data.data;
 
-        const employeeData: EmployeeInformations = {
-          id: userInfo.userId,
-          name: userInfo.name,
-          matricule: userInfo.matricule,
-          post: userInfo.position,
-          direction: userInfo.department,
-          department: employeeSupInfo.department.departmentName,
-          service: employeeSupInfo.service.serviceName,
-        };
-
-        return employeeData;
-      } 
-      catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-          return error.response.data;
-        }
-        throw error;
-      }
+      return {
+        id: userInfo.userId,
+        name: userInfo.name,
+        matricule: userInfo.matricule,
+        post: userInfo.position,
+        direction: userInfo.department,
+        department: employeeSupInfo.department.departmentName,
+        service: employeeSupInfo.service.serviceName,
+      };
     },
     enabled: !!userId,
   });

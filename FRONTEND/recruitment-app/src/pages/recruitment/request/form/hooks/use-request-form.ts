@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useGetContractTypes, type ContractType } from "@/api/contract/services";
-import { useEmployeeInformations, type EmployeeInformations } from "@/api/users/services";
+import { useEmployeeInformations } from "@/api/users/services";
 import type { RequestEditDTO } from "@/api/recruitment/service";
 import { addWeeks } from "date-fns";
 
@@ -88,7 +88,7 @@ const useRecruitmentForm = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const contracts: ContractType[] = contractsResponse?.data || [];
-  const employee = infosResponse as EmployeeInformations;
+  const employee = infosResponse ?? null;
 
   const currentUserId = useMemo(() => {
     const emp = infosResponse;
@@ -263,8 +263,6 @@ const useRecruitmentForm = ({
       });
       return merged;
     });
-
-    console.log("form :",formData);
 
     return Object.keys(errors).length === 0;
   }, [formData, contracts, currentUserId]);

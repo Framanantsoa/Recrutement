@@ -11,9 +11,6 @@ public interface IPreselectionRepository
     Task<List<LangageSpeaking>> GetLangageSpeakings(List<string> langageIds, List<string> levelIds);
     Task<List<SpeakingLevel>> GetAllSpeakingLevelsAsync();
     Task<List<PreselectionCriteria>> GetAllPreselectionCriteriaAsync();
-    Task<PreselectionCriteria> UpdateCriteriaCoefficientAsync(string id, decimal coeff);
-    Task AddCriteriaThreshold(CriteriaThreshold data);
-    Task AddSpeakingCriteriaThresholdRange(List<SpeakingCriteriaThreshold> data);
     Task AddJobPreselectionCriteria(JobDescriptionCriteria data);
 }
 
@@ -37,19 +34,6 @@ public class PreselectionRepository(
         return await _dbCtx.PreselectionCriterias.AsNoTracking().ToListAsync();
     }
 
-    public async Task<PreselectionCriteria> UpdateCriteriaCoefficientAsync(string id, decimal coeff) {
-        var criteria = await _dbCtx.PreselectionCriterias.FindAsync(id)
-         ?? throw new ArgumentException($"Critère de présélection ID : {id} non trouvé.");
-        
-        criteria.Coefficient = coeff;
-        criteria.UpdatedAt = DateTime.UtcNow;
-
-        _dbCtx.PreselectionCriterias.Update(criteria);
-        await _dbCtx.SaveChangesAsync();
-
-        return criteria;
-    }
-
 
     public async Task<List<LangageSpeaking>> GetLangageSpeakings(
         List<string> langageIds, List<string> levelIds)
@@ -67,20 +51,6 @@ public class PreselectionRepository(
             throw new ArgumentException("Aucun niveau de langue trouvé");
 
         return result;
-    }
-
-    public async Task AddCriteriaThreshold(CriteriaThreshold data) {
-        data.Id = await _seq.GenerateObjectId("CRIT_THR", "SEU/CRIT");
-        await _dbCtx.CriteriaThresholds.AddAsync(data);
-    }
-
-    public async Task AddSpeakingCriteriaThresholdRange(List<SpeakingCriteriaThreshold> data) {
-        foreach (var item in data)
-        {
-            item.Id = await _seq.GenerateObjectId("CRIT_LANG", "LANG/CRIT");
-        }
-
-        await _dbCtx.SpeakingCriteriaThresholds.AddRangeAsync(data);
     }
 
     public async Task AddJobPreselectionCriteria(JobDescriptionCriteria data) {

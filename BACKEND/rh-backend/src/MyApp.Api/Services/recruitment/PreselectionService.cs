@@ -8,9 +8,7 @@ public interface IPreselectionService
 {
     Task<List<Langage>> GetAllLangagesAsync();
     Task<List<SpeakingLevel>> GetAllSpeakingLevelsAsync();
-    Task<PreselectionCriteriaDTO> GetAllPreselectionCriteriaAsync();
-    Task<PreselectionCriteria> UpdateCriteriaCoefficientAsync(string criteriaId, decimal coefficient);
-    Task AddJobPreselectionCriteria(JobCriteriaFormDTO data);
+    // Task AddJobPreselectionCriteria(JobCriteriaFormDTO data);
 }
 
 
@@ -48,93 +46,56 @@ public class PreselectionService(
         }
     }
 
-
-    public async Task<PreselectionCriteriaDTO> GetAllPreselectionCriteriaAsync() {
-        try {
-            _logger.LogInformation("Recherche des critères de présélection en cours ...");
-            var criteria = await _repo.GetAllPreselectionCriteriaAsync();
-
-            var criteriaWithScore = criteria.Select(c => new PreselectionCriteriaWithScoreDTO {
-                Id = c.Id,
-                Criteria = c.Criteria,
-                Coefficient = c.Coefficient,
-                Score = c.DefinitiveScale
-            }).ToList();
-
-            return new PreselectionCriteriaDTO {
-                Criteria = criteriaWithScore,
-                TotalScore = criteriaWithScore.Sum(c => c.Score)
-            };
-        }
-        catch(Exception ex) {
-            _logger.LogError(ex, "Erreur lors de la recherche des critères de présélection");
-            throw;
-        }
-    }
-
-
-    public async Task<PreselectionCriteria> UpdateCriteriaCoefficientAsync(string criteriaId, decimal coefficient) {
-        try {
-            _logger.LogInformation("Mise à jour du coefficient d'un critère de présélection en cours ...");
-            return await _repo.UpdateCriteriaCoefficientAsync(criteriaId, coefficient);
-        }
-        catch(Exception ex) {
-            _logger.LogError(ex, "Erreur lors de la mise à jour du coefficient d'un critère de présélection");
-            throw;
-        }
-    }
-
-
-    public async Task AddJobPreselectionCriteria(JobCriteriaFormDTO data) {
-        try {
-            _logger.LogInformation("Insertion des critères de présélection d'un TDR en cours ...");
-            await _dbService.BeginTransactionAsync();        
+    // public async Task AddJobPreselectionCriteria(JobCriteriaFormDTO data) {
+    //     try {
+    //         _logger.LogInformation("Insertion des critères de présélection d'un TDR en cours ...");
+    //         await _dbService.BeginTransactionAsync();        
     
-        // 1. Création du threshold
-            var criteria = new CriteriaThreshold {
-                MinLevelEducationId = data.MinLevelEducationId,
-                MinExperienceYears = data.MinExperienceYears
-            };
-            await _repo.AddCriteriaThreshold(criteria);
+    //     // 1. Création du threshold
+    //         var criteria = new CriteriaThreshold {
+    //             MinLevelEducationId = data.MinLevelEducationId,
+    //             MinExperienceYears = data.MinExperienceYears
+    //         };
+    //         await _repo.AddCriteriaThreshold(criteria);
 
-        // 2. Récupération en une seule requête
-            var langageIds = data.Langages.Select(l => l.LangageId).ToList();
-            var levelIds = data.Langages.Select(l => l.LevelId).ToList();
+    //     // 2. Récupération en une seule requête
+    //         var langageIds = data.Langages.Select(l => l.LangageId).ToList();
+    //         var levelIds = data.Langages.Select(l => l.LevelId).ToList();
 
-            var speakingLangages = await _repo.GetLangageSpeakings(langageIds, levelIds);
+    //         var speakingLangages = await _repo.GetLangageSpeakings(langageIds, levelIds);
 
-        // 3. Mapping en mémoire avec Dictionary pour lookup O(1)
-            var dict = speakingLangages.ToDictionary(
-                s => (s.LangageId, s.SpeakingLevelId),
-                s => s
-            );
+    //     // 3. Mapping en mémoire avec Dictionary pour lookup O(1)
+    //         var dict = speakingLangages.ToDictionary(
+    //             s => (s.LangageId, s.SpeakingLevelId),
+    //             s => s
+    //         );
 
-            var speakingCriteriaList = data.Langages.Select(lang => {
-                if (!dict.TryGetValue((lang.LangageId, lang.LevelId), out var speaking))
-                    throw new ArgumentException($"Niveau de langue non trouvé pour {lang.LangageId}/{lang.LevelId}");
+    //         var speakingCriteriaList = data.Langages.Select(lang => {
+    //             if (!dict.TryGetValue((lang.LangageId, lang.LevelId), out var speaking))
+    //                 throw new ArgumentException($"Niveau de langue non trouvé pour {lang.LangageId}/{lang.LevelId}");
 
-                return new SpeakingCriteriaThreshold {
-                    CriteriaThresholdId = criteria.Id,
-                    MinSpeakingLevelId = speaking.Id
-                };
-            }).ToList();
+    //             return new SpeakingCriteriaThreshold {
+    //                 CriteriaThresholdId = criteria.Id,
+    //                 MinSpeakingLevelId = speaking.Id
+    //             };
+    //         }).ToList();
 
-        // 4. Insert en batch
-            await _repo.AddSpeakingCriteriaThresholdRange(speakingCriteriaList);
+    //     // 4. Insert en batch
+    //         await _repo.AddSpeakingCriteriaThresholdRange(speakingCriteriaList);
 
-        // 5. Lien avec le TDR  
-            var jobCriteria = new JobDescriptionCriteria {
-                JobDescriptionId = data.JobDescId,
-                CriteriaThresholdId = criteria.Id
-            };
-            await _repo.AddJobPreselectionCriteria(jobCriteria);
+    //     // 5. Lien avec le TDR  
+    //         var jobCriteria = new JobDescriptionCriteria {
+    //             JobDescriptionId = data.JobDescId,
+    //             CriteriaThresholdId = criteria.Id
+    //         };
+    //         await _repo.AddJobPreselectionCriteria(jobCriteria);
 
-        // Application des transactions
-            await _dbService.CommitAsync();
-        }
-        catch(Exception ex) {
-            _logger.LogError(ex, "Erreur lors de l'insertion des critères de présélection d'un TDR");
-            throw;
-        }
-    }
+    //     // Application des transactions
+    //         await _dbService.CommitAsync();
+    //     }
+    //     catch(Exception ex) {
+    //         _logger.LogError(ex, "Erreur lors de l'insertion des critères de présélection d'un TDR");
+    //         throw;
+    //     }
+    // }
 }

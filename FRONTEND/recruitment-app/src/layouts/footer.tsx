@@ -14,7 +14,7 @@ const Footer: React.FC<FooterProps> = ({ collapsed }) => {
       {!collapsed && (
         <SidebarFooterInfo>
           <div className="sidebar-footer-title">Ravinala Airports</div>
-          <div className="sidebar-footer-subtitle">Gestion de Mission</div>
+          <div className="sidebar-footer-subtitle">Gestion de Recrutement</div>
         </SidebarFooterInfo>
       )}
     </SidebarFooter>

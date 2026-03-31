@@ -68,7 +68,7 @@ const RecruitmentRequestForm: React.FC<RecruitmentRequestFormProps> = ({
     } = useRecruitmentForm({
         mode: isUpdate ? "edit" : "create",
         initialData
-    });
+    });                                                                                                                                                                                                                                                                                       
 
     const [sharedDirection, setSharedDirection] = useState<string>("");
     useEffect(() => {

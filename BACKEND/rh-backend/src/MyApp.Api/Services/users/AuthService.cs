@@ -42,28 +42,28 @@ public class AuthService : IAuthService
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             return new ValidationResult { Message = "Username and password are required", Type = "invalid_input" };
-        try
-        {
-            var ldapResult = await ValidateLdapCredentialsAsync(username, password);
-            if (ldapResult.Type == "success")
-            {
-                var dbUser = await GetUserFromDatabaseAsync(ldapResult.EmailAddress);
-                return ValidateUserAccess(dbUser);
-            }
-            else if (ldapResult.Type == "ldap_unavailable" || ldapResult.Type == "ldap_error")
-            {
-                return await FallbackValidateAsync(username, password);
-            }
-            else
-            {
-                return new ValidationResult { Message = ldapResult.Message, Type = ldapResult.Type };
-            }
-        }
-        
         // try
         // {
-        //     return await FallbackValidateAsync(username, password);
+        //     var ldapResult = await ValidateLdapCredentialsAsync(username, password);
+        //     if (ldapResult.Type == "success")
+        //     {
+        //         var dbUser = await GetUserFromDatabaseAsync(ldapResult.EmailAddress);
+        //         return ValidateUserAccess(dbUser);
+        //     }
+        //     else if (ldapResult.Type == "ldap_unavailable" || ldapResult.Type == "ldap_error")
+        //     {
+        //         return await FallbackValidateAsync(username, password);
+        //     }
+        //     else
+        //     {
+        //         return new ValidationResult { Message = ldapResult.Message, Type = ldapResult.Type };
+        //     }
         // }
+        
+        try
+        {
+            return await FallbackValidateAsync(username, password);
+        }
         catch (Exception ex)
         {
             return new ValidationResult { Message = $"An error occurred during authentication: {ex.Message}", Type = "error" };
@@ -95,7 +95,19 @@ public class AuthService : IAuthService
             ["00408"] = ("1234", "joel.tadzong@ravinala-airports.aero"),
             ["00289"] = ("1234", "zoelisoa.rajohnson@ravinala-airports.aero"),
             ["00222"] = ("1234", "felana.ratsimbazafy@ravinala-airports.aero"),
-            ["00354"] = ("1234", "tahiana.rakotondrasoa@ravinala-airports.aero")
+            ["00354"] = ("1234", "tahiana.rakotondrasoa@ravinala-airports.aero"),
+
+        // OTHER
+            ["mat431"] = ("1234", "jean.dupont@gmail.com"),
+            ["mat182"] = ("1234", "marie.rakoto@gmail.com"),
+            ["mat425"] = ("1234", "paul.martin@gmail.com"),
+            ["mat358"] = ("1234", "luc.andriana@gmail.com"),
+            ["mat383"] = ("1234", "sophie.rabeharisoa@gmail.com"),
+            ["mat418"] = ("1234", "eric.randrianarisoa@gmail.com"),
+            ["mat446"] = ("1234", "laura.rakotonirina@gmail.com"),
+            ["mat416"] = ("1234", "hery.razanakoto@gmail.com"),
+            ["stg173"] = ("1234", "mathias.manantsoa@gmail.com"),
+            ["mat386"] = ("1234", "nicolas.razafindrakoto@gmail.com")
         };
 
         if (hardcodedUsers.TryGetValue(username, out var info) && info.Password == password)

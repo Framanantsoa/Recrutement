@@ -346,8 +346,7 @@ INSERT INTO menu (menu_id, menu_key, icon, link, is_enabled, position, module_id
 ('MEN_002_1', 'validations', 'fa-tasks', '/recrutement/a-valider', 1, 1, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
 ('MEN_002_2', 'Workflow des validateurs', 'fa-users-cog', '/recrutement/validateurs', 1, 2, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
 ('MEN_002_3', 'demandes', 'fa-list', '/recrutement/liste-demandes', 1, 3, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
-('MEN_002_4', 'Paramétrages', 'fa-cogs', '/recrutement/parametrage', 1, 4, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
-('MEN_002_5', 'Entretiens', 'fa-calendar', '/recrutement/liste-entretiens', 1, 5, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
+('MEN_002_4', 'Entretiens', 'fa-reg-calendar', '/recrutement/liste-entretiens', 1, 5, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
 -- Administration
 ('MEN_003', 'utilisateurs', 'fa-users', '/utilisateurs', 1, 1, 'MOD_003', 'administration', 1, GETDATE(), GETDATE()),
 ('MEN_004', 'Rôles & Habilitations', 'fa-shield-alt', '/droit-acces', 1, 2, 'MOD_004', 'administration', 1, GETDATE(), GETDATE()),
@@ -372,7 +371,6 @@ INSERT INTO menu_hierarchy (hierarchy_id, parent_menu_id, menu_id, created_at, u
 ('H_002_2', 'MEN_002', 'MEN_002_2', GETDATE(), GETDATE()),
 ('H_002_3', 'MEN_002', 'MEN_002_3', GETDATE(), GETDATE()),
 ('H_002_4', 'MEN_002', 'MEN_002_4', GETDATE(), GETDATE()),
-('H_002_5', 'MEN_002', 'MEN_002_5', GETDATE(), GETDATE()),
 -- SOUS-MENUS DROIT & ACCÈS
 ('H_004_1', 'MEN_004', 'MEN_004_1', GETDATE(), GETDATE()),
 ('H_004_2', 'MEN_004', 'MEN_004_2', GETDATE(), GETDATE());

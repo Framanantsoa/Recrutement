@@ -46,30 +46,6 @@ CREATE SEQUENCE seq_site_id
     CACHE 50;
 -- GO
 
-IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_nationality_id')
-    DROP SEQUENCE seq_nationality_id;
--- GO
-CREATE SEQUENCE seq_nationality_id
-    AS INT
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 1
-    NO CYCLE
-    CACHE 50;
--- GO
-
-IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_gender_id')
-    DROP SEQUENCE seq_gender_id;
--- GO
-CREATE SEQUENCE seq_gender_id
-    AS INT
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 1
-    NO CYCLE
-    CACHE 50;
--- GO
-
 IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_contract_type_id')
     DROP SEQUENCE seq_contract_type_id;
 -- GO
@@ -130,6 +106,30 @@ CREATE SEQUENCE seq_user_id
     NO CYCLE
     CACHE 50;
 -- GO
+
+IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_gender_id')
+    DROP SEQUENCE seq_gender_id;
+-- GO
+CREATE SEQUENCE seq_gender_id
+    AS INT
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    NO CYCLE
+    CACHE 50;
+-- GO 
+
+IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_nationality_id')
+    DROP SEQUENCE seq_nationality_id;
+-- GO
+CREATE SEQUENCE seq_nationality_id
+    AS INT
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    NO CYCLE
+    CACHE 50;
+-- GO 
 
 IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_role_id')
     DROP SEQUENCE seq_role_id; -- Corrected: was seq_user_id
@@ -208,72 +208,6 @@ CREATE SEQUENCE seq_tmp_employee_id
 
 
 -- RECRUTEMENT
-IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_replacement_reason_id')
-    DROP SEQUENCE seq_replacement_reason_id;
--- GO
-CREATE SEQUENCE seq_replacement_reason_id
-    AS INT
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 1
-    NO CYCLE
-    CACHE 50;
--- GO
-
-
-IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_req_status_id')
-    DROP SEQUENCE seq_req_status_id;
--- GO
-CREATE SEQUENCE seq_req_status_id
-    AS INT
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 1
-    NO CYCLE
-    CACHE 50;
--- GO
-
-
-IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_job_status_id')
-    DROP SEQUENCE seq_job_status_id;
--- GO
-CREATE SEQUENCE seq_job_status_id
-    AS INT
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 1
-    NO CYCLE
-    CACHE 50;
--- GO
-
-
-IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_level_education_id')
-    DROP SEQUENCE seq_level_education_id;
--- GO
-CREATE SEQUENCE seq_level_education_id
-    AS INT
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 1
-    NO CYCLE
-    CACHE 50;
--- GO
-
-
-
-IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_evaluation_type_id')
-    DROP SEQUENCE seq_evaluation_type_id;
--- GO
-CREATE SEQUENCE seq_evaluation_type_id
-    AS INT
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 1
-    NO CYCLE
-    CACHE 50;
--- GO
-
-
 IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_request_id')
     DROP SEQUENCE seq_request_id;
 -- GO
@@ -382,45 +316,6 @@ IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_skill_id')
     DROP SEQUENCE seq_skill_id;
 -- GO
 CREATE SEQUENCE seq_skill_id
-    AS INT
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 1
-    NO CYCLE
-    CACHE 50;
--- GO
-
-
-IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_candidature_id')
-    DROP SEQUENCE seq_candidature_id;
--- GO
-CREATE SEQUENCE seq_candidature_id
-    AS INT
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 1
-    NO CYCLE
-    CACHE 50;
--- GO
-
-
-IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_evaluation_id')
-    DROP SEQUENCE seq_evaluation_id;
--- GO
-CREATE SEQUENCE seq_evaluation_id
-    AS INT
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 1
-    NO CYCLE
-    CACHE 50;
--- GO
-
-
-IF EXISTS (SELECT * FROM sys.sequences WHERE name = 'seq_comment_id')
-    DROP SEQUENCE seq_comment_id;
--- GO
-CREATE SEQUENCE seq_comment_id
     AS INT
     START WITH 1
     INCREMENT BY 1

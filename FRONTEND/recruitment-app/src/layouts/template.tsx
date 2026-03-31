@@ -163,7 +163,7 @@ const Template: React.FC<TemplateProps> = ({ children }) => {
   const habilitationsMap = useMemo(() => ({
     "Utilisateurs": hasVoirUtilisateurs,
     "Rôles & Habilitations": hasVoirDroitAcces,
-    "Paramétrages": hasVoirParametrage,
+    "Paramétrages": false,
     "Entretiens": true,
     "Accès": hasVoirAcces,
     "Référentiel": hasVoirReferentiel,

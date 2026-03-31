@@ -283,7 +283,6 @@ export const useDeleteRecruitmentRequest = () => {
 export const useGetUsersByDirection = (direction: string, all=false) => {
     return useQuery<{ data: DocumentDTO[] }, Error>({
         queryKey: ['usersByDirection', direction] as const,
-        enabled: !!direction,
         queryFn: async () => {
             try {
                 const response = await api.get(`/api/User/directions/${direction}`, {
@@ -296,7 +295,8 @@ export const useGetUsersByDirection = (direction: string, all=false) => {
                 }
                 throw error;
             }
-        }
+        },
+        enabled: !!direction,
     });
 };
 

@@ -23,8 +23,6 @@ public interface ICandidatureRepository
     Task<LangageSpeaking?> GetLangageSpeakingByIdsAsync(string langageId, string levelId);
     Task FinishCandidatureTreatment(string candidatureId);
 
-    Task<decimal> GetLevelEducationPoint(Candidature cad, JobDescriptionCriteria criteria);
-
 // COMMENTAIRES
     Task AddCandidatureCommentAsync(CandidatureComment comment);
     Task<CandidatureComment?> GetByCommentIdAsync(string commId);
@@ -191,14 +189,14 @@ public class CandidatureRepository(AppDbContext context,
         if(points.Any(p => p==0)) {
             candidature.IsPreselected = false;
         }
-        else {
-        // Définition du seuil : Candidat présélectionné > points 60%
-            decimal percentage = 60m;
-            decimal minThreshold = await _dbCtx.PreselectionCriterias.SumAsync(p =>
-             p.DefinitiveScale) * (percentage / 100m);
+        // else {
+        // // Définition du seuil : Candidat présélectionné > points 60%
+        //     decimal percentage = 60m;
+        //     decimal minThreshold = await _dbCtx.PreselectionCriterias.SumAsync(p =>
+        //      p.TotalPoints) * (percentage / 100m);
 
-            candidature.IsPreselected = points.Sum() >= minThreshold;
-        }
+        //     candidature.IsPreselected = points.Sum() >= minThreshold;
+        // }
 
         await _dbCtx.SaveChangesAsync();
     }

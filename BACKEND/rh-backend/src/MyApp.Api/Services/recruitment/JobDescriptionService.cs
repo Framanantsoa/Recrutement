@@ -208,23 +208,23 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
         // Skills
             result.Skills = jobDesc.Skills.Select(s => s.Label).ToArray();
 
-        // Criterias
-            if (jobDesc.Criteria != null) {
-                result.Criteria = new JobCriteriaDTO 
-                {
-                    CriteriaThresholdId = jobDesc.Criteria.CriteriaThresholdId,
-                    MinExperienceYears = jobDesc.Criteria.CriteriaThreshold.MinExperienceYears,
-                    MinLevelEducationId = jobDesc.Criteria.CriteriaThreshold.MinLevelEducationId,
-                    MinLevelEducation = jobDesc.Criteria.CriteriaThreshold.MinLevelEducation.Name,
-                    SpeakingCriteria = jobDesc.Criteria.CriteriaThreshold.SpeakingThresholds
-                        .Select(sc => new SpeakingCriteriaDTO
-                        {
-                            Langage = sc.MinSpeakingLevel.Langage.Name,
-                            Level = sc.MinSpeakingLevel.SpeakingLevel.Name
-                        })
-                        .ToList()
-                };
-            }
+        // // Criterias
+        //     if (jobDesc.Criteria != null) {
+        //         result.Criteria = new JobCriteriaDTO 
+        //         {
+        //             CriteriaThresholdId = jobDesc.Criteria.CriteriaThresholdId,
+        //             MinExperienceYears = jobDesc.Criteria.CriteriaThreshold.MinExperienceYears,
+        //             MinLevelEducationId = jobDesc.Criteria.CriteriaThreshold.MinLevelEducationId,
+        //             MinLevelEducation = jobDesc.Criteria.CriteriaThreshold.MinLevelEducation.Name,
+        //             SpeakingCriteria = jobDesc.Criteria.CriteriaThreshold.SpeakingThresholds
+        //                 .Select(sc => new SpeakingCriteriaDTO
+        //                 {
+        //                     Langage = sc.MinSpeakingLevel.Langage.Name,
+        //                     Level = sc.MinSpeakingLevel.SpeakingLevel.Name
+        //                 })
+        //                 .ToList()
+        //         };
+        //     }
 
             return result;   
         }

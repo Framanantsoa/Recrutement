@@ -90,7 +90,8 @@ public class EmpImportService : IEmpImportService
                 var employee = new Employee
                 {
                     EmployeeId = Guid.NewGuid().ToString(),
-                    EmployeeCode = "0"+cols[0].Trim(),
+                    EmployeeCode = cols[0].Trim().Length > 5
+                     ? cols[0].Trim() : '0'+cols[0].Trim(),
                     LastName = cols[1].Trim(),
                     FirstName = cols[2].Trim(),
                     JobTitle = cols[4].Trim(),

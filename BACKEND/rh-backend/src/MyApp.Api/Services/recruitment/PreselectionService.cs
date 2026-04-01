@@ -67,8 +67,10 @@ public class PreselectionService(
         {
             _logger.LogInformation("Insertion des critères de présélection...");
 
-            var job = await _jobRepo.GetJobDescriptionById(data.JobDescId)
-                ?? throw new ArgumentException("JobDescription introuvable");
+            var exists = await _jobRepo.DoesExistsById(data.JobDescId);
+
+            if (!exists)
+                throw new ArgumentException("JobDescription introuvable");
 
             // ================= VALIDATION LANGUES =================
             var langageIds = data.Langages.Select(l => l.LangageId).ToList();
@@ -93,7 +95,7 @@ public class PreselectionService(
                 CreatedAt = DateTime.UtcNow
             };
             await _repo.AddJobPreselectionCriteria(educationCriteria);
-            await _dbService.SaveChangesAsync();
+            // await _dbService.SaveChangesAsync();
 
             foreach (var l in data.LevelEducation)
             {
@@ -104,7 +106,7 @@ public class PreselectionService(
                     Points = l.Points
                 });
             }
-            await _dbService.SaveChangesAsync();
+            // await _dbService.SaveChangesAsync();
 
             // ================= FORMATION =================
             var formationCriteria = new JobDescriptionCriteria
@@ -116,14 +118,14 @@ public class PreselectionService(
             };
 
             await _repo.AddJobPreselectionCriteria(formationCriteria);
-            await _dbService.SaveChangesAsync();
+            // await _dbService.SaveChangesAsync();
 
             await _repo.AddFormation(new JobCriteriaFormation
             {
                 JobCriteriaId = formationCriteria.Id,
                 Points = data.FormationsPoints
             });
-            await _dbService.SaveChangesAsync();
+            // await _dbService.SaveChangesAsync();
 
             // ================= PRESENTATION =================
             var presentationCriteria = new JobDescriptionCriteria
@@ -135,14 +137,14 @@ public class PreselectionService(
             };
 
             await _repo.AddJobPreselectionCriteria(presentationCriteria);
-            await _dbService.SaveChangesAsync();
+            // await _dbService.SaveChangesAsync();
 
             await _repo.AddPresentation(new JobCriteriaPresentation
             {
                 JobCriteriaId = presentationCriteria.Id,
                 Points = data.PresentationsPoints
             });
-            await _dbService.SaveChangesAsync();
+            // await _dbService.SaveChangesAsync();
 
             // ================= LANGUES =================
             var languageCriteria = new JobDescriptionCriteria
@@ -154,7 +156,7 @@ public class PreselectionService(
             };
 
             await _repo.AddJobPreselectionCriteria(languageCriteria);
-            await _dbService.SaveChangesAsync();
+            // await _dbService.SaveChangesAsync();
 
             foreach (var lang in data.Langages)
             {
@@ -167,7 +169,7 @@ public class PreselectionService(
                     Points = lang.Points
                 });
             }
-            await _dbService.SaveChangesAsync();
+            // await _dbService.SaveChangesAsync();
 
             // ================= EXPERIENCE =================
             var experienceCriteria = new JobDescriptionCriteria
@@ -179,7 +181,7 @@ public class PreselectionService(
             };
 
             await _repo.AddJobPreselectionCriteria(experienceCriteria);
-            await _dbService.SaveChangesAsync();
+            // await _dbService.SaveChangesAsync();
 
             foreach (var exp in data.Experiences)
             {
@@ -191,7 +193,7 @@ public class PreselectionService(
                     Points = exp.Points
                 });
             }
-            await _dbService.SaveChangesAsync();
+            // await _dbService.SaveChangesAsync();
 
             // ================= COMMIT =================
             await _dbService.CommitAsync();

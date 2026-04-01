@@ -30,6 +30,7 @@ public interface IJobDescriptionRepository
     Task<List<PostType>> GetAllPostTypes();
     void Attach<TEntity>(TEntity entity) where TEntity : class;
     Task<bool> SoftSkillExistsByLabel(string label);
+    Task<bool> DoesExistsById(string id);
     Task UpdateJobDescription(JobDescription last, JobDescription newJob);
 
 // Commit de transaction
@@ -73,6 +74,14 @@ public class JobDescriptionRepository(AppDbContext ctx, ISequenceGenerator seq) 
         return await _dbCtx.SoftSkills.AnyAsync(e => 
             e.Name.ToLower().Equals(label.ToLower())
         );
+    }
+
+
+    public async Task<bool> DoesExistsById(string id) {
+        var exists = await _dbCtx.JobDescriptions
+            .AnyAsync(j => j.Id == id);
+
+        return exists;
     }
 
 

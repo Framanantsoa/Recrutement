@@ -66,72 +66,62 @@ public class PreselectionRepository(
 
     // INSERTS
     public async Task AddPreselectionCriteria(PreselectionCriteria data) {
-        // data.Id = await _seq.GenerateObjectId("PRESEL", "CRIT/PRE");
-        data.Id = Guid.NewGuid().ToString();
+        data.Id = await _seq.GenerateObjectId("PRESEL", "CRIT/PRE");
         await _dbCtx.PreselectionCriterias.AddAsync(data);
     }
 
     public async Task AddJobPreselectionCriteria(JobDescriptionCriteria data) {
-        // data.Id = await _seq.GenerateObjectId("JOB_CRIT", "TDR/CRIT"
-        data.Id = Guid.NewGuid().ToString();;
+        data.Id = await _seq.GenerateObjectId("JOB_CRIT", "TDR/CRIT");
         await _dbCtx.JobDescriptionCriterias.AddAsync(data);
     }
 
     public async Task AddLevelEducation(JobCriteriaLevelEducation data) {
-        // data.Id = await _seq.GenerateObjectId("JC_LE", "CRIT/LE");
- 
-        data.Id = Guid.NewGuid().ToString();       
+        data.Id = await _seq.GenerateObjectId("JC_LE", "CRIT/LE");
+        
         await _dbCtx.JobCriteriaLevelEducations.AddAsync(data);
     }
 
     public async Task AddExperience(JobCriteriaExperience data) {
-        // data.Id = await _seq.GenerateObjectId("JC_EXP", "CRIT/EXP");
-        data.Id = Guid.NewGuid().ToString();
+        data.Id = await _seq.GenerateObjectId("JC_EXP", "CRIT/EXP");
         await _dbCtx.JobCriteriaExperiences.AddAsync(data);
     }
 
     public async Task AddSpeaking(JobCriteriaSpeaking data) {
-        // data.Id = await _seq.GenerateObjectId("JC_LANG", "CRIT/LANG"
-        data.Id = Guid.NewGuid().ToString();
+        data.Id = await _seq.GenerateObjectId("JC_LANG", "CRIT/LANG");
         await _dbCtx.JobCriteriaSpeakings.AddAsync(data);
     }
 
     public async Task AddLevelEducationRange(List<JobCriteriaLevelEducation> data) {
         foreach (var item in data)
         {
-            // item.Id = await _seq.GenerateObjectId("JC_LE", "CRIT/LE");
-        
-            item.Id = Guid.NewGuid().ToString();       
+            item.Id = await _seq.GenerateObjectId("JC_LE", "CRIT/LE");   
         }
 
         await _dbCtx.JobCriteriaLevelEducations.AddRangeAsync(data);
     }
 
     public async Task AddFormation(JobCriteriaFormation data) {
-        // data.Id = await _seq.GenerateObjectId("JC_FORM", "CRIT/FORM"
-        data.Id = Guid.NewGuid().ToString();
+        data.Id = await _seq.GenerateObjectId("JC_FORM", "CRIT/FORM");
         await _dbCtx.JobCriteriaFormations.AddAsync(data);
     }
 
     public async Task AddPresentation(JobCriteriaPresentation data) {
-        // data.Id = await _seq.GenerateObjectId("JC_PRE", "CRIT/PRES")
-        data.Id = Guid.NewGuid().ToString();;
+        data.Id = await _seq.GenerateObjectId("JC_PRE", "CRIT/PRES");
         await _dbCtx.JobCriteriaPresentations.AddAsync(data);
     }
 
     public async Task AddExperienceRange(List<JobCriteriaExperience> data) {
         foreach (var item in data) {
-            item.Id = Guid.NewGuid().ToString();
+            item.Id = await _seq.GenerateObjectId("JC_EXP", "CRIT/EXP");
         }
-        // item.Id = await _seq.GenerateObjectId("JC_EXP", "CRIT/EXP");
             
         await _dbCtx.JobCriteriaExperiences.AddRangeAsync(data);
     }
 
     public async Task AddSpeakingRange(List<JobCriteriaSpeaking> data) {
-        foreach (var item in data)
-            // item.Id = await _seq.GenerateObjectId("JC_LANG", "CRIT/LANG"
-            // data.Id = Guid.NewGuid().ToString(););
+        foreach (var item in data) {
+            item.Id = await _seq.GenerateObjectId("JC_LANG", "CRIT/LANG");
+        }
 
         await _dbCtx.JobCriteriaSpeakings.AddRangeAsync(data);
     }

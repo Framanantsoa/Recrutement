@@ -488,12 +488,10 @@ export const useAddJobDescription = () => {
         mutationFn: (data) => api.post('/api/recruitment/job-descriptions', data)
             .then(r => r.data),
 
-        onSuccess: (response) => {
-            const id = response.data;
-
+        onSuccess: (_, variables) => {
         // Refetch du détail
             queryClient.invalidateQueries({
-                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, id]
+                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, variables.requestId]
             });
         }
     });
@@ -590,9 +588,11 @@ export const useUpdateJobDescription = (requestId : string | null) => {
         mutationFn: async (data) => 
             await api.put(`/api/recruitment/job-descriptions/${requestId}`, data).then(r => r.data),
 
-        onSuccess: () => queryClient.invalidateQueries({ 
-            queryKey: SEARCH_JOB_DESC_BASE_KEY 
-        }),
+        onSuccess: (_, variables) => {
+             queryClient.invalidateQueries({
+                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, variables.requestId]
+            });
+        },
     });
 };
 

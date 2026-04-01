@@ -1,8 +1,8 @@
-import type { JobCriteriaForm } from "@/pages/recruitment/candidature/criteria-form/hooks/use-save-criteria";
 import api from "@/utils/axios-config";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { SEARCH_JOB_DESC_BASE_KEY } from "../service";
+import type { JobCriteriaFormDTO } from "@/pages/recruitment/candidature/criteria-form/hooks/use-save-criteria";
 
 interface ApiResponse<T> {
   data: T;
@@ -116,7 +116,7 @@ export const useAddJobCriteria = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (data: JobCriteriaForm) =>
+        mutationFn: async (data: JobCriteriaFormDTO) =>
             api.post(`/api/recruitment/Preselections/job-criteria`, data)
              .then(r => r.data),
 
@@ -130,5 +130,3 @@ export const useAddJobCriteria = () => {
         }
     });
 };
-
-

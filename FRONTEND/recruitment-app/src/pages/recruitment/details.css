@@ -91,30 +91,6 @@
 }
 
 /* =========================================================
-   LABEL + VALUE (LabelValue)
-========================================================= */
-.info-card {
-  display: flex;
-  align-items: center;
-  flex-direction: row;
-  gap: 4px;
-}
-
-.info-card .label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-}
-
-.info-card .value {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-dark);
-  line-height: 1.4;
-}
-
-/* =========================================================
    SECTIONS (sans cadre)
 ========================================================= */
 .details-section {
@@ -259,7 +235,7 @@
 
 /* Label en haut, souligné */
 .label-top {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--text-muted);
@@ -271,10 +247,10 @@
     list-style: disc;
     padding-left: 20px;
     margin: 0 15px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-primary, #222);
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 /* Espacement entre les items */

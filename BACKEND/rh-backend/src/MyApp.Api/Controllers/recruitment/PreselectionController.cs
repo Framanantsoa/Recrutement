@@ -50,63 +50,42 @@ public class PreselectionController
     }
 
 
-    // [HttpGet("criterias")]
-    // [AllowAnonymous]
-    // public async Task<IActionResult> GetAllCriterias() {
-    //     // if(!User.Identity?.IsAuthenticated ?? true) {
-    //     //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-    //     // }
+    [HttpGet("criterias")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAllCriterias() {
+        // if(!User.Identity?.IsAuthenticated ?? true) {
+        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        // }
 
-    //     try {
-    //         var results = await _service.GetAllPreselectionCriteriaAsync();
-    //         return Ok(new { data = results, status = 200, message = "success" });
-    //     }
-    //     catch (ArgumentException ex) {
-    //         return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
-    //     }
-    //     catch (Exception ex) {
-    //         return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
-    //     }
-    // }
-
-
-    // [HttpPut("criterias/{id}")]
-    // [AllowAnonymous]
-    // public async Task<IActionResult> UpdateCriteriaCoefficient(string id,
-    //  [FromBody] UpdateCriteriaCoefficientDTO dto) {
-    //     // if(!User.Identity?.IsAuthenticated ?? true) {
-    //     //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-    //     // }
-
-    //     try {
-    //         var result = await _service.UpdateCriteriaCoefficientAsync(id, dto.Coefficient);
-    //         return Ok(new { data = result, status = 200, message = "success" });
-    //     }
-    //     catch (ArgumentException ex) {
-    //         return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
-    //     }
-    //     catch (Exception ex) {
-    //         return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
-    //     }
-    // }
+        try {
+            var results = await _service.GetAllPreselectionCriteriaAsync();
+            return Ok(new { data = results, status = 200, message = "success" });
+        }
+        catch (ArgumentException ex) {
+            return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
+        }
+        catch (Exception ex) {
+            return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
+        }
+    }
 
 
-    // [HttpPost("job-criteria")]
-    // [AllowAnonymous]
-    // public async Task<IActionResult> AddJobCriteria([FromBody] JobCriteriaFormDTO dto) {
-    //     // if(!User.Identity?.IsAuthenticated ?? true) {
-    //     //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-    //     // }
+    [HttpPost("job-criteria")]
+    [AllowAnonymous]
+    public async Task<IActionResult> AddJobCriteria([FromBody] JobCriteriaFormDTO dto) {
+        // if(!User.Identity?.IsAuthenticated ?? true) {
+        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        // }
 
-    //     try {
-    //         await _service.AddJobPreselectionCriteria(dto);
-    //         return Ok(new { data = (object?)null, status = 200, message = "success" });
-    //     }
-    //     catch (ArgumentException ex) {
-    //         return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
-    //     }
-    //     catch (Exception ex) {
-    //         return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
-    //     }
-    // }
+        try {
+            await _service.AddJobPreselectionCriteria(dto);
+            return Ok(new { data = (object?)null, status = 200, message = "success" });
+        }
+        catch (ArgumentException ex) {
+            return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
+        }
+        catch (Exception ex) {
+            return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
+        }
+    }
 }

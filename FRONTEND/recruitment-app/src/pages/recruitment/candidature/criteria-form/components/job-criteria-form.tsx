@@ -1,216 +1,328 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type {
+  LevelEducationCriteriaForm,
+  ExperienceCriteriaForm,
+  LangageSkillCriteriaForm,
+  JobCriteriaFormDTO,
+} from "../hooks/use-save-criteria";
+
 import type { LangageDTO, SpeakingLevelDTO } from "@/api/recruitment/preselection/service";
 import type { DocumentDTO } from "@/api/recruitment/service";
+import EditableSectionTitle from "@/components/editable-section-title";
+
 import {
-    ErrorMessage,
-    FormFieldCell,
-    FormInput,
-    FormLabelRequired,
-    FormRow,
-    FormSectionTitle,
-    FormTable
+  FormFieldCell,
+  FormInput,
+  FormLabelRequired,
+  FormRow,
+  FormTable,
+  ErrorMessage
 } from "@/styles/form-container";
+
 import { Separator } from "@/styles/login-styles";
 import { StyledSelect } from "@/styles/table-styles";
+import { Minus, Plus } from "lucide-react";
 import React from "react";
 
-interface JobCriteriaFormProps {
-    formData: {
-        jobDescId: string;
-        minLevelEducationId: string;
-        minExperienceYears: number;
-        langages: {
-            langageId: string;
-            levelId: string;
-        }[];
-    };
+interface Props {
+  formData: JobCriteriaFormDTO;
+  fieldErrors?: { [key: string]: any };
 
-    levelEducations: DocumentDTO[];
-    speakingLevels: SpeakingLevelDTO[];
-    langages: LangageDTO[];
+  levelEducations: DocumentDTO[];
+  speakingLevels: SpeakingLevelDTO[];
+  langages: LangageDTO[];
 
-    fieldErrors?: { [key: string]: string[] };
+  handleFieldChange: (name: keyof JobCriteriaFormDTO, value: any) => void;
+  handleLevelEducationChange: (
+    field: keyof LevelEducationCriteriaForm,
+    value: any
+  ) => void;
 
-    handleInputChange: (
-        e: {
-            target: {
-                name: keyof JobCriteriaFormProps["formData"];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                value: any;
-            };
-        }
-    ) => void;
+  updateExperience: (
+    index: number,
+    field: keyof ExperienceCriteriaForm,
+    value: number
+  ) => void;
+
+  addExperience: () => void;
+  removeExperience: (index: number) => void;
+
+  updateLangage: (
+    index: number,
+    field: keyof LangageSkillCriteriaForm,
+    value: any
+  ) => void;
+
+  addLangage: () => void;
+  removeLangage: (index: number) => void;
 }
 
-const JobCriteriaForm: React.FC<JobCriteriaFormProps> = ({
-    levelEducations,
-    speakingLevels,
-    langages,
-    handleInputChange,
-    formData,
-    fieldErrors = {}
+const JobCriteriaForm: React.FC<Props> = ({
+  formData,
+  fieldErrors = {},
+  levelEducations,
+  speakingLevels,
+  langages,
+
+  handleFieldChange,
+  handleLevelEducationChange,
+
+  updateExperience,
+  addExperience,
+  removeExperience,
+
+  updateLangage,
+  addLangage,
+  removeLangage
 }) => {
 
-    /* ========= LANGAGES ========= */
-    const addLangage = () => {
-        const newLangages = [...formData.langages, { langageId: "", levelId: "" }];
-        handleInputChange({ target: { name: "langages", value: newLangages } });
-    };
+  const getExperienceError = (index: number, field: keyof ExperienceCriteriaForm | string) => {
+    return fieldErrors.experiences?.[index]?.[field]?.join(", ");
+  };
 
-    const removeLangage = (index: number) => {
-        const newLangages = [...formData.langages];
-        newLangages.splice(index, 1);
-        handleInputChange({ target: { name: "langages", value: newLangages } });
-    };
+  const getLangageError = (index: number, field: keyof LangageSkillCriteriaForm | string) => {
+    return fieldErrors.langages?.[index]?.[field]?.join(", ");
+  };
 
-    const updateLangage = (index: number, field: "langageId" | "levelId", value: string) => {
-        const newLangages = [...formData.langages];
-        newLangages[index] = {
-            ...newLangages[index],
-            [field]: value
-        };
-        handleInputChange({ target: { name: "langages", value: newLangages } });
-    };
+  return (
+    <>
+      {/* ================= EDUCATION ================= */}
+      <EditableSectionTitle
+        title="Niveau d'étude"
+        value={formData.levelEducationsPoints}
+        onChange={(val) => handleFieldChange("levelEducationsPoints", val)}
+      />
 
-    return (
-        <>
-            <FormSectionTitle>Compétences de base</FormSectionTitle>
+      {formData.levelEducationsPoints > 0 && (
+        <FormTable>
+          <tbody>
+            <FormRow>
+              <FormFieldCell>
+                <FormLabelRequired>Niveau</FormLabelRequired>
+                <StyledSelect
+                  value={formData.levelEducation.levelId}
+                  onChange={(e) =>
+                    handleLevelEducationChange("levelId", e.target.value)
+                  }
+                >
+                  <option value="">-- Choisir un niveau --</option>
+                  {levelEducations.map(l => (
+                    <option key={l.id} value={l.id}>{l.name}</option>
+                  ))}
+                </StyledSelect>
 
-            <FormTable>
-                <tbody>
-                    {/* Niveau étude */}
-                    <FormRow>
-                        <FormFieldCell colSpan={2}>
-                            <FormLabelRequired>Niveau d'étude minimum</FormLabelRequired>
+                {fieldErrors.levelEducation?.levelId && (
+                  <ErrorMessage>{fieldErrors.levelEducation.levelId.join(", ")}</ErrorMessage>
+                )}
+              </FormFieldCell>
 
-                            <StyledSelect
-                                value={formData.minLevelEducationId || ""}
-                                onChange={(e) =>
-                                    handleInputChange({
-                                        target: {
-                                            name: "minLevelEducationId",
-                                            value: e.target.value
-                                        }
-                                    })
-                                }
-                            >
-                                <option value="" disabled>-- Sélectionner un niveau --</option>
+              <FormFieldCell>
+                <FormLabelRequired>Points</FormLabelRequired>
+                <FormInput
+                  type="number"
+                  value={formData.levelEducation.points}
+                  onChange={(e) =>
+                    handleLevelEducationChange("points", Number(e.target.value))
+                  }
+                />
 
-                                {levelEducations.map((level) => (
-                                    <option key={level.id} value={level.id}>
-                                        {level.name}
-                                    </option>
-                                ))}
-                            </StyledSelect>
+                {fieldErrors.levelEducation?.points && (
+                  <ErrorMessage>{fieldErrors.levelEducation.points.join(", ")}</ErrorMessage>
+                )}
+              </FormFieldCell>
+            </FormRow>
+          </tbody>
+        </FormTable>
+      )}
 
-                            {fieldErrors.minLevelEducationId && (
-                                <ErrorMessage>
-                                    {fieldErrors.minLevelEducationId.join(", ")}
-                                </ErrorMessage>
-                            )}
-                        </FormFieldCell>
-                    </FormRow>
+      <Separator />
 
-                    {/* Expérience */}
-                    <FormRow>
-                        <FormFieldCell>
-                            <FormLabelRequired>Années d'expérience professionnel</FormLabelRequired>
+      {/* ================= EXPERIENCES ================= */}
+      <EditableSectionTitle
+        title="Expériences professionnelles"
+        value={formData.experiencesPoints}
+        onChange={(val) => handleFieldChange("experiencesPoints", val)}
+      />
 
-                            <FormInput
-                                type="text"
-                                value={formData.minExperienceYears.toString()}
-                                onChange={(e) =>
-                                    handleInputChange({
-                                        target: {
-                                            name: "minExperienceYears",
-                                            value: Number(e.target.value)
-                                        }
-                                    })
-                                }
-                            />
+      {formData.experiencesPoints > 0 && (
+        <FormTable>
+          <tbody>
+            {formData.experiences.map((exp, index) => (
+              <FormRow key={index}>
+                <FormFieldCell>
+                  <FormLabelRequired>Année minimum</FormLabelRequired>
+                  <FormInput
+                    type="number"
+                    value={exp.minimum}
+                    onChange={(e) =>
+                      updateExperience(index, "minimum", Number(e.target.value))
+                    }
+                  />
 
-                            {fieldErrors.minExperienceYears && (
-                                <ErrorMessage>
-                                    {fieldErrors.minExperienceYears.join(", ")}
-                                </ErrorMessage>
-                            )}
-                        </FormFieldCell>
-                    </FormRow>
-                </tbody>
-            </FormTable>
+                  {getExperienceError(index, "minimum") && (
+                    <ErrorMessage>{getExperienceError(index, "minimum")}</ErrorMessage>
+                  )}
+                  {getExperienceError(index, "range") && (
+                    <ErrorMessage>{getExperienceError(index, "range")}</ErrorMessage>
+                  )}
+                  {getExperienceError(index, "overlap") && (
+                    <ErrorMessage>{getExperienceError(index, "overlap")}</ErrorMessage>
+                  )}
+                </FormFieldCell>
 
-            <Separator />
+                <FormFieldCell>
+                  <FormLabelRequired>Année maximum</FormLabelRequired>
+                  <FormInput
+                    type="number"
+                    value={exp.maximum}
+                    onChange={(e) =>
+                      updateExperience(index, "maximum", Number(e.target.value))
+                    }
+                  />
 
-            <FormSectionTitle>Compétences linguistiques</FormSectionTitle>
+                  {getExperienceError(index, "maximum") && (
+                    <ErrorMessage>{getExperienceError(index, "maximum")}</ErrorMessage>
+                  )}
+                </FormFieldCell>
 
-            <FormTable>
-                <tbody>
-                    {formData.langages.map((lang, index) => (
-                        <FormRow key={index}>
-                            <FormFieldCell colSpan={2}>
-                                <FormLabelRequired>Langue</FormLabelRequired>
+                <FormFieldCell>
+                  <FormLabelRequired>Points</FormLabelRequired>
+                  <FormInput
+                    type="number"
+                    value={exp.points}
+                    onChange={(e) =>
+                      updateExperience(index, "points", Number(e.target.value))
+                    }
+                  />
 
-                                <StyledSelect
-                                    value={lang.langageId}
-                                    onChange={(e) =>
-                                        updateLangage(index, "langageId", e.target.value)
-                                    }
-                                >
-                                    <option value="" disabled>-- Sélectionner une langue --</option>
-                                    {langages.map((l) => (
-                                        <option key={l.id} value={l.id}>{l.name}</option>
-                                    ))}
-                                </StyledSelect>
-                            </FormFieldCell>
+                  {getExperienceError(index, "points") && (
+                    <ErrorMessage>{getExperienceError(index, "points")}</ErrorMessage>
+                  )}
+                </FormFieldCell>
 
-                            <FormFieldCell colSpan={2}>
-                                <FormLabelRequired>Niveau</FormLabelRequired>
+                <FormFieldCell>
+                  {index > 0 && (
+                    <button type="button" onClick={() => removeExperience(index)}>
+                      <Minus size={16} />
+                    </button>
+                  )}
+                </FormFieldCell>
+              </FormRow>
+            ))}
 
-                                <StyledSelect
-                                    value={lang.levelId}
-                                    onChange={(e) =>
-                                        updateLangage(index, "levelId", e.target.value)
-                                    }
-                                >
-                                    <option value="" disabled>-- Sélectionner un niveau --</option>
-                                    {speakingLevels.map((lvl) => (
-                                        <option key={lvl.id} value={lvl.id}>
-                                            {lvl.name} ({lvl.code})
-                                        </option>
-                                    ))}
-                                </StyledSelect>
-                            </FormFieldCell>
+            <FormRow>
+              <FormFieldCell colSpan={4}>
+                <button type="button" onClick={addExperience}>
+                  <Plus size={16} /> Ajouter une expérience
+                </button>
+              </FormFieldCell>
+            </FormRow>
+          </tbody>
+        </FormTable>
+      )}
 
-                            <FormFieldCell>
-                                {index > 0 && (
-                                    <button type="button" onClick={() => removeLangage(index)}>
-                                        ❌
-                                    </button>
-                                )}
-                            </FormFieldCell>
-                        </FormRow>
+      <Separator />
+
+      {/* ================= LANGUES ================= */}
+      <EditableSectionTitle
+        title="Compétences linguistiques"
+        value={formData.langagesPoints}
+        onChange={(val) => handleFieldChange("langagesPoints", val)}
+      />
+
+      {formData.langagesPoints > 0 && (
+        <FormTable>
+          <tbody>
+            {formData.langages.map((lang, index) => (
+              <FormRow key={index}>
+                <FormFieldCell>
+                  <StyledSelect
+                    value={lang.langageId}
+                    onChange={(e) =>
+                      updateLangage(index, "langageId", e.target.value)
+                    }
+                  >
+                    <option value="">-- Choisir une langue --</option>
+                    {langages.map(l => (
+                      <option key={l.id} value={l.id}>{l.name}</option>
                     ))}
+                  </StyledSelect>
 
-                    {/* erreurs */}
-                    {fieldErrors.langages?.length > 0 && (
-                        <FormRow>
-                            <FormFieldCell colSpan={4}>
-                                <ErrorMessage>{fieldErrors.langages.join(", ")}</ErrorMessage>
-                            </FormFieldCell>
-                        </FormRow>
-                    )}
+                  {getLangageError(index, "langageId") && (
+                    <ErrorMessage>{getLangageError(index, "langageId")}</ErrorMessage>
+                  )}
+                </FormFieldCell>
 
-                    {/* bouton add */}
-                    <FormRow>
-                        <FormFieldCell colSpan={4}>
-                            <button type="button" onClick={addLangage}>
-                                + Ajouter une langue
-                            </button>
-                        </FormFieldCell>
-                    </FormRow>
-                </tbody>
-            </FormTable>
-        </>
-    );
+                <FormFieldCell>
+                  <StyledSelect
+                    value={lang.levelId}
+                    onChange={(e) =>
+                      updateLangage(index, "levelId", e.target.value)
+                    }
+                  >
+                    <option value="">-- Choisir le niveau --</option>
+                    {speakingLevels.map(l => (
+                      <option key={l.id} value={l.id}>{l.name}</option>
+                    ))}
+                  </StyledSelect>
+
+                  {getLangageError(index, "levelId") && (
+                    <ErrorMessage>{getLangageError(index, "levelId")}</ErrorMessage>
+                  )}
+                </FormFieldCell>
+
+                <FormFieldCell>
+                  <FormInput
+                    type="number"
+                    value={lang.points}
+                    onChange={(e) =>
+                      updateLangage(index, "points", Number(e.target.value))
+                    }
+                  />
+
+                  {getLangageError(index, "points") && (
+                    <ErrorMessage>{getLangageError(index, "points")}</ErrorMessage>
+                  )}
+                </FormFieldCell>
+
+                <FormFieldCell>
+                  {index > 0 && (
+                    <button type="button" onClick={() => removeLangage(index)}>
+                      <Minus size={16} />
+                    </button>
+                  )}
+                </FormFieldCell>
+              </FormRow>
+            ))}
+
+            <FormRow>
+              <FormFieldCell colSpan={4}>
+                <button type="button" onClick={addLangage}>
+                  <Plus size={16} /> Ajouter une langue
+                </button>
+              </FormFieldCell>
+            </FormRow>
+          </tbody>
+        </FormTable>
+      )}
+
+      <Separator />
+
+      {/* ================= PRESENTATION ================= */}
+      <EditableSectionTitle
+        title="Clarté du CV + LM"
+        value={formData.presentationsPoints}
+        onChange={(val) => handleFieldChange("presentationsPoints", val)}
+      />
+
+      {/* ================= FORMATIONS ================= */}
+      <EditableSectionTitle
+        title="Diplômes et/ou Formations"
+        value={formData.formationsPoints}
+        onChange={(val) => handleFieldChange("formationsPoints", val)}
+      />
+    </>
+  );
 };
 
 export default JobCriteriaForm;

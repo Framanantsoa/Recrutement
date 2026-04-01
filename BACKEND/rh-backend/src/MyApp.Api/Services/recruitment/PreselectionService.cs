@@ -7,8 +7,9 @@ namespace MyApp.Api.Services.recruitment;
 public interface IPreselectionService
 {
     Task<List<Langage>> GetAllLangagesAsync();
+    Task<List<PreselectionCriteria>> GetAllPreselectionCriteriaAsync();
     Task<List<SpeakingLevel>> GetAllSpeakingLevelsAsync();
-    // Task AddJobPreselectionCriteria(JobCriteriaFormDTO data);
+    Task AddJobPreselectionCriteria(JobCriteriaFormDTO data);
 }
 
 
@@ -35,6 +36,18 @@ public class PreselectionService(
     }
 
 
+    public async Task<List<PreselectionCriteria>> GetAllPreselectionCriteriaAsync() {
+        try {
+            _logger.LogInformation("Recherche des critères en cours ...");
+            return await _repo.GetAllPreselectionCriteriaAsync();
+        }
+        catch(Exception ex) {
+            _logger.LogError(ex, "Erreur lors de la recherche des critères");
+            throw;
+        }
+    }
+
+
     public async Task<List<SpeakingLevel>> GetAllSpeakingLevelsAsync() {
         try {
             _logger.LogInformation("Recherche des niveaux de langue en cours ...");
@@ -46,56 +59,163 @@ public class PreselectionService(
         }
     }
 
-    // public async Task AddJobPreselectionCriteria(JobCriteriaFormDTO data) {
-    //     try {
-    //         _logger.LogInformation("Insertion des critères de présélection d'un TDR en cours ...");
-    //         await _dbService.BeginTransactionAsync();        
-    
-    //     // 1. Création du threshold
-    //         var criteria = new CriteriaThreshold {
-    //             MinLevelEducationId = data.MinLevelEducationId,
-    //             MinExperienceYears = data.MinExperienceYears
-    //         };
-    //         await _repo.AddCriteriaThreshold(criteria);
+    public async Task AddJobPreselectionCriteria(JobCriteriaFormDTO data) {
+        try {
+            _logger.LogInformation("Insertion des critères de présélection...");
 
-    //     // 2. Récupération en une seule requête
-    //         var langageIds = data.Langages.Select(l => l.LangageId).ToList();
-    //         var levelIds = data.Langages.Select(l => l.LevelId).ToList();
+            await _dbService.BeginTransactionAsync();
 
-    //         var speakingLangages = await _repo.GetLangageSpeakings(langageIds, levelIds);
+            // =========================
+            // 1. Vérifier Job
+            // =========================
+            var job = await _jobRepo.GetJobDescriptionById(data.JobDescId)
+                ?? throw new ArgumentException("JobDescription introuvable");
 
-    //     // 3. Mapping en mémoire avec Dictionary pour lookup O(1)
-    //         var dict = speakingLangages.ToDictionary(
-    //             s => (s.LangageId, s.SpeakingLevelId),
-    //             s => s
-    //         );
+            // =========================
+            // 2. VALIDATION AVANT INSERT (CRITIQUE 🔥)
+            // =========================
 
-    //         var speakingCriteriaList = data.Langages.Select(lang => {
-    //             if (!dict.TryGetValue((lang.LangageId, lang.LevelId), out var speaking))
-    //                 throw new ArgumentException($"Niveau de langue non trouvé pour {lang.LangageId}/{lang.LevelId}");
+            // Vérifier langues AVANT insertion
+            var langageIds = data.Langages.Select(l => l.LangageId).ToList();
+            var levelIds = data.Langages.Select(l => l.LevelId).ToList();
 
-    //             return new SpeakingCriteriaThreshold {
-    //                 CriteriaThresholdId = criteria.Id,
-    //                 MinSpeakingLevelId = speaking.Id
-    //             };
-    //         }).ToList();
+            var speakingLangages = await _repo.GetLangageSpeakings(langageIds, levelIds);
 
-    //     // 4. Insert en batch
-    //         await _repo.AddSpeakingCriteriaThresholdRange(speakingCriteriaList);
+            var dict = speakingLangages.ToDictionary(
+                s => (s.LangageId, s.SpeakingLevelId),
+                s => s
+            );
 
-    //     // 5. Lien avec le TDR  
-    //         var jobCriteria = new JobDescriptionCriteria {
-    //             JobDescriptionId = data.JobDescId,
-    //             CriteriaThresholdId = criteria.Id
-    //         };
-    //         await _repo.AddJobPreselectionCriteria(jobCriteria);
+            var missingLangs = data.Langages
+                .Where(l => !dict.ContainsKey((l.LangageId, l.LevelId)))
+                .ToList();
 
-    //     // Application des transactions
-    //         await _dbService.CommitAsync();
-    //     }
-    //     catch(Exception ex) {
-    //         _logger.LogError(ex, "Erreur lors de l'insertion des critères de présélection d'un TDR");
-    //         throw;
-    //     }
-    // }
+            if (missingLangs.Any())
+            {
+                throw new ArgumentException("Certaines langues/niveaux sont invalides");
+            }
+
+            // =========================
+            // 3. EDUCATION
+            // =========================
+            var educationCriteria = new JobDescriptionCriteria
+            {
+                JobDescriptionId = data.JobDescId,
+                PreselectionCriteriaId = "CRIT_001",
+                MaxPoints = data.LevelEducationsPoints, // 🔥 corrigé
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _repo.AddJobPreselectionCriteria(educationCriteria);
+
+            await _repo.AddLevelEducation(new JobCriteriaLevelEducation
+            {
+                JobCriteriaId = educationCriteria.Id,
+                LevelEducationId = data.LevelEducation.LevelId,
+                Points = data.LevelEducation.Points
+            });
+
+            // =========================
+            // 4. FORMATION
+            // =========================
+            var formationCriteria = new JobDescriptionCriteria
+            {
+                JobDescriptionId = data.JobDescId,
+                PreselectionCriteriaId = "CRIT_002",
+                MaxPoints = data.FormationsPoints,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _repo.AddJobPreselectionCriteria(formationCriteria);
+
+            await _repo.AddFormation(new JobCriteriaFormation
+            {
+                JobCriteriaId = formationCriteria.Id,
+                Points = data.FormationsPoints
+            });
+
+            // =========================
+            // 5. PRESENTATION
+            // =========================
+            var presentationCriteria = new JobDescriptionCriteria
+            {
+                JobDescriptionId = data.JobDescId,
+                PreselectionCriteriaId = "CRIT_005",
+                MaxPoints = data.PresentationsPoints,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _repo.AddJobPreselectionCriteria(presentationCriteria);
+
+            await _repo.AddPresentation(new JobCriteriaPresentation
+            {
+                JobCriteriaId = presentationCriteria.Id,
+                Points = data.PresentationsPoints
+            });
+
+            // =========================
+            // 6. EXPERIENCE
+            // =========================
+            var experienceCriteria = new JobDescriptionCriteria
+            {
+                JobDescriptionId = data.JobDescId,
+                PreselectionCriteriaId = "CRIT_003",
+                MaxPoints = data.ExperiencesPoints, // 🔥 maintenant depuis DTO
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _repo.AddJobPreselectionCriteria(experienceCriteria);
+
+            var experiences = data.Experiences.Select(exp => new JobCriteriaExperience
+            {
+                JobCriteriaId = experienceCriteria.Id,
+                MinYear = exp.Minimum,
+                MaxYear = exp.Maximum,
+                Points = exp.Points
+            }).ToList();
+
+            await _repo.AddExperienceRange(experiences);
+
+            // =========================
+            // 7. LANGUES
+            // =========================
+            var languageCriteria = new JobDescriptionCriteria
+            {
+                JobDescriptionId = data.JobDescId,
+                PreselectionCriteriaId = "CRIT_004",
+                MaxPoints = data.LangagesPoints, // 🔥 corrigé
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _repo.AddJobPreselectionCriteria(languageCriteria);
+
+            var speakingList = data.Langages.Select(lang =>
+            {
+                var speaking = dict[(lang.LangageId, lang.LevelId)];
+
+                return new JobCriteriaSpeaking
+                {
+                    JobCriteriaId = languageCriteria.Id,
+                    LangageSpeakingId = speaking.Id,
+                    Points = lang.Points
+                };
+            }).ToList();
+
+            await _repo.AddSpeakingRange(speakingList);
+
+            // =========================
+            // 8. COMMIT FINAL (🔥 tout ou rien)
+            // =========================
+            await _dbService.CommitAsync();
+
+            _logger.LogInformation("Insertion réussie");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur insertion critères");
+
+            await _dbService.RollbackAsync();
+            throw;
+        }
+    }
 }

@@ -11,16 +11,25 @@ public interface IPreselectionRepository
     Task<List<LangageSpeaking>> GetLangageSpeakings(List<string> langageIds, List<string> levelIds);
     Task<List<SpeakingLevel>> GetAllSpeakingLevelsAsync();
     Task<List<PreselectionCriteria>> GetAllPreselectionCriteriaAsync();
+
+    Task AddPreselectionCriteria(PreselectionCriteria data);
     Task AddJobPreselectionCriteria(JobDescriptionCriteria data);
+
+    Task AddLevelEducation(JobCriteriaLevelEducation data);
+    Task AddFormation(JobCriteriaFormation data);
+    Task AddPresentation(JobCriteriaPresentation data);
+
+    Task AddExperienceRange(List<JobCriteriaExperience> data);
+    Task AddSpeakingRange(List<JobCriteriaSpeaking> data);
 }
 
 
 public class PreselectionRepository(
     AppDbContext context, ISequenceGenerator seq
 ) : IPreselectionRepository {
+
     private readonly AppDbContext _dbCtx = context;
     private readonly ISequenceGenerator _seq = seq;
-
 
     public async Task<List<Langage>> GetAllLangagesAsync() {
         return await _dbCtx.Langages.AsNoTracking().ToListAsync();
@@ -34,7 +43,6 @@ public class PreselectionRepository(
         return await _dbCtx.PreselectionCriterias.AsNoTracking().ToListAsync();
     }
 
-
     public async Task<List<LangageSpeaking>> GetLangageSpeakings(
         List<string> langageIds, List<string> levelIds)
     {
@@ -47,14 +55,49 @@ public class PreselectionRepository(
             )
             .ToListAsync();
 
-        if (result.Count == 0)
+        if (!result.Any())
             throw new ArgumentException("Aucun niveau de langue trouvé");
 
         return result;
     }
 
+    // INSERTS
+    public async Task AddPreselectionCriteria(PreselectionCriteria data) {
+        data.Id = await _seq.GenerateObjectId("PRESEL", "CRIT/PRE");
+        await _dbCtx.PreselectionCriterias.AddAsync(data);
+    }
+
     public async Task AddJobPreselectionCriteria(JobDescriptionCriteria data) {
         data.Id = await _seq.GenerateObjectId("JOB_CRIT", "TDR/CRIT");
         await _dbCtx.JobDescriptionCriterias.AddAsync(data);
+    }
+
+    public async Task AddLevelEducation(JobCriteriaLevelEducation data) {
+        data.Id = await _seq.GenerateObjectId("JC_LE", "CRIT/LE");
+        await _dbCtx.JobCriteriaLevelEducations.AddAsync(data);
+    }
+
+    public async Task AddFormation(JobCriteriaFormation data) {
+        data.Id = await _seq.GenerateObjectId("JC_FORM", "CRIT/FORM");
+        await _dbCtx.JobCriteriaFormations.AddAsync(data);
+    }
+
+    public async Task AddPresentation(JobCriteriaPresentation data) {
+        data.Id = await _seq.GenerateObjectId("JC_PRE", "CRIT/PRES");
+        await _dbCtx.JobCriteriaPresentations.AddAsync(data);
+    }
+
+    public async Task AddExperienceRange(List<JobCriteriaExperience> data) {
+        foreach (var item in data)
+            item.Id = await _seq.GenerateObjectId("JC_EXP", "CRIT/EXP");
+
+        await _dbCtx.JobCriteriaExperiences.AddRangeAsync(data);
+    }
+
+    public async Task AddSpeakingRange(List<JobCriteriaSpeaking> data) {
+        foreach (var item in data)
+            item.Id = await _seq.GenerateObjectId("JC_LANG", "CRIT/LANG");
+
+        await _dbCtx.JobCriteriaSpeakings.AddRangeAsync(data);
     }
 }

@@ -24,8 +24,8 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit }) => {
 
   const [isCriteriaOpen, setIsCriteriaOpen] = useState(false);
 
-  // const userData = JSON.parse(localStorage.getItem("user") || "{}");
-  // const userId = userData?.userId || "";
+  const userData = JSON.parse(localStorage.getItem("user") || "{}");
+  const userId = userData?.userId || "";
 
   // const canExportPDF = useHasHabilitation(userId, "Exporter PDF TDR");
   // const canModify = useHasHabilitation(userId, "Modifier TDR");
@@ -59,10 +59,11 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit }) => {
               </ButtonConfirm>
             {/* )} */}
 
-            {job.lastStatus.toLowerCase() === "en attente" ? (
+            {(job.lastStatus.toLowerCase() === "en attente") ? (
               <ButtonConfirmSecondary
                 className="tdr-btn"
                 onClick={() => onEdit(job.id)}
+                disabled={userId!==details.applicantUserId}
               >
                 <FaPen /> Modifier
               </ButtonConfirmSecondary>

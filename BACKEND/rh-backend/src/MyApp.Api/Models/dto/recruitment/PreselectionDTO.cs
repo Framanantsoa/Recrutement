@@ -23,12 +23,38 @@ public class UpdateCriteriaCoefficientDTO
 }
 
 
+public class LevelEducationCriteriaForm
+{
+    public string LevelId { get; set; } = null!;
+    public decimal Points { get; set; }
+}
+
+public class ExperienceCriteriaForm
+{
+    public short Minimum { get; set; }
+    public short Maximum { get; set; }
+    public decimal Points { get; set; }
+}
+
+public class LangageSkillCriteriaForm
+{
+    public string LangageId { get; set; } = null!;
+    public string LevelId { get; set; } = null!;
+    public decimal Points { get; set; }
+}
+
 public class JobCriteriaFormDTO
 {
     public string JobDescId { get; set; } = null!;
-    public string MinLevelEducationId { get; set; } = null!;
-    public short MinExperienceYears { get; set; }
-    public List<LangageSkillFormDTO> Langages { get; set; } = [];
+    public LevelEducationCriteriaForm LevelEducation { get; set; } = null!;
+    public List<ExperienceCriteriaForm> Experiences { get; set; } = [];
+    public List<LangageSkillCriteriaForm> Langages { get; set; } = [];
+
+    public decimal FormationsPoints { get; set; }
+    public decimal PresentationsPoints { get; set; }
+    public decimal ExperiencesPoints { get; set; }
+    public decimal LangagesPoints { get; set; }
+    public decimal LevelEducationsPoints { get; set; }
 }
 
 public class SpeakingCriteriaDTO

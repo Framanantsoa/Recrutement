@@ -46,7 +46,7 @@ public class LangageSkillCriteriaForm
 public class JobCriteriaFormDTO
 {
     public string JobDescId { get; set; } = null!;
-    public LevelEducationCriteriaForm LevelEducation { get; set; } = null!;
+    public List<LevelEducationCriteriaForm> LevelEducation { get; set; } = null!;
     public List<ExperienceCriteriaForm> Experiences { get; set; } = [];
     public List<LangageSkillCriteriaForm> Langages { get; set; } = [];
 

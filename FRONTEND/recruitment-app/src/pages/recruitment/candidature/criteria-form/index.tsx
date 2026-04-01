@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from "react";
+import React, { useEffect } from "react";
 import { Save, X } from "lucide-react";
 
 import {
@@ -34,29 +34,38 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
   jobId,
   onClose
 }) => {
-  const { data: langagesResp } = useSearchLangages();
-  const { data: speakingResp } = useSearchSpeakingLevels();
-  const { data: levelResp } = useGetAllLevelEducations();
+    const { data: langagesResp } = useSearchLangages();
+    const { data: speakingResp } = useSearchSpeakingLevels();
+    const { data: levelResp } = useGetAllLevelEducations();
 
-  const addCriteria = useAddJobCriteria();
+    const addCriteria = useAddJobCriteria();
 
-  const {
-    formData,
-    fieldErrors,
+    const {
+        formData,
+        fieldErrors,
+        initializeLevels,
 
-    handleFieldChange,
-    handleLevelEducationChange,
+        handleFieldChange,
 
-    updateExperience,
-    addExperience,
-    removeExperience,
+        updateExperience,
+        addExperience,
+        removeExperience,
 
-    updateLangage,
-    addLangage,
-    removeLangage,
+        updateLevelEducation,
 
-    validate
-  } = useSaveCriteria(jobId);
+        updateLangage,
+        addLangage,
+        removeLangage,
+
+        validate
+    } = useSaveCriteria(jobId);
+
+// Chargement des données
+    useEffect(() => {
+        if (levelResp?.data) {
+          initializeLevels(levelResp.data);
+        }
+      }, [levelResp]);
 
     type AlertType = "error" | "info" | "success" | "warning";
 
@@ -138,7 +147,7 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
                              langages={langagesResp?.data || []}
 
                              handleFieldChange={handleFieldChange}
-                             handleLevelEducationChange={handleLevelEducationChange}
+                             updateLevelEducation={updateLevelEducation}
 
                              updateExperience={updateExperience}
                              addExperience={addExperience}

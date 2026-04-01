@@ -33,15 +33,17 @@ interface Props {
   langages: LangageDTO[];
 
   handleFieldChange: (name: keyof JobCriteriaFormDTO, value: any) => void;
-  handleLevelEducationChange: (
-    field: keyof LevelEducationCriteriaForm,
-    value: any
-  ) => void;
 
   updateExperience: (
     index: number,
     field: keyof ExperienceCriteriaForm,
     value: number
+  ) => void;
+
+  updateLevelEducation: (
+    index: number,
+    field: keyof LevelEducationCriteriaForm,
+    value: any
   ) => void;
 
   addExperience: () => void;
@@ -65,7 +67,8 @@ const JobCriteriaForm: React.FC<Props> = ({
   langages,
 
   handleFieldChange,
-  handleLevelEducationChange,
+
+  updateLevelEducation,
 
   updateExperience,
   addExperience,
@@ -84,9 +87,15 @@ const JobCriteriaForm: React.FC<Props> = ({
     return fieldErrors.langages?.[index]?.[field]?.join(", ");
   };
 
+  console.log("Erreurs :", fieldErrors);
+
   return (
     <>
       {/* ================= EDUCATION ================= */}
+      {fieldErrors.totalPoints && fieldErrors.totalPoints.length > 0 && (
+        <ErrorMessage>{fieldErrors.totalPoints.join(", ")}</ErrorMessage>
+      )}
+
       <EditableSectionTitle
         title="Niveau d'étude"
         value={formData.levelEducationsPoints}
@@ -96,41 +105,40 @@ const JobCriteriaForm: React.FC<Props> = ({
       {formData.levelEducationsPoints > 0 && (
         <FormTable>
           <tbody>
-            <FormRow>
-              <FormFieldCell>
-                <FormLabelRequired>Niveau</FormLabelRequired>
-                <StyledSelect
-                  value={formData.levelEducation.levelId}
-                  onChange={(e) =>
-                    handleLevelEducationChange("levelId", e.target.value)
-                  }
-                >
-                  <option value="">-- Choisir un niveau --</option>
-                  {levelEducations.map(l => (
-                    <option key={l.id} value={l.id}>{l.name}</option>
-                  ))}
-                </StyledSelect>
+            {formData.levelEducation.map((lvl, index) => {
+              const levelName = levelEducations.find(l => l.id === lvl.levelId)?.name;
 
-                {fieldErrors.levelEducation?.levelId && (
-                  <ErrorMessage>{fieldErrors.levelEducation.levelId.join(", ")}</ErrorMessage>
-                )}
-              </FormFieldCell>
+              return (
+                <FormRow key={lvl.levelId}>
+                  <FormFieldCell>
+                    <FormLabelRequired>Niveau</FormLabelRequired>
+                    <FormInput
+                      type="text"
+                      value={levelName || ""}
+                      disabled
+                    />
+                  </FormFieldCell>
 
-              <FormFieldCell>
-                <FormLabelRequired>Points</FormLabelRequired>
-                <FormInput
-                  type="number"
-                  value={formData.levelEducation.points}
-                  onChange={(e) =>
-                    handleLevelEducationChange("points", Number(e.target.value))
-                  }
-                />
+                  <FormFieldCell>
+                    <FormLabelRequired>Points</FormLabelRequired>
+                    <FormInput
+                      type="number"
+                      max={formData.levelEducationsPoints}
+                      value={lvl.points}
+                      onChange={(e) =>
+                        updateLevelEducation(index, "points", Number(e.target.value))
+                      }
+                    />
 
-                {fieldErrors.levelEducation?.points && (
-                  <ErrorMessage>{fieldErrors.levelEducation.points.join(", ")}</ErrorMessage>
-                )}
-              </FormFieldCell>
-            </FormRow>
+                    {fieldErrors.levelEducation?.[index]?.points && (
+                      <ErrorMessage>
+                        {fieldErrors.levelEducation[index].points.join(", ")}
+                      </ErrorMessage>
+                    )}
+                  </FormFieldCell>
+                </FormRow>
+              );
+            })}
           </tbody>
         </FormTable>
       )}
@@ -154,6 +162,7 @@ const JobCriteriaForm: React.FC<Props> = ({
                   <FormInput
                     type="number"
                     value={exp.minimum}
+                    min={index > 0 ? formData.experiences[index - 1].maximum + 1 : 0}
                     onChange={(e) =>
                       updateExperience(index, "minimum", Number(e.target.value))
                     }
@@ -189,6 +198,7 @@ const JobCriteriaForm: React.FC<Props> = ({
                   <FormLabelRequired>Points</FormLabelRequired>
                   <FormInput
                     type="number"
+                    max={formData.experiencesPoints}
                     value={exp.points}
                     onChange={(e) =>
                       updateExperience(index, "points", Number(e.target.value))
@@ -274,6 +284,7 @@ const JobCriteriaForm: React.FC<Props> = ({
                 <FormFieldCell>
                   <FormInput
                     type="number"
+                    max={formData.langagesPoints}
                     value={lang.points}
                     onChange={(e) =>
                       updateLangage(index, "points", Number(e.target.value))

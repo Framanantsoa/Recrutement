@@ -59,23 +59,18 @@ public class PreselectionService(
         }
     }
 
-    public async Task AddJobPreselectionCriteria(JobCriteriaFormDTO data) {
-        try {
+    public async Task AddJobPreselectionCriteria(JobCriteriaFormDTO data)
+    {
+        await _dbService.BeginTransactionAsync();
+
+        try
+        {
             _logger.LogInformation("Insertion des critères de présélection...");
 
-            await _dbService.BeginTransactionAsync();
-
-            // =========================
-            // 1. Vérifier Job
-            // =========================
             var job = await _jobRepo.GetJobDescriptionById(data.JobDescId)
                 ?? throw new ArgumentException("JobDescription introuvable");
 
-            // =========================
-            // 2. VALIDATION AVANT INSERT (CRITIQUE 🔥)
-            // =========================
-
-            // Vérifier langues AVANT insertion
+            // ================= VALIDATION LANGUES =================
             var langageIds = data.Langages.Select(l => l.LangageId).ToList();
             var levelIds = data.Langages.Select(l => l.LevelId).ToList();
 
@@ -86,38 +81,32 @@ public class PreselectionService(
                 s => s
             );
 
-            var missingLangs = data.Langages
-                .Where(l => !dict.ContainsKey((l.LangageId, l.LevelId)))
-                .ToList();
-
-            if (missingLangs.Any())
-            {
+            if (data.Langages.Any(l => !dict.ContainsKey((l.LangageId, l.LevelId))))
                 throw new ArgumentException("Certaines langues/niveaux sont invalides");
-            }
 
-            // =========================
-            // 3. EDUCATION
-            // =========================
+            // ================= EDUCATION =================
             var educationCriteria = new JobDescriptionCriteria
             {
                 JobDescriptionId = data.JobDescId,
                 PreselectionCriteriaId = "CRIT_001",
-                MaxPoints = data.LevelEducationsPoints, // 🔥 corrigé
+                MaxPoints = data.LevelEducationsPoints,
                 CreatedAt = DateTime.UtcNow
             };
-
             await _repo.AddJobPreselectionCriteria(educationCriteria);
+            await _dbService.SaveChangesAsync();
 
-            await _repo.AddLevelEducation(new JobCriteriaLevelEducation
+            foreach (var l in data.LevelEducation)
             {
-                JobCriteriaId = educationCriteria.Id,
-                LevelEducationId = data.LevelEducation.LevelId,
-                Points = data.LevelEducation.Points
-            });
+                await _repo.AddLevelEducation(new JobCriteriaLevelEducation
+                {
+                    JobCriteriaId = educationCriteria.Id,
+                    LevelEducationId = l.LevelId,
+                    Points = l.Points
+                });
+            }
+            await _dbService.SaveChangesAsync();
 
-            // =========================
-            // 4. FORMATION
-            // =========================
+            // ================= FORMATION =================
             var formationCriteria = new JobDescriptionCriteria
             {
                 JobDescriptionId = data.JobDescId,
@@ -127,16 +116,16 @@ public class PreselectionService(
             };
 
             await _repo.AddJobPreselectionCriteria(formationCriteria);
+            await _dbService.SaveChangesAsync();
 
             await _repo.AddFormation(new JobCriteriaFormation
             {
                 JobCriteriaId = formationCriteria.Id,
                 Points = data.FormationsPoints
             });
+            await _dbService.SaveChangesAsync();
 
-            // =========================
-            // 5. PRESENTATION
-            // =========================
+            // ================= PRESENTATION =================
             var presentationCriteria = new JobDescriptionCriteria
             {
                 JobDescriptionId = data.JobDescId,
@@ -146,75 +135,73 @@ public class PreselectionService(
             };
 
             await _repo.AddJobPreselectionCriteria(presentationCriteria);
+            await _dbService.SaveChangesAsync();
 
             await _repo.AddPresentation(new JobCriteriaPresentation
             {
                 JobCriteriaId = presentationCriteria.Id,
                 Points = data.PresentationsPoints
             });
+            await _dbService.SaveChangesAsync();
 
-            // =========================
-            // 6. EXPERIENCE
-            // =========================
-            var experienceCriteria = new JobDescriptionCriteria
-            {
-                JobDescriptionId = data.JobDescId,
-                PreselectionCriteriaId = "CRIT_003",
-                MaxPoints = data.ExperiencesPoints, // 🔥 maintenant depuis DTO
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _repo.AddJobPreselectionCriteria(experienceCriteria);
-
-            var experiences = data.Experiences.Select(exp => new JobCriteriaExperience
-            {
-                JobCriteriaId = experienceCriteria.Id,
-                MinYear = exp.Minimum,
-                MaxYear = exp.Maximum,
-                Points = exp.Points
-            }).ToList();
-
-            await _repo.AddExperienceRange(experiences);
-
-            // =========================
-            // 7. LANGUES
-            // =========================
+            // ================= LANGUES =================
             var languageCriteria = new JobDescriptionCriteria
             {
                 JobDescriptionId = data.JobDescId,
                 PreselectionCriteriaId = "CRIT_004",
-                MaxPoints = data.LangagesPoints, // 🔥 corrigé
+                MaxPoints = data.LangagesPoints,
                 CreatedAt = DateTime.UtcNow
             };
 
             await _repo.AddJobPreselectionCriteria(languageCriteria);
+            await _dbService.SaveChangesAsync();
 
-            var speakingList = data.Langages.Select(lang =>
+            foreach (var lang in data.Langages)
             {
                 var speaking = dict[(lang.LangageId, lang.LevelId)];
 
-                return new JobCriteriaSpeaking
+                await _repo.AddSpeaking(new JobCriteriaSpeaking
                 {
                     JobCriteriaId = languageCriteria.Id,
                     LangageSpeakingId = speaking.Id,
                     Points = lang.Points
-                };
-            }).ToList();
+                });
+            }
+            await _dbService.SaveChangesAsync();
 
-            await _repo.AddSpeakingRange(speakingList);
+            // ================= EXPERIENCE =================
+            var experienceCriteria = new JobDescriptionCriteria
+            {
+                JobDescriptionId = data.JobDescId,
+                PreselectionCriteriaId = "CRIT_003",
+                MaxPoints = data.ExperiencesPoints,
+                CreatedAt = DateTime.UtcNow
+            };
 
-            // =========================
-            // 8. COMMIT FINAL (🔥 tout ou rien)
-            // =========================
+            await _repo.AddJobPreselectionCriteria(experienceCriteria);
+            await _dbService.SaveChangesAsync();
+
+            foreach (var exp in data.Experiences)
+            {
+                await _repo.AddExperience(new JobCriteriaExperience
+                {
+                    JobCriteriaId = experienceCriteria.Id,
+                    MinYear = exp.Minimum,
+                    MaxYear = exp.Maximum,
+                    Points = exp.Points
+                });
+            }
+            await _dbService.SaveChangesAsync();
+
+            // ================= COMMIT =================
             await _dbService.CommitAsync();
 
             _logger.LogInformation("Insertion réussie");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erreur insertion critères");
-
             await _dbService.RollbackAsync();
+            _logger.LogError(ex, "Erreur insertion critères");
             throw;
         }
     }

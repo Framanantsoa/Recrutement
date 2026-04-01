@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 type FieldErrors = {
-  levelEducation?: { levelId?: string[], points?: string[] };
+  levelEducation?: { levelId?: string[], points?: string[] }[];
   formationsPoints?: string[];
   presentationsPoints?: string[];
   experiences?: { minimum?: string[], maximum?: string[], points?: string[], range?: string[], overlap?: string[] }[];
@@ -29,7 +29,7 @@ export interface LangageSkillCriteriaForm {
 
 export interface JobCriteriaFormDTO {
   jobDescId: string;
-  levelEducation: LevelEducationCriteriaForm;
+  levelEducation: LevelEducationCriteriaForm[];
   experiences: ExperienceCriteriaForm[];
   langages: LangageSkillCriteriaForm[];
 
@@ -43,7 +43,7 @@ export interface JobCriteriaFormDTO {
 const useSaveCriteria = (jobDescId: string) => {
   const initialState: JobCriteriaFormDTO = {
     jobDescId,
-    levelEducation: { levelId: "", points: 0 },
+    levelEducation: [{ levelId: "", points: 0 }],
     experiences: [{ minimum: 0, maximum: 0, points: 0 }],
     langages: [{ langageId: "", levelId: "", points: 0 }],
 
@@ -52,6 +52,16 @@ const useSaveCriteria = (jobDescId: string) => {
     experiencesPoints: 0,
     langagesPoints: 0,
     levelEducationsPoints: 0,
+  };
+
+  const initializeLevels = (levels: { id: string }[]) => {
+    setFormData(prev => ({
+      ...prev,
+      levelEducation: levels.map(l => ({
+        levelId: l.id,
+        points: 0
+      }))
+    }));
   };
 
   const [formData, setFormData] = useState<JobCriteriaFormDTO>(initialState);
@@ -116,15 +126,21 @@ const useSaveCriteria = (jobDescId: string) => {
   };
 
   // 🔹 Niveau d'éducation
-  const handleLevelEducationChange = (field: keyof LevelEducationCriteriaForm, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      levelEducation: {
-        ...prev.levelEducation,
+  const updateLevelEducation = (
+    index: number,
+    field: keyof LevelEducationCriteriaForm,
+    value: any
+  ) => {
+    setFormData(prev => {
+      const updated = [...prev.levelEducation];
+      updated[index] = {
+        ...updated[index],
         [field]: field === "points" ? Number(value) : value
-      }
-    }));
-    clearError(`levelEducation.${field}`);
+      };
+      return { ...prev, levelEducation: updated };
+    });
+  
+    clearError(`levelEducation[${index}].${field}`);
   };
 
   // 🔹 Expériences
@@ -198,14 +214,18 @@ const useSaveCriteria = (jobDescId: string) => {
   const validate = (): boolean => {
     const errors: FieldErrors = {};
 
-    // Niveau d'éducation
-    if (!formData.levelEducation.levelId || formData.levelEducation.points <= 0) {
-      errors.levelEducation = {};
-      if (!formData.levelEducation.levelId)
-        errors.levelEducation.levelId = ["Veuillez choisir un niveau"];
-      if (formData.levelEducation.points <= 0)
-        errors.levelEducation.points = ["Points de niveau requis"];
-    }
+    const levelErrors: FieldErrors["levelEducation"] = [];
+
+  // Niveau d'étude
+    formData.levelEducation.forEach((lvl, i) => {
+      const e: any = {};
+
+      if (!lvl.levelId) e.levelId = ["Veuillez choisir un niveau"];
+      if (lvl.points <= 0) e.points = ["Points requis"];
+
+      if (Object.keys(e).length > 0) levelErrors[i] = e;
+    });
+    if (levelErrors.length > 0) errors.levelEducation = levelErrors;
 
     // Formations / Présentations
     if (formData.formationsPoints == null || formData.formationsPoints <= 0) {
@@ -224,7 +244,7 @@ const useSaveCriteria = (jobDescId: string) => {
       if (exp.maximum == null) e.maximum = ["Max requis"];
       if (exp.points == null || exp.points <= 0) e.points = ["Points requis"];
       if (exp.minimum > exp.maximum) e.range = ["Min ne peut pas dépasser Max"];
-
+    
       // Vérifier chevauchement
       formData.experiences.forEach((other, j) => {
         if (i === j) return;
@@ -232,7 +252,7 @@ const useSaveCriteria = (jobDescId: string) => {
           e.overlap = ["Intervalle d'année d'expérience en chevauchement"];
         }
       });
-
+    
       if (Object.keys(e).length > 0) expErrors[i] = e; // n'ajoute que si erreur
     });
 
@@ -249,11 +269,7 @@ const useSaveCriteria = (jobDescId: string) => {
       if (Object.keys(e).length > 0) langErrors[i] = e;
     });
 
-    if (langErrors.length > 0) errors.langages = langErrors;
-
-    setFieldErrors(errors);
-
-    // Vérifier s'il y a des erreurs
+// Vérifier s'il y a des erreurs
     const hasErrors = Object.keys(errors).some(k => {
       const val = (errors as any)[k];
       if (Array.isArray(val)) return val.length > 0;
@@ -261,6 +277,22 @@ const useSaveCriteria = (jobDescId: string) => {
         return Object.values(val).some((v: any) => Array.isArray(v) ? v.length > 0 : false);
       return false;
     });
+
+    const totalLangPoints = formData.langages.reduce(
+      (sum, l) => sum + (l.points || 0),
+      0
+    );
+    
+    if (totalLangPoints > formData.langagesPoints) {
+      errors.totalPoints = [
+        ...(errors.totalPoints || []),
+        "La somme des points des langues dépasse le maximum"
+      ];
+    }
+
+    if (langErrors.length > 0) errors.langages = langErrors;
+
+    setFieldErrors(errors);
 
     return !hasErrors;
   };
@@ -270,7 +302,8 @@ const useSaveCriteria = (jobDescId: string) => {
     fieldErrors,
 
     handleFieldChange,
-    handleLevelEducationChange,
+    updateLevelEducation,
+    initializeLevels,
 
     updateExperience,
     addExperience,

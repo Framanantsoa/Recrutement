@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useGetJobDescriptionDetails, type RequestDetailsDTO } from "@/api/recruitment/service";
+import React, { useEffect, useState } from "react";
+import { useGetJobDescriptionDetails, type JobCriteriaDTO, type RequestDetailsDTO } from "@/api/recruitment/service";
 import { exportJobDescriptionToPDF } from "../../utils/pdfExport";
 import { FaFilePdf, FaList, FaPen, FaPenAlt } from "react-icons/fa";
 import LabelValue from "../../request/details/components/LabelValue";
@@ -16,9 +16,10 @@ interface Props {
   requestId: string;
   details: RequestDetailsDTO;
   onEdit: (jobId: string) => void;
+  onCriteriaLoad?: (criteria: JobCriteriaDTO) => void;
 }
 
-const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit }) => {
+const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit, onCriteriaLoad }) => {
   const navigate = useNavigate();
   const { data, isLoading, error } = useGetJobDescriptionDetails(requestId);
 
@@ -27,14 +28,17 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit }) => {
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = userData?.userId || "";
 
-  // const canExportPDF = useHasHabilitation(userId, "Exporter PDF TDR");
-  // const canModify = useHasHabilitation(userId, "Modifier TDR");
+  useEffect(() => {
+    if (data?.data?.criteria && onCriteriaLoad) {
+      onCriteriaLoad(data.data.criteria);
+    }
+  }, [data?.data?.criteria, onCriteriaLoad]);
 
-  
+  // --- Rendu conditionnel ---
   if (isLoading) return <p>Chargement du TDR...</p>;
   if (error) return <p>Erreur : {error.message}</p>;
   if (!data) return <p>Aucun TDR trouvé.</p>;
-  
+
   const job = data.data;
   const createdAt = new Date(job.createdAt + "Z");
   const createdAtDateStr = formatDate(createdAt, "dd/MM/yyyy à HH:mm");
@@ -134,32 +138,6 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit }) => {
           label="Compétences requises" items={job.skills} 
         />
       </section>
-
-    {/* ===== CRITÈRES DE SÉLECTION ===== */}
-      {(job.criteria != null) && (
-        <section className="details-section">
-          <h3>Critères de présélection (minimum requis)</h3>
-
-          <LabelValue
-            label="Niveau d'études"
-            value={job.criteria.minLevelEducation}
-          />
-
-          <LabelValue
-            label="Expérience professionnel"
-            value={`${job.criteria.minExperienceYears.toString()} ans`}
-          />
-
-          {job.criteria.speakingCriteria.length > 0 && (
-            <LabelValueList
-              label="Compétences linguistiques"
-              items={job.criteria.speakingCriteria.map(
-                sc => `${sc.langage} - ${sc.level}`
-              )}
-            />
-          )}
-        </section>
-      )}
     </div>
 
     <PreselectionCriteriaForm

@@ -120,25 +120,87 @@ public class CandidatureService(ICandidatureRepository rep,
     //     }
     // }
 
+    private decimal CalculateEducationScore(
+        string levelEducationId, JobDescriptionCriteria criteria
+    ) {
+        var match = criteria.LevelEducations
+            .FirstOrDefault(le => le.LevelEducationId == levelEducationId);
+
+        return match?.Points ?? 0;
+    }
+
+    private decimal CalculateExperienceScore(
+        int yearsOfExperience, JobDescriptionCriteria criteria
+    ) {
+        var match = criteria.Experiences
+            .FirstOrDefault(exp =>
+                yearsOfExperience >= exp.MinYear &&
+                yearsOfExperience <= exp.MaxYear
+            );
+
+        return match?.Points ?? 0;
+    }
 
     private async Task AssignCandidatureScoresAsync(Candidature candidature) {
         try {
-            _logger.LogInformation("Définition automatique des notes de la candidature {id}", candidature.Id);
-            await _dbService.BeginTransactionAsync();
+            _logger.LogInformation("Définition automatique des points de la candidature {id}", candidature.Id);
 
-        // Note auto du niveau d'étude
-        // Note auto des années d'exp.
-        // Note auto des compétences linguistiques
+            var job = await _jobDescRepo.GetByIdWithCriteria(candidature.JobDescriptionId)
+             ?? throw new ArgumentException("TDR non trouvé");
 
-        // Note manuel des formations
-        // Note manuel de la clarté CV + LM
+            var detail = candidature.CandidatureDetails.FirstOrDefault();
+            if (detail == null) return;
 
-            await _dbService.CommitAsync();
+            foreach (var crit in job.Criteria) {
+                switch (crit.PreselectionCriteriaId) 
+                {
+                    case "CRIT_001": // Niveau d'étude
+                        var educationScore = CalculateEducationScore(
+                            detail.LevelEducationId, crit
+                        );
+                        await _repo.AddCandidatureScoreAsync(new CandidatureScore {
+                            CandidatureId = candidature.Id,
+                            CriteriaId = crit.Id,
+                            Points = educationScore
+                        });
+                        break;
+
+                    case "CRIT_003": // Expérience
+                        var experienceScore = CalculateExperienceScore(
+                            detail.YearsOfExperience, crit
+                        );
+
+                        await _repo.AddCandidatureScoreAsync(new CandidatureScore {
+                            CandidatureId = candidature.Id,
+                            CriteriaId = crit.Id,
+                            Points = experienceScore
+                        });
+                        break;
+
+                    case "CRIT_002": // Formation (manuel)
+                        await _repo.AddCandidatureScoreAsync(new CandidatureScore {
+                            CandidatureId = candidature.Id,
+                            CriteriaId = crit.Id,
+                            Points = 0m
+                        });
+                        break;
+
+                    case "CRIT_005": // Clarté CV (manuel)
+                        await _repo.AddCandidatureScoreAsync(new CandidatureScore {
+                            CandidatureId = candidature.Id,
+                            CriteriaId = crit.Id,
+                            Points = 0m
+                        });
+                        break;
+
+                    default:
+                        _logger.LogWarning("Critère inconnu : {critId}", crit.PreselectionCriteriaId);
+                        break;
+                }
+            }
         }
         catch (Exception ex) {
-            _logger.LogError(ex, "Erreur lors de la définition des nots");
-
-            await _dbService.RollbackAsync();
+            _logger.LogError(ex, "Erreur lors de la définition des points");
             throw;
         }
     }
@@ -147,7 +209,7 @@ public class CandidatureService(ICandidatureRepository rep,
     public async Task AddCandidature(string jobId, CandidatureFormDTO data) {
         try {
             _logger.LogInformation("Insertion de la nouvelle candidature de : {email}...", data.Email);
-            
+
             await _dbService.BeginTransactionAsync();
 
         // Infos générales

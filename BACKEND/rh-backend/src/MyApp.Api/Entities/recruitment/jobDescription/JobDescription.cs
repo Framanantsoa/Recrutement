@@ -16,27 +16,28 @@ public class JobDescription : BaseEntity
     [Column("last_status")]
     public string LastStatus { get; set; } = null!;
 
-
     [Column("request_id")]
     public string RequestId { get; set; } = null!;
 
-    [ForeignKey(nameof(RequestId))]
-    public RecruitmentRequest Request { get; set; } = null!;
-
-
     [Column("post_type_id")]
     public string PostTypeId { get; set; } = null!;
+
+// RELATIONS
+    [ForeignKey(nameof(RequestId))]
+    public RecruitmentRequest Request { get; set; } = null!;
 
     [ForeignKey(nameof(PostTypeId))]
     public PostType PostType { get; set; } = null!;
 
 // Collections
-    public List<Attribution> Attributions { get; set; } = [];
-    public List<Experience> Experiences { get; set; } = [];
-    public List<Formation> Formations { get; set; } = [];
-    public List<JobDescriptionSoftSkill> SoftSkills { get; set; } = [];
-    public List<Skill> Skills { get; set; } = [];
-    public List<JobDescriptionValidation> Validations { get; set; } = [];
+    public ICollection<Attribution> Attributions { get; set; } = [];
+    public ICollection<Experience> Experiences { get; set; } = [];
+    public ICollection<Formation> Formations { get; set; } = [];
+    public ICollection<JobDescriptionSoftSkill> SoftSkills { get; set; } = [];
+    public ICollection<Skill> Skills { get; set; } = [];
+    public ICollection<JobDescriptionValidation> Validations { get; set; } = [];
     
-    public JobDescriptionCriteria? Criteria { get; set; }
+    public ICollection<JobDescriptionCriteria> Criteria { get; set; } = [];
+
+    public ICollection<Candidature> Candidates { get; set; } = [];
 }

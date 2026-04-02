@@ -140,6 +140,13 @@
 }
 .status-en-attente .status-dot { background: #fb923c; }
 
+/* Status colors */
+.status-brouillon {
+  background: rgba(251, 146, 60, 0.15);
+  color: #9a3412;
+}
+.status-brouillon .status-dot { background: #fb923c; }
+
 .status-en-cours {
   background: rgba(59, 130, 246, 0.15);
   color: #1e40af;
@@ -151,6 +158,12 @@
   color: #047857;
 }
 .status-validee .status-dot { background: #10b981; }
+
+.status-confirmee {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+.status-confirmee .status-dot { background: #10b981; }
 
 .status-refusee {
   background: rgba(239, 68, 68, 0.15);
@@ -225,44 +238,6 @@
 /* =========================================================
    AUTRES CLASSES POUR TDR
 ========================================================= */
-/* Carte d'information */
-.info-card-column {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 22px;
-}
-
-/* Label en haut, souligné */
-.label-top {
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-muted);
-    padding-bottom: 4px;
-}
-
-/* Liste de valeurs */
-.value-list {
-    list-style: disc;
-    padding-left: 20px;
-    margin: 0 15px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-primary, #222);
-    line-height: 1.5;
-}
-
-/* Espacement entre les items */
-.value-list li {
-    margin-bottom: 0;
-}
-
-/* (optionnel) dernier item sans marge */
-.value-list li:last-child {
-    margin-bottom: 0;
-}
-
 .details-section nav {
   display: grid;
   grid-template-columns: 1fr 1fr;

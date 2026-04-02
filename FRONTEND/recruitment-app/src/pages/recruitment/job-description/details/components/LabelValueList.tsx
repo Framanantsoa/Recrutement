@@ -1,19 +1,59 @@
+import React from "react";
+import styled from "styled-components";
+
+// ===== Styled Components =====
+const InfoCardColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 22px;
+`;
+
+const LabelTop = styled.span`
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding-bottom: 4px;
+`;
+
+const ValueList = styled.ul`
+  list-style: disc;
+  padding-left: 20px;
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  line-height: 1.8;
+`;
+
+const ValueListItem = styled.li`
+  margin-bottom: 0;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+// ===== Composant =====
 interface LabelValueListProps {
-    label: string;
-    items: string[];
+  label: string;
+  items: string[];
 }
 
 const LabelValueList: React.FC<LabelValueListProps> = ({ label, items }) => {
     if (!items.length) return null;
 
     return (
-        <div className="info-card-column">
-            <span className="label-top">{label}</span>
-            
-            <ul className="value-list">
-                { items.map((item, i) => ( <li key={i}>{item}</li> )) }
-            </ul>
-        </div>
+        <InfoCardColumn>
+            <LabelTop>{label}</LabelTop>
+
+            <ValueList>
+                {items.map((item, i) => (
+                    <ValueListItem key={i}>{item}</ValueListItem>
+                ))}
+            </ValueList>
+        </InfoCardColumn>
     );
 };
 

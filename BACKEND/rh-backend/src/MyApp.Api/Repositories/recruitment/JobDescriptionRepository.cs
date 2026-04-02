@@ -12,6 +12,7 @@ public interface IJobDescriptionRepository
 // Terme de référence
     Task AddJobDescription(JobDescription job);
     Task<JobDescription> GetJobDescriptionById(string id);
+    Task<JobDescription?> GetByIdWithCriteria(string id);
     Task<JobDescriptionStatus> GetJobDescriptionStatusById(string statusId);
     Task<JobDescription?> GetJobDescriptionByRequest(RecruitmentRequest req);
 
@@ -110,15 +111,37 @@ public class JobDescriptionRepository(AppDbContext ctx, ISequenceGenerator seq) 
         return result;
     }
 
+
+    public async Task<JobDescription?> GetByIdWithCriteria(string id) {
+        return await _dbCtx.JobDescriptions
+            .Include(j => j.Criteria)
+                .ThenInclude(c => c.LevelEducations)
+            .Include(j => j.Criteria)
+                .ThenInclude(c => c.Experiences)
+            .FirstOrDefaultAsync(j => j.Id == id);
+    }
+
     public async Task<JobDescription?> GetJobDescriptionByRequest(RecruitmentRequest req) {
         var result = await _dbCtx.JobDescriptions
             .Include(r => r.PostType)
             .Include(r => r.Attributions)
-            .Include(f => f.Formations)
+            .Include(r => r.Formations)
             .Include(r => r.Experiences)
             .Include(r => r.SoftSkills)
             .Include(r => r.Skills)
             .Include(r => r.Criteria)
+                .ThenInclude(c => c.LevelEducations)
+                    .ThenInclude(le => le.LevelEducation)
+            .Include(r => r.Criteria)
+                .ThenInclude(c => c.Experiences)
+            .Include(r => r.Criteria)
+                .ThenInclude(c => c.Speakings)
+                    .ThenInclude(s => s.LangageSpeaking)
+                        .ThenInclude(ls => ls.Langage)
+            .Include(r => r.Criteria)
+                .ThenInclude(c => c.Speakings)
+                    .ThenInclude(s => s.LangageSpeaking)
+                        .ThenInclude(ls => ls.SpeakingLevel)
             .FirstOrDefaultAsync(j => j.Request.Id == req.Id);
 
         return result;

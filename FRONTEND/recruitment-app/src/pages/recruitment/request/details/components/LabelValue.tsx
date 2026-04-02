@@ -20,7 +20,7 @@ const Label = styled.span`
 const Value = styled.span`
   display: inline-flex;
   align-self: center; /* idem */
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-dark);
   word-break: break-word;
@@ -41,7 +41,7 @@ const LabelValue: React.FC<LabelValueProps> = ({ label, value, children }) => {
 
   return (
     <InfoCard>
-      <Label>{label}:</Label>
+      <Label>{label} : </Label>
       {typeof sanitizedContent === "string" ? (
         <Value dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
       ) : (

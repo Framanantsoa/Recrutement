@@ -24,13 +24,9 @@ INSERT INTO replacement_reasons (replacement_reason_id, reason_name) VALUES
 
 
 INSERT INTO level_educations (level_education_id, level_education_name) VALUES
-('NIV_ETU_0001', 'Lycée'),
+('NIV_ETU_0001', 'Secondaire'),
 ('NIV_ETU_0002', 'Baccalauréat'),
-('NIV_ETU_0003', 'DTS'),
-('NIV_ETU_0004', 'Licence'),
-('NIV_ETU_0005', 'Master 1'),
-('NIV_ETU_0006', 'Master 2'),
-('NIV_ETU_0007', 'Doctorat');
+('NIV_ETU_0003', 'Universitaire');
 
 
 INSERT INTO posts_types (post_type_id, post_type_name) VALUES

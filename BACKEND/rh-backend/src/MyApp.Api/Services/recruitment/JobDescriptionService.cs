@@ -1,3 +1,4 @@
+using Hangfire.Common;
 using MyApp.Api.Entities.recruitment;
 using MyApp.Api.Entities.site;
 using MyApp.Api.Models.dto.notifications;
@@ -167,7 +168,8 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
     
 
     public async Task<JobDescriptionDTO?> GetJobDescription(string requestId) {
-        try {
+        try
+        {
             _log.LogInformation("Recherche de TDR en cours");
             JobDescriptionDTO result = new();
 
@@ -175,9 +177,9 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
             List<Site> sites = await _reqRepo.GetSitesAsync(request);
             JobDescription? jobDesc = await _jobDescRepo.GetJobDescriptionByRequest(request);
 
-            if(jobDesc==null) return null;
+            if (jobDesc == null) return null;
 
-        // Infos générales
+            // Infos générales
             result.RequestId = requestId;
             result.Post = request.Post;
             result.LastTitular = request.LastTitular?.Name;
@@ -187,48 +189,94 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
             result.LastStatus = jobDesc.LastStatus;
             result.PostTypeName = jobDesc.PostType.Name;
 
-        // Attributions
-            result.Attributions = jobDesc.Attributions
-                .Select(a => a.Label).ToArray();
+            // Attributions
+            result.Attributions = jobDesc.Attributions.Select(a => a.Label).ToArray();
 
-        // Formations et Expériences
-            result.Formations = jobDesc.Formations
-                .Select(f => 
-                    $"{f.Formations}").ToArray();
+            // Formations et Expériences
+            result.Formations = jobDesc.Formations.Select(f => $"{f.Formations}").ToArray();
+            result.Experiences = jobDesc.Experiences.Select(e =>
+            {
+                string yearsLabel = e.ExperienceYears > 1 ? "ans" : "an";
+                return $"{e.ExperiencePost} (Minimum {e.ExperienceYears} {yearsLabel})";
+            }).ToArray();
 
-            result.Experiences = jobDesc.Experiences
-                .Select(e => {
-                    string yearsLabel = e.ExperienceYears > 1 ? "ans" : "an";
-                    return $"{e.ExperiencePost} (Minimum {e.ExperienceYears} {yearsLabel})";
-                }).ToArray();
-
-        // SoftSkills
+            // SoftSkills
             result.SoftSkills = jobDesc.SoftSkills.Select(s => s.SoftSkill).ToArray();
 
-        // Skills
+            // Skills
             result.Skills = jobDesc.Skills.Select(s => s.Label).ToArray();
 
-        // // Criterias
-        //     if (jobDesc.Criteria != null) {
-        //         result.Criteria = new JobCriteriaDTO 
-        //         {
-        //             CriteriaThresholdId = jobDesc.Criteria.CriteriaThresholdId,
-        //             MinExperienceYears = jobDesc.Criteria.CriteriaThreshold.MinExperienceYears,
-        //             MinLevelEducationId = jobDesc.Criteria.CriteriaThreshold.MinLevelEducationId,
-        //             MinLevelEducation = jobDesc.Criteria.CriteriaThreshold.MinLevelEducation.Name,
-        //             SpeakingCriteria = jobDesc.Criteria.CriteriaThreshold.SpeakingThresholds
-        //                 .Select(sc => new SpeakingCriteriaDTO
-        //                 {
-        //                     Langage = sc.MinSpeakingLevel.Langage.Name,
-        //                     Level = sc.MinSpeakingLevel.SpeakingLevel.Name
-        //                 })
-        //                 .ToList()
-        //         };
-        //     }
+            // Criterias
+            var criteria = jobDesc.Criteria;
+            decimal totalScore = 0m;
+            if (criteria != null && criteria.Any())
+            {
+                var dto = new JobCriteriaDTO
+                {
+                    LevelEducations = new List<LevelEducationDataDTO>(),
+                    Experiences = new List<ExperienceDataDTO>(),
+                    Langages = new List<LangageDataDTO>()
+                };
 
-            return result;   
+                foreach (var c in criteria)
+                {
+                    switch (c.PreselectionCriteriaId)
+                    {
+                        case "CRIT_001": // Education
+                            totalScore+=c.MaxPoints;
+                            dto.LevelEducationsPoints = c.MaxPoints;
+                            dto.LevelEducations = c.LevelEducations
+                                .Select(le => new LevelEducationDataDTO
+                                {
+                                    LevelId = le.LevelEducationId,
+                                    LevelName = le.LevelEducation.Name,
+                                    Points = le.Points
+                                }).ToList();
+                            break;
+
+                        case "CRIT_002": // Formation
+                            totalScore+=c.MaxPoints;
+                            dto.FormationsPoints = c.MaxPoints;
+                            break;
+
+                        case "CRIT_005": // Présentation
+                            totalScore+=c.MaxPoints;
+                            dto.PresentationsPoints = c.MaxPoints;
+                            break;
+
+                        case "CRIT_003": // Expérience
+                            totalScore+=c.MaxPoints;
+                            dto.ExperiencesPoints = c.MaxPoints;
+                            dto.Experiences = c.Experiences
+                                .Select(e => new ExperienceDataDTO
+                                {
+                                    MinYear = e.MinYear,
+                                    MaxYear = e.MaxYear,
+                                    Points = e.Points
+                                }).ToList();
+                            break;
+
+                        case "CRIT_004": // Langues
+                            totalScore+=c.MaxPoints;
+                            dto.LangagesPoints = c.MaxPoints;
+                            dto.Langages = c.Speakings
+                                .Select(s => new LangageDataDTO
+                                {
+                                    Langage = s.LangageSpeaking.Langage.Name,
+                                    Level = s.LangageSpeaking.SpeakingLevel.Name,
+                                    Points = s.Points
+                                }).ToList();
+                            break;
+                    }
+                }
+                dto.TotalScore = totalScore;
+                result.Criteria = dto;
+            }
+
+            return result;
         }
-        catch (Exception ex) {
+        catch (Exception ex)
+        {
             _log.LogError(ex, "Erreur de recherche de TDR");
             throw;
         }

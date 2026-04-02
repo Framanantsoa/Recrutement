@@ -11,10 +11,13 @@ namespace MyApp.Api.Repositories.recruitment;
 public interface ICandidatureRepository
 {
     Task<string> GenerateCandidatureId(string direction, int year);
+
     Task AddAsync(Candidature candidature, string department);
     Task AddCandidatureDetailAsync(CandidatureDetail detail);
     Task AddCandidatureLangageAsync(CandidatureLangage treatment);
     Task AddCandidatureFormationAsync(CandidatureFormation param);
+    Task AddCandidatureScoreAsync(CandidatureScore param);
+
     Task<IEnumerable<Candidature>> GetByJobDescriptionIdAsync(string jobDescId,
      CandidatureFiltersDTO filters, int page, int pageSize);
     Task<Candidature?> GetCandidatureById(string id);

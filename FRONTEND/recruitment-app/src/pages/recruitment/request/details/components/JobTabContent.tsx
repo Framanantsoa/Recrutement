@@ -3,14 +3,15 @@ import JobDetailsCard from "@/pages/recruitment/job-description/details";
 import JobDescriptionForm from "@/pages/recruitment/job-description/form";
 import { ButtonPrimary } from "@/styles/popup-styles";
 import { Plus } from "lucide-react";
-import type { RequestDetailsDTO } from "@/api/recruitment/service";
+import type { JobCriteriaDTO, RequestDetailsDTO } from "@/api/recruitment/service";
 
 const JobTabContent: React.FC<{
   requestId: string;
   details: RequestDetailsDTO;
   requestStatus: string;
   hasJobDescription?: boolean;
-}> = ({ requestId, details, requestStatus, hasJobDescription }) => {
+  onCriteriaLoad?: (criteria: JobCriteriaDTO) => void;
+}> = ({ requestId, details, requestStatus, hasJobDescription, onCriteriaLoad }) => {
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = userData?.userId || "";
 
@@ -43,8 +44,7 @@ const JobTabContent: React.FC<{
         <p style={{ marginBottom:"2%" }}>Cette demande n’a pas encore de terme de référence.</p>
 
         { !canOpenJobDescriptionForm ? (
-          <p className="text-note">La demande nécessite une validation complète.
-          </p>
+          <p className="text-note">La demande nécessite une validation complète.</p>
         ) : (
           details.applicantUserId==userId && (
             <ButtonPrimary className="primary-btn" onClick={openCreateForm}>
@@ -58,6 +58,7 @@ const JobTabContent: React.FC<{
         details={details}
         requestId={requestId}
         onEdit={openEditForm}
+        onCriteriaLoad={onCriteriaLoad}
       />
     )}
 

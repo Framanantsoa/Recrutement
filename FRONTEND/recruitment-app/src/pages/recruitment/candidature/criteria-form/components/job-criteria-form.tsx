@@ -16,7 +16,8 @@ import {
   FormLabelRequired,
   FormRow,
   FormTable,
-  ErrorMessage
+  ErrorMessage,
+  FormLabel
 } from "@/styles/form-container";
 
 import { Separator } from "@/styles/login-styles";
@@ -158,14 +159,15 @@ const JobCriteriaForm: React.FC<Props> = ({
             {formData.experiences.map((exp, index) => (
               <FormRow key={index}>
                 <FormFieldCell>
-                  <FormLabelRequired>Année minimum</FormLabelRequired>
+                  <FormLabel>Année minimum</FormLabel>
                   <FormInput
                     type="number"
                     value={exp.minimum}
-                    min={index > 0 ? formData.experiences[index - 1].maximum + 1 : 0}
                     onChange={(e) =>
                       updateExperience(index, "minimum", Number(e.target.value))
                     }
+                    // min={index > 0 ? formData.experiences[index - 1].maximum + 1 : 0}
+                    // readOnly
                   />
 
                   {getExperienceError(index, "minimum") && (
@@ -212,7 +214,7 @@ const JobCriteriaForm: React.FC<Props> = ({
 
                 <FormFieldCell>
                   {index > 0 && (
-                    <button type="button" onClick={() => removeExperience(index)}>
+                    <button type="button" style={{ marginTop:"20px" }} onClick={() => removeExperience(index)}>
                       <Minus size={16} />
                     </button>
                   )}

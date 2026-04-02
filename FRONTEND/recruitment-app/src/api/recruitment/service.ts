@@ -132,35 +132,39 @@ export interface CreateRequestResponse {
     message: string;
 }
 
-export interface CriteriaThreshold {
-    id: string;
-    minLevelEducation: string;
-    minExperienceYears: number;
-    criteria: string;
-    coefficient: number;
-    definitiveScale: number;
+export interface LevelEducationDataDTO {
+  levelId: string;
+  levelName: string;
+  points: number;
 }
 
-export interface JobDescriptionCriteria {
-    id: string;
-    jobDescriptionId: string;
-    criteriaThresholdId: string;
-    criteriaThreshold: CriteriaThreshold;
-    createdAt: string;
-    updatedAt: string | null;
+export interface ExperienceDataDTO {
+  minYear: number;
+  maxYear: number;
+  points: number;
 }
 
-export interface SpeakingCriteriaDTO {
-    langage: string;
-    level: string;
+export interface LangageDataDTO {
+  langage: string;
+  level: string;
+  points: number;
 }
 
 export interface JobCriteriaDTO {
-    criteriaThresholdId: string;
-    minExperienceYears: number;
-    minLevelEducationId: string;
-    minLevelEducation: string;
-    speakingCriteria: SpeakingCriteriaDTO[];
+  levelEducationsPoints: number;
+  levelEducations: LevelEducationDataDTO[];
+
+  formationsPoints: number;
+
+  presentationsPoints: number;
+
+  experiencesPoints: number;
+  experiences: ExperienceDataDTO[];
+
+  langagesPoints: number;
+  langages: LangageDataDTO[];
+
+  totalScore: number;
 }
 
 export interface JobDescriptionDetails {
@@ -177,7 +181,7 @@ export interface JobDescriptionDetails {
   lastTitular: string | null;
   lastStatus: string;
   postTypeName: string;
-  criteria: JobCriteriaDTO | null;
+  criteria: JobCriteriaDTO;
 }
 
 

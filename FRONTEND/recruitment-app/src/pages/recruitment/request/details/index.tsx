@@ -1,4 +1,4 @@
-import { useCanValidateJobDescription, useGetRecruitmentRequestDetails, useHasJobDescription, useHasValidationInRecruitment } from "@/api/recruitment/service";
+import { useCanValidateJobDescription, useGetRecruitmentRequestDetails, useHasJobDescription, useHasValidationInRecruitment, type JobCriteriaDTO } from "@/api/recruitment/service";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import RequestDetailsCard from "./components/RequestDetailsCard";
 import { ArrowLeft, Check, X } from "lucide-react";
@@ -13,12 +13,13 @@ import Alert from "@/components/alert";
 import RefuseValidationForm, { type RequestValidationFormDTO } from "../validation/components/refuse-request-form";
 import RequestHistoricTab from "./components/RequestHistoricTab";
 import useValidateJobDescription from "../validation/hooks/use-validate-job-description";
+import JobCriteriaTab from "../../candidature/criteria-form/components/job-criteria-tab";
 
 interface BackendError {
   message?: string;
 }
 
-type TabKey = "request" | "historic" | "job";
+type TabKey = "request" | "historic" | "job" | "criteria";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const deformatParam = (id: string | null) => {
@@ -44,11 +45,13 @@ const RequestDetails: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<"request" | "historic" | "job">(() => {
+  const [activeTab, setActiveTab] = useState<TabKey>(() => {
     const saved = sessionStorage.getItem("lastActiveDetailTab") as TabKey;
     return saved ? saved : "request";
   });
   const [decision, setDecision] = useState<"Approuver" | "Refuser">();
+
+  const [jobCriteria, setJobCriteria] = useState<JobCriteriaDTO | null>(null);
   
   const [isValidationModalOpen, setIsValidationModalOpen] = useState<boolean>(false);
   const [isRefuseFormOpen, setIsRefuseFormOpen] = useState<boolean>(false);
@@ -66,6 +69,13 @@ const RequestDetails: React.FC = () => {
       setFormData(prev => ({ ...prev, validatorId }));
     }
   }, [id, validatorId, setFormData]);
+
+  useEffect(() => {
+    if (activeTab === "criteria" && !jobCriteria) {
+      sessionStorage.setItem("lastActiveDetailTab", "job");
+      setActiveTab("job");
+    }
+  }, [activeTab, jobCriteria]);
   
   const { data: validator} = useHasValidationInRecruitment(validatorId);
   const { data: jobDescValidator} = useCanValidateJobDescription(validatorId);
@@ -183,25 +193,31 @@ const RequestDetails: React.FC = () => {
             setActiveTab("request"); 
             sessionStorage.setItem("lastActiveDetailTab", "request");
           }
-        }>
-          Demande
-        </button>
+        }>Demande</button>
+
         <button className={activeTab === "historic" ? "tab active" : "tab"} 
           onClick={() => {
             setActiveTab("historic");
             sessionStorage.setItem("lastActiveDetailTab", "historic");
           }}
-        >
-          Validations
-        </button>
+        >Validations</button>
+
         <button className={activeTab === "job" ? "tab active" : "tab"} 
           onClick={() => {
             setActiveTab("job");
             sessionStorage.setItem("lastActiveDetailTab", "job");
           }}
-        >
-          Terme de référence
-        </button>
+        >Terme de référence</button>
+
+        { jobCriteria && (
+          <button
+            className={activeTab === "criteria" ? "tab active" : "tab"}
+            onClick={() => {
+              setActiveTab("criteria");
+              sessionStorage.setItem("lastActiveDetailTab", "criteria");
+            }}
+          >Critères de présélection</button>
+        )}
       </div>
 
     {/* Confirmation d'action */}
@@ -247,7 +263,12 @@ const RequestDetails: React.FC = () => {
           details={data.details}
           requestStatus={data.details.status}
           hasJobDescription={jobDescData?.hasJobDescription}
+          onCriteriaLoad={(criteria) => setJobCriteria(criteria)}
         />
+      )}
+
+      {activeTab === "criteria" && jobCriteria && (
+        <JobCriteriaTab criteria={jobCriteria} />
       )}
 
 

@@ -59,20 +59,19 @@ public class PreselectionService(
         }
     }
 
-    public async Task AddJobPreselectionCriteria(JobCriteriaFormDTO data)
-    {
+    public async Task AddJobPreselectionCriteria(JobCriteriaFormDTO data) {
         await _dbService.BeginTransactionAsync();
 
-        try
-        {
+        try {
             _logger.LogInformation("Insertion des critères de présélection...");
 
-            var exists = await _jobRepo.DoesExistsById(data.JobDescId);
+            var job = await _jobRepo.GetByIdWithCriteria(data.JobDescId)
+             ?? throw new ArgumentException("TDR introuvable");
 
-            if (!exists)
-                throw new ArgumentException("JobDescription introuvable");
+            if (job.Criteria != null && job.Criteria.Any())
+                throw new InvalidOperationException("Ce TDR possède déjà des critères");
 
-            // ================= VALIDATION LANGUES =================
+        // ================= VALIDATION LANGUES =================
             var langageIds = data.Langages.Select(l => l.LangageId).ToList();
             var levelIds = data.Langages.Select(l => l.LevelId).ToList();
 
@@ -86,7 +85,7 @@ public class PreselectionService(
             if (data.Langages.Any(l => !dict.ContainsKey((l.LangageId, l.LevelId))))
                 throw new ArgumentException("Certaines langues/niveaux sont invalides");
 
-            // ================= EDUCATION =================
+        // ================= NIVEAU D'ETUDE =================
             var educationCriteria = new JobDescriptionCriteria
             {
                 JobDescriptionId = data.JobDescId,
@@ -95,7 +94,6 @@ public class PreselectionService(
                 CreatedAt = DateTime.UtcNow
             };
             await _repo.AddJobPreselectionCriteria(educationCriteria);
-            // await _dbService.SaveChangesAsync();
 
             foreach (var l in data.LevelEducation)
             {
@@ -106,9 +104,8 @@ public class PreselectionService(
                     Points = l.Points
                 });
             }
-            // await _dbService.SaveChangesAsync();
 
-            // ================= FORMATION =================
+        // ================= FORMATION =================
             var formationCriteria = new JobDescriptionCriteria
             {
                 JobDescriptionId = data.JobDescId,
@@ -118,16 +115,14 @@ public class PreselectionService(
             };
 
             await _repo.AddJobPreselectionCriteria(formationCriteria);
-            // await _dbService.SaveChangesAsync();
 
             await _repo.AddFormation(new JobCriteriaFormation
             {
                 JobCriteriaId = formationCriteria.Id,
                 Points = data.FormationsPoints
             });
-            // await _dbService.SaveChangesAsync();
 
-            // ================= PRESENTATION =================
+        // ================= PRESENTATION =================
             var presentationCriteria = new JobDescriptionCriteria
             {
                 JobDescriptionId = data.JobDescId,
@@ -137,16 +132,14 @@ public class PreselectionService(
             };
 
             await _repo.AddJobPreselectionCriteria(presentationCriteria);
-            // await _dbService.SaveChangesAsync();
 
             await _repo.AddPresentation(new JobCriteriaPresentation
             {
                 JobCriteriaId = presentationCriteria.Id,
                 Points = data.PresentationsPoints
             });
-            // await _dbService.SaveChangesAsync();
 
-            // ================= LANGUES =================
+        // ================= LANGUES =================
             var languageCriteria = new JobDescriptionCriteria
             {
                 JobDescriptionId = data.JobDescId,
@@ -156,7 +149,6 @@ public class PreselectionService(
             };
 
             await _repo.AddJobPreselectionCriteria(languageCriteria);
-            // await _dbService.SaveChangesAsync();
 
             foreach (var lang in data.Langages)
             {
@@ -169,9 +161,8 @@ public class PreselectionService(
                     Points = lang.Points
                 });
             }
-            // await _dbService.SaveChangesAsync();
 
-            // ================= EXPERIENCE =================
+        // ================= EXPERIENCE =================
             var experienceCriteria = new JobDescriptionCriteria
             {
                 JobDescriptionId = data.JobDescId,
@@ -181,7 +172,6 @@ public class PreselectionService(
             };
 
             await _repo.AddJobPreselectionCriteria(experienceCriteria);
-            // await _dbService.SaveChangesAsync();
 
             foreach (var exp in data.Experiences)
             {
@@ -193,15 +183,13 @@ public class PreselectionService(
                     Points = exp.Points
                 });
             }
-            // await _dbService.SaveChangesAsync();
 
-            // ================= COMMIT =================
+        // ================= COMMIT =================
             await _dbService.CommitAsync();
 
             _logger.LogInformation("Insertion réussie");
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             await _dbService.RollbackAsync();
             _logger.LogError(ex, "Erreur insertion critères");
             throw;

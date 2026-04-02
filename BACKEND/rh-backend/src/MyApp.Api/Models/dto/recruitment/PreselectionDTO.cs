@@ -63,11 +63,42 @@ public class SpeakingCriteriaDTO
     public string Level { get; set; } = null!;
 }
 
+// AFFICHAGE -> extraction
+public class LevelEducationDataDTO
+{
+    public string LevelId { get; set; } = null!;
+    public string LevelName { get; set; } = null!;
+    public decimal Points { get; set; }
+}
+
+public class ExperienceDataDTO
+{
+    public short MinYear { get; set; }
+    public short MaxYear { get; set; }
+    public decimal Points { get; set; }
+}
+
+public class LangageDataDTO
+{
+    public string Langage { get; set; } = null!;
+    public string Level { get; set; } = null!;
+    public decimal Points { get; set; }
+}
+
 public class JobCriteriaDTO
 {
-    public string CriteriaThresholdId { get; set; } = null!;
-    public short MinExperienceYears { get; set; }
-    public string MinLevelEducationId { get; set; } = null!;
-    public string MinLevelEducation { get; set; } = null!;
-    public List<SpeakingCriteriaDTO> SpeakingCriteria { get; set; } = [];
+    public decimal LevelEducationsPoints { get; set; }
+    public List<LevelEducationDataDTO> LevelEducations { get; set; } = [];
+
+    public decimal FormationsPoints { get; set; }
+
+    public decimal PresentationsPoints { get; set; }
+
+    public decimal ExperiencesPoints { get; set; }
+    public List<ExperienceDataDTO> Experiences { get; set; } = [];
+
+    public decimal LangagesPoints { get; set; }
+    public List<LangageDataDTO> Langages { get; set; } = [];
+
+    public decimal TotalScore { get; set; }
 }

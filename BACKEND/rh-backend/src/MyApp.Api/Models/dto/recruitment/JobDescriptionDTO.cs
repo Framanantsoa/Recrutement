@@ -30,7 +30,7 @@ public class JobDescriptionDTO
     public string LastStatus { get; set; } = null!;
 
 // Criterias
-    public JobCriteriaDTO? Criteria { get; set; }
+    public JobCriteriaDTO Criteria { get; set; } = null!;
 }
 
 

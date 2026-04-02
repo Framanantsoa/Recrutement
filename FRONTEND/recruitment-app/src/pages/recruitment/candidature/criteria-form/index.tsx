@@ -65,7 +65,7 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
         if (levelResp?.data) {
           initializeLevels(levelResp.data);
         }
-      }, [levelResp]);
+    }, [levelResp]);
 
     type AlertType = "error" | "info" | "success" | "warning";
 
@@ -105,10 +105,15 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
             onClose();
         } 
         catch (error: any) {
+            const message =
+                error?.response?.data?.message || // ✅ backend standard
+                error?.message ||                 // fallback axios
+                "Erreur";
+
             setAlert({
                 isOpen: true,
                 type: "error",
-                message: error?.message || "Erreur"
+                message
             });
         }
     };

@@ -57,10 +57,13 @@ const useSaveCriteria = (jobDescId: string) => {
   const initializeLevels = (levels: { id: string }[]) => {
     setFormData(prev => ({
       ...prev,
-      levelEducation: levels.map(l => ({
-        levelId: l.id,
-        points: 0
-      }))
+      levelEducation: levels.map(l => {
+        const existing = prev.levelEducation.find(e => e.levelId === l.id);
+        return {
+          levelId: l.id,
+          points: existing ? existing.points : 0
+        };
+      })
     }));
   };
 
@@ -151,6 +154,10 @@ const useSaveCriteria = (jobDescId: string) => {
       return { ...prev, experiences: updated };
     });
     clearError(`experiences[${index}].${field}`);
+
+    clearError(`experiences[${index}].minimum`);
+    clearError(`experiences[${index}].overlap`);
+    clearError(`experiences[${index}].range`);
   };
 
   const addExperience = () => {
@@ -243,15 +250,15 @@ const useSaveCriteria = (jobDescId: string) => {
       if (exp.minimum == null) e.minimum = ["Min requis"];
       if (exp.maximum == null) e.maximum = ["Max requis"];
       if (exp.points == null || exp.points <= 0) e.points = ["Points requis"];
-      if (exp.minimum > exp.maximum) e.range = ["Min ne peut pas dépasser Max"];
+      if (exp.minimum > exp.maximum) e.range = ["Le Min ne peut pas dépasser le Max"];
     
       // Vérifier chevauchement
-      formData.experiences.forEach((other, j) => {
-        if (i === j) return;
-        if (exp.minimum <= other.maximum && exp.maximum >= other.minimum) {
-          e.overlap = ["Intervalle d'année d'expérience en chevauchement"];
+      if (i > 0) {
+        const prev = formData.experiences[i - 1];
+        if (exp.minimum <= prev.maximum) {
+          e.overlap = ["Chevauchement avec l'intervalle précédent"];
         }
-      });
+      }
     
       if (Object.keys(e).length > 0) expErrors[i] = e; // n'ajoute que si erreur
     });

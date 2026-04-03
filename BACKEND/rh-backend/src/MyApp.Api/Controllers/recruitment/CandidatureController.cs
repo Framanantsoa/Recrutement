@@ -12,58 +12,57 @@ public class CandidatureController(ICandidatureService s1)
 {
     private readonly ICandidatureService _service = s1;
 
-    // [HttpGet("job-descriptions/{id}")]
-    // [AllowAnonymous]
-    // public async Task<IActionResult> GetCandidaturesByJobDescriptionId(
-    //  [FromRoute] string id, [FromQuery] CandidatureFiltersDTO filters,
-    //  [FromQuery] int page=1, [FromQuery] int pageSize=10) {
-    //     // if(!User.Identity?.IsAuthenticated ?? true) {
-    //     //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-    //     // }
+    [HttpGet("job-descriptions/{id}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetCandidaturesByJobDescriptionId(
+     [FromRoute] string id, [FromQuery] CandidatureFiltersDTO filters,
+     [FromQuery] int page=1, [FromQuery] int pageSize=10) {
+        // if(!User.Identity?.IsAuthenticated ?? true) {
+        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        // }
 
-    //     id = id.Replace("_", "/");
-    //     try {
-    //         var (candidatures, details) = await _service.GetByJobDescriptionIdAsync(
-    //             id, filters, page, pageSize
-    //         );
+        id = id.Replace("_", "/");
+        try {
+            var (candidatures, details) = await _service.GetByJobDescriptionIdAsync(
+                id, filters, page, pageSize
+            );
 
-    //         var result = new {
-    //             Details = details, Candidatures = candidatures, 
-    //             TotalCount = candidatures.Count(), Page = page, PageSize = pageSize
-    //         };
+            var result = new {
+                Details = details, Candidatures = candidatures, 
+                TotalCount = candidatures.Count(), Page = page, PageSize = pageSize
+            };
 
-    //         return Ok(new { data = result, status = 200, message = "Candidatures récupérées avec succès" });
-    //     }
-    //     catch(ArgumentException ex) {
-    //         return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
-    //     }
-    //     catch(Exception ex) {
-    //         return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
-    //     }
-    // }
+            return Ok(new { data = result, status = 200, message = "Candidatures récupérées avec succès" });
+        }
+        catch(ArgumentException ex) {
+            return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
+        }
+        catch(Exception ex) {
+            return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
+        }
+    }
 
 
-    // [HttpGet("{id}")]
-    // [AllowAnonymous]
-    // public async Task<IActionResult> GetCandidatureDetails([FromRoute] string id) {
-    //     // if(!User.Identity?.IsAuthenticated ?? true) {
-    //     //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-    //     // }
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetCandidatureDetails([FromRoute] string id) {
+        // if(!User.Identity?.IsAuthenticated ?? true) {
+        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        // }
 
-    //     id = id.Replace("_", "/");
-    //     try {
-    //         var (criteria, details) = await _service.GetCandidatureDetailsAsync(id);
-    //         var result = new { criteria, details };
+        id = id.Replace("_", "/");
+        try {
+            var details = await _service.GetCandidatureDetailsAsync(id);
 
-    //         return Ok(new { data = result, status = 200, message = "Candidature récupérée avec succès" });
-    //     }
-    //     catch(ArgumentException ex) {
-    //         return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
-    //     }
-    //     catch(Exception ex) {
-    //         return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
-    //     }
-    // }
+            return Ok(new { data = details, status = 200, message = "Candidature récupérée avec succès" });
+        }
+        catch(ArgumentException ex) {
+            return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
+        }
+        catch(Exception ex) {
+            return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
+        }
+    }
 
 
     [HttpPost("job-descriptions/{id}")]  

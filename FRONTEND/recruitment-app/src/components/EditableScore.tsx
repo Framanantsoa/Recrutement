@@ -5,6 +5,7 @@ import { Pencil, Check, X } from "lucide-react";
 interface Props {
   label: string;
   value?: number;
+  max: number;
   onSave: (value: number) => void;
 }
 
@@ -82,7 +83,7 @@ const Button = styled.button<{ variant?: "edit" | "save" | "cancel" }>`
 
 /* ================= COMPONENT ================= */
 
-const EditableScore: React.FC<Props> = ({ label, value = 0, onSave }) => {
+const EditableScore: React.FC<Props> = ({ label, value = 0, max, onSave }) => {
   const [editing, setEditing] = useState(false);
   const [score, setScore] = useState<number>(value);
 
@@ -107,7 +108,7 @@ const EditableScore: React.FC<Props> = ({ label, value = 0, onSave }) => {
               type="number"
               value={score}
               min={0}
-              max={5}
+              max={max}
               onChange={(e) => setScore(Number(e.target.value))}
             />
 

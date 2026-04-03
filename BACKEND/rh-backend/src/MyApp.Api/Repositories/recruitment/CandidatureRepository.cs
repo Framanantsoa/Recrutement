@@ -49,6 +49,7 @@ public class CandidatureRepository(AppDbContext context,
         var query = _dbCtx.Candidatures
             .Include(c => c.JobDescription)
                 .ThenInclude(j => j.Request)
+            .Include(c => c.CandidatureScores)
             .Where(c => c.JobDescriptionId == jobDescId);
 
         // filtre nom
@@ -160,21 +161,35 @@ public class CandidatureRepository(AppDbContext context,
 
 
     public async Task UpdateCriteriaPoints(string candidatureId,
-     string criteriaId, decimal newPoints) {
-        var candidature = await _dbCtx.Candidatures.FirstOrDefaultAsync(c => 
-         c.Id.Equals(candidatureId))
-         ?? throw new ArgumentException("Candidature non trouvée");
+        string criteriaId, decimal newPoints
+    ) {
+        var candidature = await _dbCtx.Candidatures
+            .FirstOrDefaultAsync(c => c.Id == candidatureId)
+            ?? throw new ArgumentException("Candidature non trouvée");
 
-        var criteria = await _dbCtx.PreselectionCriterias.FirstOrDefaultAsync(p => 
-         p.Id.Equals(criteriaId))
-         ?? throw new ArgumentException("Critère de présélection non trouvé");
+        var jobCriteria = await _dbCtx.JobDescriptionCriterias
+            .FirstOrDefaultAsync(jc =>
+                jc.JobDescriptionId == candidature.JobDescriptionId &&
+                jc.PreselectionCriteriaId == criteriaId)
+            ?? throw new ArgumentException("Critère du job non trouvé");
 
-        var canditatNote = await _dbCtx.CandidatureScores.FirstOrDefaultAsync(cn =>
-         cn.CandidatureId==candidatureId && cn.CriteriaId==criteriaId)
-         ?? throw new ArgumentException("Note de candidature non trouvée");
+        var canditatNote = await _dbCtx.CandidatureScores
+            .Include(cs => cs.Criteria)
+            .FirstOrDefaultAsync(cs =>
+                cs.CandidatureId == candidatureId &&
+                cs.Criteria.PreselectionCriteriaId == criteriaId)
+            ?? throw new ArgumentException("Score de candidature non trouvé");
 
+        // VALIDATION
+        if (newPoints > jobCriteria.MaxPoints) {
+            throw new ArgumentException($"Le score ne peut pas dépasser {(int)jobCriteria.MaxPoints} points");
+        }
+
+        if (newPoints < 0) {
+            throw new ArgumentException("Le score ne peut pas être négatif");
+        }
         canditatNote.Points = newPoints;
-        
+
         await _dbCtx.SaveChangesAsync();
     }
 
@@ -182,24 +197,35 @@ public class CandidatureRepository(AppDbContext context,
     public async Task FinishCandidatureTreatment(string candidatureId) {
         var candidature = await _dbCtx.Candidatures
             .Include(c => c.CandidatureScores)
+                .ThenInclude(cs => cs.Criteria)
             .FirstOrDefaultAsync(c => c.Id.Equals(candidatureId))
          ?? throw new ArgumentException("Candidature non trouvée");
 
         candidature.IsTreated = true;
 
-    // Condition de pénalisation
         var points = candidature.CandidatureScores.Select(n => n.Points);
+        
+    // éliminé directement si critère = 0
         if(points.Any(p => p==0)) {
             candidature.IsPreselected = false;
         }
-        // else {
-        // // Définition du seuil : Candidat présélectionné > points 60%
-        //     decimal percentage = 60m;
-        //     decimal minThreshold = await _dbCtx.PreselectionCriterias.SumAsync(p =>
-        //      p.TotalPoints) * (percentage / 100m);
+        else {
+        // 1. Calcul du score total du candidat
+            var totalCandidateScore = points.Sum();
 
-        //     candidature.IsPreselected = points.Sum() >= minThreshold;
-        // }
+        // 2. Calcul du score max du TDR
+            var totalMaxScore = candidature.CandidatureScores
+                .Select(cs => cs.Criteria.MaxPoints)
+                .Distinct() // évite doublons si jamais
+                .Sum();
+
+        // 3. Seuil à 60%
+            decimal percentage = 60m;
+            decimal minThreshold = totalMaxScore * (percentage / 100m);
+
+        // 4. Comparaison
+            candidature.IsPreselected = totalCandidateScore >= minThreshold;
+        }
 
         await _dbCtx.SaveChangesAsync();
     }
@@ -209,6 +235,8 @@ public class CandidatureRepository(AppDbContext context,
         return await _dbCtx.Candidatures
             .Include(c => c.JobDescription)
             .Include(c => c.CandidatureScores)
+                .ThenInclude(cs => cs.Criteria)
+                    .ThenInclude(jc => jc.PreselectionCriteria)
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id);
     }

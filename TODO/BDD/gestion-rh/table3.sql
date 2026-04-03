@@ -328,7 +328,6 @@ CREATE TABLE candidatures_scores (
    candidature_id VARCHAR(50) NOT NULL,
    job_criteria_id VARCHAR(50) NOT NULL,
    points DECIMAL(5,2) NOT NULL,
-   total_score DECIMAL(10,2) NOT NULL DEFAULT 0,
    PRIMARY KEY(candidature_score_id),
    FOREIGN KEY(candidature_id) REFERENCES candidatures(candidature_id),
    FOREIGN KEY(job_criteria_id) REFERENCES job_criteria(job_criteria_id)
@@ -370,48 +369,6 @@ CREATE TABLE business_sequences (
    updated_at DATETIME2 NOT NULL
 );
 GO
-
--- =============================
--- ALTERS
--- =============================
--- Organigram
-ALTER TABLE direction
-ADD is_active BIT NOT NULL
-    CONSTRAINT DF_direction_is_active DEFAULT 1;
-GO
-ALTER TABLE department
-ADD is_active BIT NOT NULL
-    CONSTRAINT DF_department_is_active DEFAULT 1;
-GO
-ALTER TABLE service
-ADD is_active BIT NOT NULL
-    CONSTRAINT DF_service_is_active DEFAULT 1;
-GO
-
--- Request
-ALTER TABLE recruitment_requests
-ADD created_by VARCHAR(250) NOT NULL;
-
-ALTER TABLE recruitment_requests
-ADD CONSTRAINT FK_recruitment_requests_created_by
-FOREIGN KEY (created_by)
-REFERENCES users(user_id);
-GO
-ALTER TABLE recruitment_requests
-ALTER COLUMN not_planned_reason VARCHAR(MAX)
-GO
-
--- Job description
-ALTER TABLE job_descriptions ADD last_status VARCHAR(50);
-GO
-
-ALTER TABLE job_descriptions ADD post_type_id VARCHAR(50) NOT NULL;
-GO
-ALTER TABLE job_descriptions
-ADD CONSTRAINT FK_JobDescriptions_PostTypes
-FOREIGN KEY (post_type_id) REFERENCES posts_types(post_type_id);
-GO
-
 
 -- =============================
 -- FUNCTIONS

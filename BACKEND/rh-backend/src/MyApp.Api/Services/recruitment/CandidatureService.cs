@@ -6,12 +6,12 @@ namespace MyApp.Api.Services.recruitment;
 
 public interface ICandidatureService
 {
-    // Task<(IEnumerable<CandidatureDTO>, CandidaturesDetailsDTO)> GetByJobDescriptionIdAsync(
-    //  string jobDescId, CandidatureFiltersDTO filters, int page, int pageSize);
+    Task<(IEnumerable<CandidatureDTO>, CandidaturesDetailsDTO)> GetByJobDescriptionIdAsync(
+     string jobDescId, CandidatureFiltersDTO filters, int page, int pageSize);
     Task AddCandidature(string jobId, CandidatureFormDTO data);
     Task FinishCandidatureTreatment(string candidatureId);
     Task UpdateCriteriaPoints(string candidatureId, string criteriaId, decimal newPoints);
-    // Task<(PreselectionCriteriaDTO, CandidatureDetailsDTO)> GetCandidatureDetailsAsync(string id);
+    Task<CandidatureDetailsDTO> GetCandidatureDetailsAsync(string id);
     
     Task AddCandidatureComment(string cadId, CandidatureCommentFormDTO data);
     Task UpdateCandidatureComment(string cadId, CandidatureCommentFormDTO data);
@@ -31,94 +31,97 @@ public class CandidatureService(ICandidatureRepository rep,
     private readonly ILogger<CandidatureService> _logger = logger;
 
 
-    // public async Task<(IEnumerable<CandidatureDTO>, CandidaturesDetailsDTO)> GetByJobDescriptionIdAsync(
-    //     string jobDescId, CandidatureFiltersDTO filters, int page, int pageSize)
-    // {
-    //     var candidaturesEntity = await _repo.GetByJobDescriptionIdAsync(jobDescId, filters, page, pageSize);
-    //     var criteria = await _preselectService.GetAllPreselectionCriteriaAsync();
+    public async Task<(IEnumerable<CandidatureDTO>, CandidaturesDetailsDTO)> GetByJobDescriptionIdAsync(
+        string jobDescId, CandidatureFiltersDTO filters, int page, int pageSize)
+    {
+    // 1. Charger candidatures avec leurs scores
+        var candidaturesEntity = await _repo.GetByJobDescriptionIdAsync(jobDescId, filters, page, pageSize);
 
-    //     // calculer le score total pour chaque candidature
-    //     var candidaturesDTO = new List<CandidatureDTO>();
-    //     foreach (var c in candidaturesEntity) {
-    //         var points = c.CandidatureScores;
-    //         var totalScore = points
-    //             .Join(criteria.Criteria, p => p.CriteriaId, c => c.Id, (p, c) => p.Points * c.Coefficient)
-    //             .Sum();
+    // 2. Charger les critères du job avec MaxPoints
+        var jobDesc = await _jobDescRepo.GetJobDescriptionById(jobDescId);
+        var criteria = jobDesc.Criteria ?? new List<JobDescriptionCriteria>();
+        decimal maxScore = criteria.Sum(c => c.MaxPoints);
 
-    //         candidaturesDTO.Add(new CandidatureDTO {
-    //             Id = c.Id,
-    //             FirstName = c.FirstName,
-    //             LastName = c.LastName,
-    //             Email = c.EmailContact,
-    //             LmUrl = c.LmUrl ?? "N/A",
-    //             CvUrl = c.CvUrl ?? "N/A",
-    //             SendingDateTime = c.CreatedAt,
-    //             IsTreated = c.IsTreated,
-    //             IsPreselected = c.IsPreselected,
-    //             TotalScore = totalScore,
-    //             MaxScore = criteria.TotalScore
-    //         });
-    //     }
+    // 3. Construire les DTOs candidats
+        var candidaturesDTO = candidaturesEntity.Select(c => new CandidatureDTO
+        {
+            Id = c.Id,
+            FirstName = c.FirstName,
+            LastName = c.LastName,
+            Email = c.EmailContact,
+            LmUrl = c.LmUrl ?? "N/A",
+            CvUrl = c.CvUrl ?? "N/A",
+            SendingDateTime = c.CreatedAt,
+            IsTreated = c.IsTreated,
+            IsPreselected = c.IsPreselected,
+            TotalScore = c.CandidatureScores?.Sum(s => s.Points) ?? 0,
+            MaxScore = maxScore
+        }).ToList();
 
-    //     // filtrer uniquement ceux qui sont présélectionnés
-    //     if (filters.IsPreselected) {
-    //         candidaturesDTO = candidaturesDTO
-    //             .Where(c => c.IsPreselected==true && c.IsTreated == true)
-    //             .OrderByDescending(c => c.TotalScore) // tri par score total
-    //             .ToList();
-    //     }
-    //     else {
-    //         candidaturesDTO = candidaturesDTO
-    //             .OrderByDescending(c => c.SendingDateTime) // tri par date
-    //             .ToList();
-    //     }
+    // 4. Filtrage si nécessaire
+        if (filters.IsPreselected != null) {
+            candidaturesDTO = candidaturesDTO
+                .Where(c => c.IsPreselected == true && c.IsTreated == true)
+                .OrderByDescending(c => c.TotalScore)
+                .ToList();
+        }
+        else {
+            candidaturesDTO = candidaturesDTO
+                .OrderByDescending(c => c.SendingDateTime)
+                .ToList();
+        }
 
-    //     // préparer details
-    //     var jobDesc = await _jobDescRepo.GetJobDescriptionById(jobDescId);
-    //     var detailsDTO = new CandidaturesDetailsDTO
-    //     {
-    //         Contract = jobDesc.Request.Contract?.Code ?? jobDesc.Request.ContractPrecision ?? "N/A",
-    //         Direction = jobDesc.Request.HierarchicalManager.Department ?? "N/A",
-    //         Post = jobDesc.Request.Post ?? "N/A",
-    //     };
+    // 5. Préparer les détails du job
+        var detailsDTO = new CandidaturesDetailsDTO
+        {
+            Contract = jobDesc.Request.Contract?.Code ?? jobDesc.Request.ContractPrecision ?? "N/A",
+            Direction = jobDesc.Request.HierarchicalManager.Department ?? "N/A",
+            Post = jobDesc.Request.Post ?? "N/A",
+        };
 
-    //     return (candidaturesDTO, detailsDTO);
-    // }
+        return (candidaturesDTO, detailsDTO);
+    }
 
 
-    // public async Task<(PreselectionCriteriaDTO, CandidatureDetailsDTO)> GetCandidatureDetailsAsync(string id) {
-    //     try {
-    //         _logger.LogInformation("Récupération des détails de la candidature {Id}", id);
-            
-    //         var details = await _repo.GetCandidatureDetails(id);
-    //         var candidature = await _repo.GetCandidatureById(id);
-    //         var criteria = await _preselectService.GetAllPreselectionCriteriaAsync();
+    public async Task<CandidatureDetailsDTO> GetCandidatureDetailsAsync(string id) {
+        try {
+            _logger.LogInformation("Récupération des détails de la candidature {Id}", id);
 
-    //         if (details == null || candidature == null) {
-    //             _logger.LogWarning("Candidature non trouvée pour l'ID {Id}", id);
-    //             throw new InvalidOperationException("Candidature non trouvée");
-    //         }
+        // 1. Charger la candidature et ses détails
+            var details = await _repo.GetCandidatureDetails(id);
+            var candidature = await _repo.GetCandidatureById(id);
 
-    //         var points = candidature.CandidatureScores;
-    //         details.Points = points;
+            if (details == null || candidature == null) {
+                _logger.LogWarning("Candidature non trouvée pour l'ID {Id}", id);
+                throw new InvalidOperationException("Candidature non trouvée");
+            }
 
-    //         // CALCUL DU TOTAL
-    //         var totalScore = (
-    //             from p in points
-    //             join c in criteria.Criteria on p.CriteriaId equals c.Id
-    //             select p.Points * c.Coefficient
-    //         ).Sum();
+        // 2. Charger tous les critères de pré-sélection
+            var criteriaList = await _preselectService.GetAllPreselectionCriteriaAsync();
+            var criteriaDict = criteriaList.ToDictionary(c => c.Id, c => c.Criteria);
 
-    //         // Ajoute le total dans ton DTO
-    //         details.TotalScore = totalScore;
+        // 3. Ajouter les scores au DTO avec nom du critère
+            details.Scores = candidature.CandidatureScores
+                .Select(s => new CandidatureScoreDTO
+                {
+                    Id = s.Id,
+                    CriteriaId = s.Criteria.PreselectionCriteriaId, // l'ID du PreselectionCriteria
+                    Criteria = s.Criteria.PreselectionCriteria.Criteria,
+                    Points = s.Points,
+                    Max = s.Criteria.MaxPoints
+                }).ToList();
 
-    //         return (criteria, details);
-    //     } 
-    //     catch (Exception ex) {
-    //         _logger.LogError(ex, "Erreur lors de la récupération des détails de la candidature {Id}", id);
-    //         throw;
-    //     }
-    // }
+        // 4. Calculer le total des points obtenus par le candidat
+            details.TotalScore = details.Scores?.Sum(s => s.Points) ?? 0;
+            details.MaxScore = details.Scores?.Sum(s => s.Max) ?? 0;
+
+            return details;
+        }
+        catch (Exception ex) {
+            _logger.LogError(ex, "Erreur lors de la récupération des détails de la candidature {Id}", id);
+            throw;
+        }
+    }
 
     private decimal CalculateEducationScore(
         string levelEducationId, JobDescriptionCriteria criteria
@@ -141,15 +144,77 @@ public class CandidatureService(ICandidatureRepository rep,
         return match?.Points ?? 0;
     }
 
+    private int GetLevelRank(string code) {
+        return code switch {
+            "A1" => 1,
+            "A2" => 2,
+            "B1" => 3,
+            "B2" => 4,
+            "C1" => 5,
+            "C2" => 6,
+            _ => 0
+        };
+    }
+
+    private decimal CalculateLanguageScore(
+        ICollection<CandidatureLangage> candidateLangs, JobDescriptionCriteria criteria
+    ) {
+        decimal totalPoints = 0;
+
+        foreach (var required in criteria.Speakings)
+        {
+            var requiredLangId = required.LangageSpeaking?.LangageId;
+            var requiredLevel = required.LangageSpeaking?.SpeakingLevel?.Code;
+
+            var candidateLang = candidateLangs
+                .FirstOrDefault(cl =>
+                    cl.LangageSpeaking?.LangageId == requiredLangId
+                );
+
+            if (candidateLang == null) {
+                continue;
+            }
+            var candidateLevel = candidateLang.LangageSpeaking?.SpeakingLevel?.Code;
+
+            if (candidateLevel == null || requiredLevel == null) {
+                _logger.LogWarning("Niveau NULL détecté");
+                continue;
+            }
+
+            var candidateRank = GetLevelRank(candidateLevel);
+            var requiredRank = GetLevelRank(requiredLevel);
+
+            if (requiredRank == 0) {
+                continue;
+            }
+
+        // Si niveau >= requis -> 100% des points, sinon calcul du ratio
+            decimal ratio = candidateRank >= requiredRank ?
+                1m : (decimal)candidateRank / requiredRank;
+
+            var gainedPoints = ratio * required.Points;
+
+        // Incrémentation du point gagné
+            totalPoints += gainedPoints;
+        }
+
+        return totalPoints;
+    }
+
+
     private async Task AssignCandidatureScoresAsync(Candidature candidature) {
         try {
             _logger.LogInformation("Définition automatique des points de la candidature {id}", candidature.Id);
 
             var job = await _jobDescRepo.GetByIdWithCriteria(candidature.JobDescriptionId)
              ?? throw new ArgumentException("TDR non trouvé");
+            _logger.LogInformation("Nombre de critères: {count}", job.Criteria.Count);
 
             var detail = candidature.CandidatureDetails.FirstOrDefault();
             if (detail == null) return;
+
+            _logger.LogInformation("Nombre de langues candidat: {count}", 
+    detail.CandidatureLangages.Count);
 
             foreach (var crit in job.Criteria) {
                 switch (crit.PreselectionCriteriaId) 
@@ -169,11 +234,21 @@ public class CandidatureService(ICandidatureRepository rep,
                         var experienceScore = CalculateExperienceScore(
                             detail.YearsOfExperience, crit
                         );
-
                         await _repo.AddCandidatureScoreAsync(new CandidatureScore {
                             CandidatureId = candidature.Id,
                             CriteriaId = crit.Id,
                             Points = experienceScore
+                        });
+                        break;
+                    
+                    case "CRIT_004": // Compétences linguistiques
+                        var langScore = CalculateLanguageScore(
+                            detail.CandidatureLangages.ToList(), crit
+                        );
+                        await _repo.AddCandidatureScoreAsync(new CandidatureScore {
+                            CandidatureId = candidature.Id,
+                            CriteriaId = crit.Id,
+                            Points = langScore
                         });
                         break;
 
@@ -232,6 +307,7 @@ public class CandidatureService(ICandidatureRepository rep,
                 YearsOfExperience = data.YearsOfExperience,
             };
             await _repo.AddCandidatureDetailAsync(detail);
+            newCandidature.CandidatureDetails.Add(detail);
 
         // Compétences linguistiques
             foreach (var lang in data.Langages) {
@@ -243,11 +319,12 @@ public class CandidatureService(ICandidatureRepository rep,
                     continue; // Ignorer cette compétence linguistique
                 }
 
-                CandidatureLangage treatment = new() {
+                CandidatureLangage langage = new() {
                     CandidatureDetailId = detail.Id,
                     LangageSpeakingId = langageSpeaking.Id,
                 };
-                await _repo.AddCandidatureLangageAsync(treatment);
+                await _repo.AddCandidatureLangageAsync(langage);
+                detail.CandidatureLangages.Add(langage);
             }
 
         // Formations

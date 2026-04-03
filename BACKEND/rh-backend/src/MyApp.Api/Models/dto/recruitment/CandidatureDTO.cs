@@ -10,9 +10,17 @@ public class CandidatureFiltersDTO
     public bool? Treated { get; set; }
     public DateOnly? SendingMinDate { get; set; }
     public DateOnly? SendingMaxDate { get; set; }
-    public bool IsPreselected { get; set; }
+    public bool? IsPreselected { get; set; }
 }
 
+public class CandidatureScoreDTO
+{
+    public string Id { get; set; } = null!;
+    public string CriteriaId { get; set; } = null!;
+    public string Criteria { get; set; } = null!;
+    public decimal Points { get; set; }
+    public decimal Max { get; set; }
+}
 
 public class CandidaturesDetailsDTO
 {
@@ -42,10 +50,10 @@ public class CandidatureDetailsDTO
     public IEnumerable<LangageSkillDTO> LangagesSkills { get; set; }
      = new List<LangageSkillDTO>();
 
-    public IEnumerable<CandidatureScore> Scores { get; set; }
-     = new List<CandidatureScore>();
+    public IEnumerable<CandidatureScoreDTO> Scores { get; set; } = [];
 
     public decimal TotalScore { get; set; }
+    public decimal MaxScore { get; set; }
     
 // Informations de traitement
     public DateTime SendingDateTime { get; set; }
@@ -135,7 +143,6 @@ public class CandidatureFormDTO
 
     [Required(ErrorMessage = "Vous devez indiquer au moins une langue.")]
     [MinLength(1, ErrorMessage = "Vous devez indiquer au moins une langue.")]
-    [MaxLength(3, ErrorMessage = "Vous ne pouvez pas indiquer plus de 3 langues.")]
     [ValidLangages]
     public LangageSkillFormDTO[] Langages { get; set; } = null!;
 }

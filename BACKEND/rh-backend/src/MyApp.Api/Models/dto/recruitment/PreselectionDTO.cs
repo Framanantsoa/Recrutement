@@ -1,5 +1,3 @@
-using MyApp.Api.Entities.recruitment;
-
 namespace MyApp.Api.Models.dto.recruitment;
 
 public class PreselectionCriteriaDTO
@@ -12,7 +10,6 @@ public class PreselectionCriteriaWithScoreDTO
 {
     public string Id { get; set; } = null!;
     public string Criteria { get; set; } = null!;
-    public decimal Coefficient { get; set; }
     public decimal Score { get; set; }
 }
 

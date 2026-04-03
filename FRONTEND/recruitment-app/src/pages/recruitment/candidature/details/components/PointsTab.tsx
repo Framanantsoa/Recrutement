@@ -1,22 +1,11 @@
 import React from "react";
 import type { CandidatureDetailsDTO } from "@/api/recruitment/candidatures/service";
-import type { PreselectionCriteriaDTO } from "@/api/recruitment/preselection/service";
 
 interface Props {
-  criteria: PreselectionCriteriaDTO;
   details: CandidatureDetailsDTO;
 }
 
-const PointsTab: React.FC<Props> = ({ criteria, details }) => {
-
-  const getPointsByCriteriaId = (criteriaId?: string): number => {
-    if (!criteriaId) return 0;
-
-    return (
-      details.points?.find((p) => p.criteriaId === criteriaId)?.points ?? 0
-    );
-  };
-
+const PointsTab: React.FC<Props> = ({ details }) => {
   const getScoreColorClass = (points: number, max: number): string => {
     if (points === 0) return "score-bad";
 
@@ -52,16 +41,13 @@ const PointsTab: React.FC<Props> = ({ criteria, details }) => {
       <section className="details-section">
         <h3>Évaluation du candidat</h3>
 
-        {criteria.criteria.map((crit) => {
-          const basePoints = getPointsByCriteriaId(crit.id);
-          const finalScore = basePoints * crit.coefficient;
-
+        {details.scores.map((cand) => {
           return (
             <ScoreRow
-              key={crit.id}
-              label={crit.criteria}
-              score={finalScore}
-              max={crit.score}
+              key={cand.criteriaId}
+              label={cand.criteria}
+              score={cand.points}
+              max={cand.max}
             />
           );
         })}
@@ -71,7 +57,7 @@ const PointsTab: React.FC<Props> = ({ criteria, details }) => {
         <ScoreRow
           label="Score total"
           score={details.totalScore}
-          max={criteria.totalScore}
+          max={details.maxScore}
         />
       </section>
 

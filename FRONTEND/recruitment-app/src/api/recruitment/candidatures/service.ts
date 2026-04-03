@@ -2,7 +2,6 @@ import { formatParam } from "@/pages/recruitment/request/form";
 import api from "@/utils/axios-config";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import type { PreselectionCriteriaDTO } from "../preselection/service";
 import type { CreateRequestResponse } from "../service";
 import type { User } from "@/api/auth/services";
 
@@ -35,8 +34,8 @@ export interface CandidatureBaseInfoDTO {
 
 interface LangageSkillDTO {
     langage: string;
+    levelCode: string;
     level: string;
-    points: number;
 }
 
 interface CandidatureNoteUpadateFormDTO {
@@ -47,7 +46,9 @@ interface CandidatureNoteUpadateFormDTO {
 interface CandidatureScore {
     id: string;
     criteriaId: string;
+    criteria: string;
     points: number;
+    max: number;
 }
 
 export interface CandidatureDetailsDTO {
@@ -59,16 +60,20 @@ export interface CandidatureDetailsDTO {
     lmUrl: string;
     cvUrl: string;
 
+    formations: string[];
     yearsOfExperience: number;
     levelEducation: string;
-    langagesSkills: LangageSkillDTO[];
-    formations: string[];
-    totalScore: number;
 
-    points: CandidatureScore[];
+    langagesSkills: LangageSkillDTO[];
+    scores: CandidatureScore[];
+
+    totalScore: number;
+    maxScore: number;
 
     sendingDateTime: string;
     isTreated: boolean;
+
+    isPreselected: boolean | null;
 }
 
 export interface CandidatureComment {
@@ -136,15 +141,14 @@ export const useSearchCandidatures = (
 export const useSearchCandidatureDetails = (id: string) => {
     const queryKey = [...CANDIDATURE_DETAILS_KEY, { id }] as const;
 
-    return useQuery<{criteria: PreselectionCriteriaDTO, details: CandidatureDetailsDTO}, Error>({
+    return useQuery<CandidatureDetailsDTO, Error>({
         queryKey,
         queryFn: async () => {
             try {
                 const response = await api.get(`/api/recruitment/candidatures/${formatParam(id)}`, {});
-                const details = response.data.data.details;
-                const criteria = response.data.data.criteria;
+                const details = response.data.data;
 
-                return {criteria, details };
+                return details;
             } catch (error) {
                 if (axios.isAxiosError(error) && error.response) {
                     throw new Error(error.response.data?.message || 'Erreur serveur');

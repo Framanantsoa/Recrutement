@@ -19,8 +19,6 @@ const CandidatureDetailsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<TabKey>("details");
-  // const [preselected, setPreselected] = useState(false);
-  let preselected = false;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [alert, setAlert] = useState({
@@ -31,10 +29,6 @@ const CandidatureDetailsPage: React.FC = () => {
 
   const { data, isLoading } = useSearchCandidatureDetails(id ?? "");
   const finishTreatment = useFinishCandidatureTreatment(id);
-
-  if (data?.details!=undefined && data.criteria!=undefined) {
-    preselected = data?.details.totalScore >= data?.criteria.totalScore/2;
-  }
 
   const handleValidate = () => {
     finishTreatment.mutate(undefined, {
@@ -107,11 +101,11 @@ const CandidatureDetailsPage: React.FC = () => {
 
       {/* ===== CONTENT ===== */}
       {activeTab === "details" && (
-        <DetailsTab id={id} details={data.details} isPreselected={preselected}/>
+        <DetailsTab id={id} details={data} isPreselected={data.isPreselected}/>
       )}
 
       {activeTab === "points" && (
-        <PointsTab criteria={data.criteria} details={data.details} />
+        <PointsTab details={data} />
       )}
 
       {activeTab === "comments" && (
@@ -126,7 +120,7 @@ const CandidatureDetailsPage: React.FC = () => {
           <ArrowLeft size={18} /> Retour
         </ButtonView>
 
-        {data.details.isTreated==false && (
+        {data.isTreated==false && (
           <div className="right-footer">
             <ButtonView style={{ background: "var(--primary-color)", color: "white" }}
               onClick={() => setIsModalOpen(true)}

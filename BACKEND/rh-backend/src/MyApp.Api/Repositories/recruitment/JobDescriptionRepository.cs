@@ -46,6 +46,9 @@ public interface IJobDescriptionRepository
 // Liste des TDR en attente
     Task<(List<JobDescriptionDetailsDTO>, int)> GetAllPendedJobDescriptions(FilterRequestListDTO filters
      , int page, int pageSize);
+
+// Présélection
+    Task<decimal> GetMaxScoreAsync(string jobDescId);
 }
 
 
@@ -112,12 +115,41 @@ public class JobDescriptionRepository(AppDbContext ctx, ISequenceGenerator seq) 
     }
 
 
+    public async Task<decimal> GetMaxScoreAsync(string jobDescId) {
+        var jobCriteria = await _dbCtx.JobDescriptionCriterias
+            .Include(c => c.LevelEducations)
+            .Include(c => c.Formations)
+            .Include(c => c.Speakings)
+            .Include(c => c.Presentations)
+            .Include(c => c.Experiences)
+            .Where(c => c.JobDescriptionId == jobDescId)
+                .AsNoTracking()
+                .ToListAsync();
+
+        decimal totalMax = 0m;
+
+        foreach (var c in jobCriteria) {
+            totalMax += c.LevelEducations.Sum(le => le.Points);
+            totalMax += c.Formations.Sum(f => f.Points);
+            totalMax += c.Speakings.Sum(s => s.Points);
+            totalMax += c.Presentations.Sum(p => p.Points);
+            totalMax += c.Experiences.Sum(e => e.Points);
+        }
+
+        return totalMax;
+    }
+
+
     public async Task<JobDescription?> GetByIdWithCriteria(string id) {
         return await _dbCtx.JobDescriptions
             .Include(j => j.Criteria)
                 .ThenInclude(c => c.LevelEducations)
             .Include(j => j.Criteria)
                 .ThenInclude(c => c.Experiences)
+            .Include(j => j.Criteria)
+                .ThenInclude(c => c.Speakings)             
+                    .ThenInclude(s => s.LangageSpeaking)   
+                        .ThenInclude(ls => ls.SpeakingLevel) 
             .FirstOrDefaultAsync(j => j.Id == id);
     }
 

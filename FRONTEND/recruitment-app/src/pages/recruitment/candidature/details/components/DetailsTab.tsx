@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { Palette } from "lucide-react";
 
 interface Props {
-  isPreselected: boolean;
+  isPreselected: boolean | null;
   id?: string;
   details: CandidatureDetailsDTO;
 }
@@ -28,12 +28,16 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected }) => {
 
   const navigate = useNavigate();
 
+// Points statiques 
+  const maxFormation = details.scores.filter(s => s.criteriaId==="CRIT_002").map(s => s.max)[0] ?? 5;
+  const maxPresentation = details.scores.filter(s => s.criteriaId==="CRIT_005").map(s => s.max)[0] ?? 5;
+
   const sendingDate = new Date(details.sendingDateTime + "Z"); // UTC
   const fSendingDate = formatDate(sendingDate, "dd/MM/yyyy 'à' HH:mm");
 
   const getPoint = (criteriaId: string): number => {
     return (
-      details.points?.find((p) => p.criteriaId === criteriaId)?.points ?? 0
+      details.scores?.find((p) => p.criteriaId === criteriaId)?.points ?? 0
     );
   };
 
@@ -55,11 +59,18 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected }) => {
             message: "Note mise à jour avec succès",
           });
         },
-        onError: () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onError: (error: any) => {
+          let message = "Erreur lors de la mise à jour";
+
+          if (error.response?.data?.message) {
+            message = error.response.data.message;
+          }
+
           setAlert({
             isOpen: true,
             type: "error",
-            message: "Erreur lors de la mise à jour",
+            message,
           });
         },
       }
@@ -117,12 +128,13 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected }) => {
 
         {!details.isTreated && (
           <EditableScore
-            label="Note - Clarté de CV et LM (Maximum : 5)"
+            label={`Note - Clarté de CV et LM (sur ${maxPresentation})`}
             value={scores.candidature}
             onSave={(val) => {
               setScores((s) => ({ ...s, candidature: val }));
               handleSave("CRIT_005", val);
             }}
+            max={maxPresentation}
           />
         )}
       </section>
@@ -141,12 +153,13 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected }) => {
         <LabelValueList label="Diplômes et Formations" items={details.formations} />
         {!details.isTreated && (
           <EditableScore
-            label="Note - Diplômes et formations (Maximum : 5)"
+            label={`Note - Diplômes et formations (sur ${maxFormation})`}
             value={scores.formation}
             onSave={(val) => {
               setScores((s) => ({ ...s, formation: val }));
               handleSave("CRIT_002", val);
             }}
+            max={maxFormation}
           />
         )}
 
@@ -154,7 +167,7 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected }) => {
         {details.langagesSkills?.length ? (
           details.langagesSkills.map((lSkill, index) => (
             <LabelValue key={index}
-              label={lSkill.langage} value={lSkill.level}
+              label={lSkill.langage} value={`${lSkill.level} (${lSkill.levelCode})`}
             />
           ))
         ) : (

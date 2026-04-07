@@ -65,8 +65,8 @@ public class JobDescriptionController(IJobDescriptionService service)
 
         try {
             id = id.Replace("_", "/");
-            await _service.UpdateJobDescription(id, data);
-            return Ok(new { data = (object?)null, status = 200, message = "Fiche de poste mise à jour avec succès" });
+            string jobId = await _service.UpdateJobDescription(id, data);
+            return Ok(new { data = jobId, status = 200, message = "Fiche de poste mise à jour avec succès" });
         }
         catch(ArgumentException ex) {
             return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });

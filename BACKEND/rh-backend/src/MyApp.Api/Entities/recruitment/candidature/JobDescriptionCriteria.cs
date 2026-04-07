@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace MyApp.Api.Entities.recruitment;
 
 [Table("job_criteria")]
-public class JobDescriptionCriteria
+public class JobDescriptionCriteria : BaseEntity
 {
     [Key]
     [Column("job_criteria_id")]
@@ -19,11 +19,8 @@ public class JobDescriptionCriteria
     [Column("max_points")]
     public decimal MaxPoints { get; set; }
 
-    [Column("created_at")]
-    public DateTime CreatedAt { get; set; }
-
-    [Column("updated_at")]
-    public DateTime? UpdatedAt { get; set; }
+    [Column("validated_at")]
+    public DateTime? ValidatedAt { get; set; }
 
 
 // RELATIONS

@@ -267,8 +267,8 @@ const RequestDetails: React.FC = () => {
         />
       )}
 
-      {activeTab === "criteria" && jobCriteria && (
-        <JobCriteriaTab criteria={jobCriteria} />
+      {activeTab === "criteria" && jobDescData?.id && jobCriteria && (
+        <JobCriteriaTab jobId={jobDescData?.id} criteria={jobCriteria} />
       )}
 
 

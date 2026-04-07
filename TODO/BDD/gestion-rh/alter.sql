@@ -39,6 +39,9 @@ ADD CONSTRAINT FK_JobDescriptions_PostTypes
 FOREIGN KEY (post_type_id) REFERENCES posts_types(post_type_id);
 GO
 
+ALTER TABLE job_criteria ADD validated_at DATETIME2 NULL;
+GO
+
 -- =============================
 -- INDEXES
 -- =============================

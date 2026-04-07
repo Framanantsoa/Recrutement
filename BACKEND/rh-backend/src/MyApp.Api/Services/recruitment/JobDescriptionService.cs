@@ -21,7 +21,7 @@ public interface IJobDescriptionService
     Task<JobDescriptionDTO?> GetJobDescription(string requestId);
     Task<(bool, string?)> HasJobDescription(string requestId);
     Task<JobDescriptionEditDTO?> GetJobDescriptionEditById(string id);
-    Task UpdateJobDescription(string requestId, JobDescriptionFormDTO data);
+    Task<string> UpdateJobDescription(string requestId, JobDescriptionFormDTO data);
     Task<bool> CanValidateJobDescription(string userId);
     Task ValidateJobDescription(JobDescriptionValidationDTO data);
     Task<List<JobDescriptionValidationDetailsDTO>> GetAllValidationsByRequestId(string requestId);
@@ -291,7 +291,7 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
     }
 
 
-    public async Task UpdateJobDescription(string requestId, JobDescriptionFormDTO data) {
+    public async Task<string> UpdateJobDescription(string requestId, JobDescriptionFormDTO data) {
         try {
             _log.LogInformation("Mise à jour du TDR en cours");
             await _unitOfWork.BeginTransactionAsync();
@@ -374,6 +374,8 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
             // LOG
             await _logService.LogAsync("MODIFICATION TDR", "termes_reference",
              request.Creator.UserId);
+
+            return lastJobDesc.Id;
         }
         catch (Exception ex) {
             // await _unitOfWork.RollbackAsync();

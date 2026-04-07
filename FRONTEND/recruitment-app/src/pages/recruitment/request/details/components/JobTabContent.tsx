@@ -48,8 +48,8 @@ const JobTabContent: React.FC<{
         ) : (
           details.applicantUserId==userId && (
             <ButtonPrimary className="primary-btn" onClick={openCreateForm}>
-            <Plus /> Créer un terme de référence
-          </ButtonPrimary>
+              <Plus /> Créer un terme de référence
+            </ButtonPrimary>
           )
         )}        
       </div>

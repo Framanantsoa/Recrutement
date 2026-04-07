@@ -33,7 +33,6 @@ import RequestList from './pages/recruitment/request/list';
 import DraftRequestList from './pages/recruitment/request/validation/list';
 import RequestDetails from './pages/recruitment/request/details';
 import CandidatureList from './pages/recruitment/candidature/list';
-import PreselectionSetting from './pages/recruitment/candidature/settings';
 import CandidatureDetailsPage from './pages/recruitment/candidature/details';
 import DraftPlaningList from './pages/recruitment/job-interview/planing';
 // import { useAuthSync } from '@/utils/use-auth-sync';
@@ -91,7 +90,6 @@ function App() {
         <Route path="/recrutement/a-valider" element={<DraftRequestList />} />
         <Route path="/recrutement/candidatures/tdr/:jobId" element={<CandidatureList />} />
         <Route path="/recrutement/candidatures/:id/details" element={<CandidatureDetailsPage />} />
-        <Route path="/recrutement/parametrage" element={<PreselectionSetting />} />
         <Route path="/recrutement/liste-entretiens" element={<DraftPlaningList />} />
 
         {/* ERROR */}

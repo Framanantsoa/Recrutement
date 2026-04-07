@@ -24,6 +24,16 @@ public interface IPreselectionRepository
     Task AddLevelEducationRange(List<JobCriteriaLevelEducation> level);
     Task AddExperienceRange(List<JobCriteriaExperience> data);
     Task AddSpeakingRange(List<JobCriteriaSpeaking> data);
+
+    Task<JobDescriptionCriteria?> GetJobCriteriaByIdAsync(string id);
+    Task<JobDescriptionCriteria?> GetByJobAndCriteriaAsync(string jobId, string criteriaId);
+    void UpdateJobCriteria(JobDescriptionCriteria entity);
+
+    Task RemoveLevelEducations(string jobCriteriaId);
+    Task RemoveFormations(string jobCriteriaId);
+    Task RemoveExperiences(string jobCriteriaId);
+    Task RemoveSpeakings(string jobCriteriaId);
+    Task RemovePresentations(string jobCriteriaId);
 }
 
 
@@ -124,5 +134,76 @@ public class PreselectionRepository(
         }
 
         await _dbCtx.JobCriteriaSpeakings.AddRangeAsync(data);
+    }
+
+
+    public async Task<JobDescriptionCriteria?> GetJobCriteriaByIdAsync(string id)
+    {
+        return await _dbCtx.JobDescriptionCriterias
+            .Include(c => c.LevelEducations)
+            .Include(c => c.Formations)
+            .Include(c => c.Speakings)
+            .Include(c => c.Presentations)
+            .Include(c => c.Experiences)
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public async Task<JobDescriptionCriteria?> GetByJobAndCriteriaAsync(string jobId, string criteriaId)
+    {
+        return await _dbCtx.JobDescriptionCriterias
+            .Include(c => c.LevelEducations)
+            .Include(c => c.Formations)
+            .Include(c => c.Speakings)
+            .Include(c => c.Presentations)
+            .Include(c => c.Experiences)
+            .FirstOrDefaultAsync(c => 
+                c.JobDescriptionId == jobId &&
+                c.PreselectionCriteriaId == criteriaId
+            );
+    }
+
+    public void UpdateJobCriteria(JobDescriptionCriteria entity)
+    {
+        _dbCtx.JobDescriptionCriterias.Update(entity);
+    }
+
+    public async Task RemoveLevelEducations(string jobCriteriaId) {
+        var data = await _dbCtx.JobCriteriaLevelEducations
+            .Where(x => x.JobCriteriaId == jobCriteriaId)
+            .ToListAsync();
+
+        _dbCtx.JobCriteriaLevelEducations.RemoveRange(data);
+    }
+
+    public async Task RemoveFormations(string jobCriteriaId) {
+        var data = await _dbCtx.JobCriteriaFormations
+            .Where(x => x.JobCriteriaId == jobCriteriaId)
+            .ToListAsync();
+
+        _dbCtx.JobCriteriaFormations.RemoveRange(data);
+    }
+
+    public async Task RemoveSpeakings(string jobCriteriaId) {
+        var data = await _dbCtx.JobCriteriaSpeakings
+            .Where(x => x.JobCriteriaId == jobCriteriaId)
+            .ToListAsync();
+
+        _dbCtx.JobCriteriaSpeakings.RemoveRange(data);
+    }
+
+    public async Task RemoveExperiences(string jobCriteriaId) {
+        var data = await _dbCtx.JobCriteriaExperiences
+            .Where(x => x.JobCriteriaId == jobCriteriaId)
+            .ToListAsync();
+
+        _dbCtx.JobCriteriaExperiences.RemoveRange(data);
+    }
+
+    public async Task RemovePresentations(string jobCriteriaId) {
+        var data = await _dbCtx.JobCriteriaPresentations
+            .Where(x => x.JobCriteriaId == jobCriteriaId)
+            .ToListAsync();
+
+        _dbCtx.JobCriteriaPresentations.RemoveRange(data);
     }
 }

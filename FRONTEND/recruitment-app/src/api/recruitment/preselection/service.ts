@@ -130,3 +130,24 @@ export const useAddJobCriteria = () => {
         }
     });
 };
+
+export const useUpdateJobCriteria = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ jobId,data }: {
+            jobId: string; 
+            data: JobCriteriaFormDTO;
+        }) =>
+            api.put(`/api/recruitment/Preselections/job-criteria/${jobId}`, data)
+                .then(r => r.data),
+
+        onSuccess: (_, variables) => {
+            const id = variables.jobId;
+
+            queryClient.invalidateQueries({
+                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, id]
+            });
+        }
+    });
+};

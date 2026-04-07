@@ -66,7 +66,7 @@ const LoginPage: React.FC = () => {
         <Separator />
 
         <LoginDescription>
-          Automatisation des processus de recrutement
+          GESTION DE RECRUTEMENT
         </LoginDescription>
 
         <LoginForm onSubmit={handleSubmit}>

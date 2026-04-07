@@ -22,8 +22,6 @@ DROP PROCEDURE IF EXISTS sp_reset_validators_flow;
 DROP TRIGGER IF EXISTS trg_UpdateLastStatus;
 /* --- Supprimer les fonctions --- */
 DROP FUNCTION IF EXISTS fn_pending_recruitment_requests;
-/* --- Supprimer les vues --- */
-DROP VIEW IF EXISTS v_postes_par_dir;
 
 
 DROP TABLE IF EXISTS tmp_employee;

@@ -164,7 +164,7 @@ const JobDescriptionForm: React.FC<JobDescriptionFormProps> = ({
                 <PopupHeader>
                     {jobId ? 
                         (<PopupTitle>Modification du TDR</PopupTitle>) 
-                        : (<PopupTitle>Création de TDR</PopupTitle>)
+                        : (<PopupTitle>Création du TDR</PopupTitle>)
                     }
                     <PopupClose onClick={() => { handleReset(); onClose(); }}>
                         <X size={20} />

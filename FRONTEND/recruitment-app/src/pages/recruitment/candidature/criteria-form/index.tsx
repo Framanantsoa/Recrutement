@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Save, X } from "lucide-react";
 
 import {
@@ -12,9 +12,8 @@ import {
   useSearchLangages,
   useSearchSpeakingLevels
 } from "@/api/recruitment/preselection/service";
-import { useGetAllLevelEducations } from "@/api/recruitment/service";
-import { useAddJobCriteria } from "@/api/recruitment/preselection/service";
-
+import { useGetAllLevelEducations, type JobCriteriaDTO } from "@/api/recruitment/service";
+import { useAddJobCriteria, useUpdateJobCriteria } from "@/api/recruitment/preselection/service";
 import useSaveCriteria from "./hooks/use-save-criteria";
 
 import {
@@ -26,19 +25,24 @@ import JobCriteriaForm from "./components/job-criteria-form";
 interface Props {
   isOpen: boolean;
   jobId: string;
+  criteria?: JobCriteriaDTO;
   onClose: () => void;
 }
 
 const PreselectionCriteriaForm: React.FC<Props> = ({
-  isOpen,
-  jobId,
-  onClose
+    isOpen,
+    jobId,
+    criteria,
+    onClose
 }) => {
+    const [mode, setMode] = useState<"create" | "edit">("create");
+
     const { data: langagesResp } = useSearchLangages();
     const { data: speakingResp } = useSearchSpeakingLevels();
     const { data: levelResp } = useGetAllLevelEducations();
 
     const addCriteria = useAddJobCriteria();
+    const updateCriteria = useUpdateJobCriteria();
 
     const {
         formData,
@@ -58,7 +62,7 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
         removeLangage,
 
         validate
-    } = useSaveCriteria(jobId);
+    } = useSaveCriteria(jobId, mode);
 
 // Chargement des données
     useEffect(() => {
@@ -69,7 +73,7 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
 
     type AlertType = "error" | "info" | "success" | "warning";
 
-    const [alert, setAlert] = React.useState<{
+    const [alert, setAlert] = useState<{
         isOpen: boolean;
         type: AlertType;
         message: string;
@@ -91,23 +95,37 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
                 type: "error",
                 message: "Veuillez corriger les erreurs du formulaire"
             });
-            return; // stop
+            return;
         }
 
         try {
-            await addCriteria.mutateAsync(formData);
+            if (mode === "create") {
+                await addCriteria.mutateAsync(formData);
 
-            setAlert({
-                isOpen: true,
-                type: "success",
-                message: "Critères ajoutés avec succès"
-            });
+                setAlert({
+                    isOpen: true,
+                    type: "success",
+                    message: "Critères ajoutés avec succès"
+                });
+            } else {
+                await updateCriteria.mutateAsync({
+                    jobId,
+                    data: formData
+                });
+
+                setAlert({
+                    isOpen: true,
+                    type: "success",
+                    message: "Critères mis à jour avec succès"
+                });
+            }
+
             onClose();
         } 
         catch (error: any) {
             const message =
-                error?.response?.data?.message || // ✅ backend standard
-                error?.message ||                 // fallback axios
+                error?.response?.data?.message ||
+                error?.message ||
                 "Erreur";
 
             setAlert({
@@ -129,49 +147,50 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
                 </PopupHeader>
 
                 <PopupContent>
-                {alert.isOpen && (
-                    <Alert {...alert} onClose={() =>
-                     setAlert(a => ({ ...a, isOpen: false }))
-                    } />
-                )}
+                    {alert.isOpen && (
+                        <Alert {...alert} onClose={() =>
+                        setAlert(a => ({ ...a, isOpen: false }))
+                        } />
+                    )}
 
-                <StepItem active>
-                    <span>1</span> Définition des critères
-                </StepItem>
+                    <StepItem active>
+                        <span>1</span> Définition des critères
+                    </StepItem>
 
-                <FormContainer>
-                    <GenericForm onSubmit={onSubmit}>
-                        <StepContent active>
+                    <FormContainer>
+                        <GenericForm onSubmit={onSubmit}>
+                            <StepContent active>
 
-                            <JobCriteriaForm
-                             formData={formData}
-                             fieldErrors={fieldErrors}
+                                <JobCriteriaForm
+                                formData={formData}
+                                fieldErrors={fieldErrors}
 
-                             levelEducations={levelResp?.data || []}
-                             speakingLevels={speakingResp?.data || []}
-                             langages={langagesResp?.data || []}
+                                levelEducations={levelResp?.data || []}
+                                speakingLevels={speakingResp?.data || []}
+                                langages={langagesResp?.data || []}
 
-                             handleFieldChange={handleFieldChange}
-                             updateLevelEducation={updateLevelEducation}
+                                handleFieldChange={handleFieldChange}
+                                updateLevelEducation={updateLevelEducation}
 
-                             updateExperience={updateExperience}
-                             addExperience={addExperience}
-                             removeExperience={removeExperience}
+                                updateExperience={updateExperience}
+                                addExperience={addExperience}
+                                removeExperience={removeExperience}
 
-                             updateLangage={updateLangage}
-                             addLangage={addLangage}
-                             removeLangage={removeLangage}
-                            />
+                                updateLangage={updateLangage}
+                                addLangage={addLangage}
+                                removeLangage={removeLangage}
+                                />
 
-                            <StepNavigation>
-                                <ButtonPrimary type="submit">
-                                    <Save size={16} /> Enregistrer
-                                </ButtonPrimary>
-                            </StepNavigation>
+                                <StepNavigation>
+                                    <ButtonPrimary type="submit">
+                                        <Save size={16} />
+                                        {mode === "create" ? "Enregistrer" : "Mettre à jour"}
+                                    </ButtonPrimary>
+                                </StepNavigation>
 
-                        </StepContent>
-                    </GenericForm>
-                </FormContainer>
+                            </StepContent>
+                        </GenericForm>
+                    </FormContainer>
 
                 </PopupContent>
             </PagePopup>

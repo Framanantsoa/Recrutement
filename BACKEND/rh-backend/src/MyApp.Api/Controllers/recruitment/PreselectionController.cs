@@ -79,7 +79,29 @@ public class PreselectionController
 
         try {
             await _service.AddJobPreselectionCriteria(dto);
-            return Ok(new { data = (object?)null, status = 200, message = "success" });
+            return Ok(new { data = (object?)null, status = 200, message = "Critères créés" });
+        }
+        catch (ArgumentException ex) {
+            return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
+        }
+        catch (Exception ex) {
+            return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
+        }
+    }
+
+
+    [HttpPut("job-criteria/{jobId}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UpdateJobCriteria(
+        string jobId, [FromBody] JobCriteriaFormDTO dto
+    ) {
+        // if(!User.Identity?.IsAuthenticated ?? true) {
+        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        // }
+        
+        try {
+            await _service.UpdateJobPreselectionCriteria(jobId, dto);
+            return Ok(new { data = (object?)null, status = 200, message = "Critères mis à jour" });
         }
         catch (ArgumentException ex) {
             return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });

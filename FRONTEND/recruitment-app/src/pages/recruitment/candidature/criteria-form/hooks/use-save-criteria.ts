@@ -40,7 +40,7 @@ export interface JobCriteriaFormDTO {
   levelEducationsPoints: number;
 }
 
-const useSaveCriteria = (jobDescId: string) => {
+const useSaveCriteria = (jobDescId: string, mode: "create" | "edit") => {
   const initialState: JobCriteriaFormDTO = {
     jobDescId,
     levelEducation: [{ levelId: "", points: 0 }],
@@ -52,6 +52,10 @@ const useSaveCriteria = (jobDescId: string) => {
     experiencesPoints: 0,
     langagesPoints: 0,
     levelEducationsPoints: 0,
+  };
+
+  const setFromExistingData = (data: JobCriteriaFormDTO) => {
+    setFormData(data);
   };
 
   const initializeLevels = (levels: { id: string }[]) => {
@@ -321,7 +325,8 @@ const useSaveCriteria = (jobDescId: string) => {
     removeLangage,
 
     validate,
-    handleReset
+    handleReset,
+    setFromExistingData
   };
 };
 

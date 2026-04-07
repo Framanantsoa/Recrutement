@@ -2,9 +2,9 @@ import type { JobCriteriaDTO } from "@/api/recruitment/service";
 import RecruitmentStatusTag from "@/components/recruitment-status";
 import LabelValueList from "@/pages/recruitment/job-description/details/components/LabelValueList";
 import LabelValue from "@/pages/recruitment/request/details/components/LabelValue";
-import { ButtonConfirmSecondary } from "@/styles/table-styles";
+import { ButtonConfirm, ButtonConfirmSecondary } from "@/styles/table-styles";
 import React, { useState } from "react";
-import { FaPen } from "react-icons/fa";
+import { FaCheckCircle, FaPen } from "react-icons/fa";
 import PreselectionCriteriaForm from "..";
 
 interface Props {
@@ -14,6 +14,7 @@ interface Props {
 
 const JobCriteriaTab: React.FC<Props> = ({ jobId, criteria }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [modalIsOpen, setModalIsOpen] = useState(false);
 
     if (!criteria) return <p>Aucun critère défini.</p>;
 
@@ -28,6 +29,14 @@ const JobCriteriaTab: React.FC<Props> = ({ jobId, criteria }) => {
 
                 <div className="sticky-right">
                     <div className="actions-bar">
+                        <ButtonConfirm
+                            className="tdr-btn"
+                            onClick={() => setIsOpen(true)}
+                            disabled={false}
+                        >
+                            <FaCheckCircle /> Confirmer
+                        </ButtonConfirm>
+
                         <ButtonConfirmSecondary
                             className="tdr-btn"
                             onClick={() => setIsOpen(true)}

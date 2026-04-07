@@ -12,6 +12,8 @@ import { useNavigate } from "react-router-dom";
 import { formatParam } from "../../request/form";
 import PreselectionCriteriaForm from "../../candidature/criteria-form";
 
+import Alert from "@/components/alert";
+
 interface Props {
   requestId: string;
   details: RequestDetailsDTO;
@@ -27,6 +29,13 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit, onCriteri
 
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = userData?.userId || "";
+
+  const [alert, setAlert] = useState<{
+      isOpen: boolean;
+      type: "error" | "info" | "success" | "warning";
+      message: string;
+  }>({ isOpen: false, type: "info", message: "" });
+
 
   useEffect(() => {
     if (data?.data?.criteria && onCriteriaLoad) {
@@ -44,6 +53,12 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit, onCriteri
   const createdAtDateStr = formatDate(createdAt, "dd/MM/yyyy à HH:mm");
 
   return (<>
+    {alert.isOpen && (
+        <Alert {...alert}
+            onClose={() => setAlert(a => ({ ...a, isOpen: false }))}
+        />
+    )}
+
     <div className="request-details-vertical">
 
       {/* ===== STICKY HEADER ===== */}
@@ -143,7 +158,9 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit, onCriteri
     <PreselectionCriteriaForm
       isOpen={isCriteriaOpen}
       jobId={job.id}
+      requestId={requestId}
       onClose={() => setIsCriteriaOpen(false)}
+      setAlert={setAlert}
     />
   </>);
 };

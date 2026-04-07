@@ -34,6 +34,11 @@ public interface IPreselectionRepository
     Task RemoveExperiences(string jobCriteriaId);
     Task RemoveSpeakings(string jobCriteriaId);
     Task RemovePresentations(string jobCriteriaId);
+
+    Task<string?> GetLevelNameById(string levelId);
+    Task<string?> GetLangageNameById(string langageId);
+    Task<string?> GetLangageLevelById(string levelId);
+    Task<string?> GetSpeakingLevelNameById(string levelId);
 }
 
 
@@ -205,5 +210,37 @@ public class PreselectionRepository(
             .ToListAsync();
 
         _dbCtx.JobCriteriaPresentations.RemoveRange(data);
+    }
+
+    public async Task<string?> GetLevelNameById(string levelId)
+    {
+        var level = await _dbCtx.LevelEducations
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.Id == levelId);
+        return level?.Name;
+    }
+
+    public async Task<string?> GetLangageNameById(string langageId)
+    {
+        var lang = await _dbCtx.Langages
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.Id == langageId);
+        return lang?.Name;
+    }
+
+    public async Task<string?> GetLangageLevelById(string levelId)
+    {
+        var lang = await _dbCtx.SpeakingLevels
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.Id == levelId);
+        return lang?.Name;
+    }
+
+    public async Task<string?> GetSpeakingLevelNameById(string levelId)
+    {
+        var level = await _dbCtx.SpeakingLevels
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.Id == levelId);
+        return level?.Name;
     }
 }

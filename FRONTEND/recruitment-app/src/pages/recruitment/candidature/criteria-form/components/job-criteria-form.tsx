@@ -88,8 +88,6 @@ const JobCriteriaForm: React.FC<Props> = ({
     return fieldErrors.langages?.[index]?.[field]?.join(", ");
   };
 
-  console.log("Erreurs :", fieldErrors);
-
   return (
     <>
       {/* ================= EDUCATION ================= */}

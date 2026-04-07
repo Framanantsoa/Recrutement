@@ -38,8 +38,8 @@ public class UnitOfWorkService : IUnitOfWorkService
 
     public async Task RollbackAsync() {
         if (_transaction == null)
-            throw new ArgumentNullException("Transaction pas encore initialisée.");
-            
+            return;
+
         await _transaction.RollbackAsync();
         await _transaction.DisposeAsync();
         _transaction = null;   // IMPORTANT

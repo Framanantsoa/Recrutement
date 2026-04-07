@@ -284,6 +284,13 @@ public class CandidatureService(ICandidatureRepository rep,
     public async Task AddCandidature(string jobId, CandidatureFormDTO data) {
         try {
             _logger.LogInformation("Insertion de la nouvelle candidature de : {email}...", data.Email);
+            
+            var jobCriteria = await _jobDescRepo.GetByIdWithCriteria(jobId);
+
+            if (jobCriteria?.Criteria == null || !jobCriteria.Criteria.Any() || 
+             jobCriteria.Criteria.Any(c => c.ValidatedAt == null)) {
+                throw new ArgumentException("Les critères du poste ne sont pas encore validés.");
+            }
 
             await _dbService.BeginTransactionAsync();
 

@@ -2,32 +2,104 @@ import type { JobCriteriaDTO } from "@/api/recruitment/service";
 import RecruitmentStatusTag from "@/components/recruitment-status";
 import LabelValueList from "@/pages/recruitment/job-description/details/components/LabelValueList";
 import LabelValue from "@/pages/recruitment/request/details/components/LabelValue";
-import { ButtonConfirmSecondary } from "@/styles/table-styles";
+import { ButtonConfirm, ButtonConfirmSecondary } from "@/styles/table-styles";
 import React, { useState } from "react";
 import { FaPen } from "react-icons/fa";
 import PreselectionCriteriaForm from "..";
 
+import Alert from "@/components/alert";
+import Modal from "@/components/modal";
+import { useConfirmJobCriteria } from "@/api/recruitment/preselection/service";
+
 interface Props {
     jobId: string;
+    requestId: string;
     criteria: JobCriteriaDTO;
 }
 
-const JobCriteriaTab: React.FC<Props> = ({ jobId, criteria }) => {
+const JobCriteriaTab: React.FC<Props> = ({ jobId, requestId, criteria }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const [criteriaState, setCriteriaState] = useState(criteria);
+
+    const [alert, setAlert] = useState<{
+        isOpen: boolean;
+        type: "error" | "info" | "success" | "warning";
+        message: string;
+    }>({ isOpen: false, type: "info", message: "" });
+
+// HOOKS
+    const jobConfirm = useConfirmJobCriteria();
+
+// Confirmation
+    const handleConfirm = async() => {
+        if (!jobId) return;
+
+        try {
+            await jobConfirm.mutateAsync({ jobId });
+
+            setAlert({
+                isOpen: true,
+                type: "success",
+                message: "Critères confirmés avec succès"
+            });
+
+            setIsModalOpen(false);
+        } catch (error: any) {
+            setAlert({
+                isOpen: true,
+                type: "error",
+                message: error?.response?.data?.message
+                 || error?.message || "Erreur lors de la confirmation"
+            });
+
+            setIsModalOpen(false);
+        }
+    }
 
     if (!criteria) return <p>Aucun critère défini.</p>;
 
     return (<>
+        {alert.isOpen && (
+            <Alert {...alert}
+                onClose={() => setAlert(a => ({ ...a, isOpen: false }))}
+            />
+        )}
+
+        {/* MODAL */}
+        {isModalOpen && (
+            <Modal
+            type="success"
+            title="Confirmer"
+            message="Voulez-vous vraiment confirmer les critères ?"
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            confirmAction={handleConfirm}
+            confirmLabel="Confirmer"
+            cancelLabel="Annuler"
+            showActions
+            />
+        )}
+
         <div className="request-details-vertical">
 
             {/* ===== STICKY HEADER ===== */}
             <div className="sticky-top-full">
                 <div className="sticky-left">
-                    <LabelValue label="Points max" value={`${criteria.totalScore} pts`} />
+                    <LabelValue label="Points max" value={`${criteriaState.totalScore} pts`} />
                 </div>
 
                 <div className="sticky-right">
                     <div className="actions-bar">
+                        <ButtonConfirm
+                            className="tdr-btn"
+                            onClick={() => setIsModalOpen(true)}
+                            disabled={criteriaState.totalScore === 0} // optionnel
+                        >
+                            Confirmer
+                        </ButtonConfirm>
+
                         <ButtonConfirmSecondary
                             className="tdr-btn"
                             onClick={() => setIsOpen(true)}
@@ -44,43 +116,46 @@ const JobCriteriaTab: React.FC<Props> = ({ jobId, criteria }) => {
             </div>
 
             <section className="details-section">
-                {criteria.levelEducations.length > 0 && (
+                {criteriaState.levelEducations.length > 0 && (
                     <LabelValueList
                     label="Niveau d'études"
-                    items={criteria.levelEducations.map(
+                    items={criteriaState.levelEducations.map(
                         le => `${le.levelName} ( ${le.points} pts )`
                     )}
                     />
                 )}
 
-                {criteria.experiences.length > 0 && (
+                {criteriaState.experiences.length > 0 && (
                     <LabelValueList
                     label="Expérience professionnelle"
-                    items={criteria.experiences.map(
+                    items={criteriaState.experiences.map(
                         exp => `${exp.minYear} - ${exp.maxYear} ans ( ${exp.points} pts )`
                     )}
                     />
                 )}
 
-                {criteria.langages.length > 0 && (
+                {criteriaState.langages.length > 0 && (
                     <LabelValueList
                     label="Compétences linguistiques"
-                    items={criteria.langages.map(
+                    items={criteriaState.langages.map(
                         l => `${l.langage} - ${l.level} ( ${l.points} pts )`
                     )}
                     />
                 )}
 
-                <LabelValue label="Formations et/ou diplômes" value={`${criteria.formationsPoints} pts`} />
-                <LabelValue label="Clarté de candidature" value={`${criteria.presentationsPoints} pts`} />
+                <LabelValue label="Formations et/ou diplômes" value={`${criteriaState.formationsPoints} pts`} />
+                <LabelValue label="Clarté de candidature" value={`${criteriaState.presentationsPoints} pts`} />
             </section>
         </div>
 
         <PreselectionCriteriaForm
             isOpen={isOpen}
             jobId={jobId}
-            criteria={criteria}
+            requestId={requestId}
+            criteria={criteriaState}
             onClose={() => setIsOpen(false)}
+            onUpdated={(updatedCriteria) => setCriteriaState(updatedCriteria)}
+            setAlert={setAlert}
         />
     </>);
 };

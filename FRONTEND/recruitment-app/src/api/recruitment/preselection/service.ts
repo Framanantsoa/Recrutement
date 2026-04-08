@@ -136,7 +136,7 @@ export const useUpdateJobCriteria = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ jobId, requestId, data }: {
+        mutationFn: async ({ jobId, data }: {
             jobId: string; 
             requestId: string;
             data: JobCriteriaFormDTO;
@@ -173,6 +173,8 @@ export const useConfirmJobCriteria = () => {
             await queryClient.invalidateQueries({
                 queryKey: [...SEARCH_JOB_DESC_BASE_KEY, jobId]
             });
+
+            
         }
     });
 };

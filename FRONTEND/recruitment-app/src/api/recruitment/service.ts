@@ -172,6 +172,7 @@ export interface JobCriteriaDTO {
   langages: LangageDataDTO[];
 
   totalScore: number;
+  status: string;
 }
 
 export interface JobDescriptionDetails {
@@ -569,21 +570,22 @@ export const useGetRecruitmentRequest = (id?: string) => {
 };
 
 export const useUpdateRecruitmentRequest = (id?: string) => {
+    if (!id) throw new Error("ID requis pour la mise à jour");
     const queryClient = useQueryClient();
 
     return useMutation<CreateRequestResponse, Error, RecruitmentRequestForm>({
         mutationFn: async (data) => 
-            await api.put(`/api/recruitment/requests/${formatParam(id!)}`, data)
+            await api.put(`/api/recruitment/requests/${formatParam(id)}`, data)
             .then(r => r.data),
 
         onSuccess: () => {
             queryClient.invalidateQueries({ 
                 queryKey: SEARCH_REQUESTS_BASE_KEY 
-            }),
+            });
 
             queryClient.invalidateQueries({
                 queryKey: [...SEARCH_JOB_FORM_KEY, id]
-            })
+            });
         },
     });
 };

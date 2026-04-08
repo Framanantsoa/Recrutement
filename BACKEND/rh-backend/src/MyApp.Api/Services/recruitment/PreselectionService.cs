@@ -373,7 +373,8 @@ public class PreselectionService(
                 LangagesPoints = data.LangagesPoints,
                 Langages = langages,
                 TotalScore = data.LevelEducationsPoints + data.FormationsPoints +
-                            data.PresentationsPoints + data.ExperiencesPoints + data.LangagesPoints
+                            data.PresentationsPoints + data.ExperiencesPoints + data.LangagesPoints,
+                Status = presentationCriteria.ValidatedAt != null ? "Validée" : "Brouillon"
             };
 
             return updatedCriteria;

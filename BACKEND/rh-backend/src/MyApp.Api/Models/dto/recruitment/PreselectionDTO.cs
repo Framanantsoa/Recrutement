@@ -76,4 +76,5 @@ public class JobCriteriaDTO
     public List<LangageDataDTO> Langages { get; set; } = [];
 
     public decimal TotalScore { get; set; }
+    public string Status { get; set; } = null!;
 }

@@ -7,7 +7,6 @@ import {
   PopupClose, PopupContent, ButtonPrimary
 } from "@/styles/popup-styles";
 
-import Alert from "@/components/alert";
 import {
   useSearchLangages,
   useSearchSpeakingLevels

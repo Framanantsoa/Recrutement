@@ -272,6 +272,7 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
                     }
                 }
                 dto.TotalScore = totalScore;
+                dto.Status = criteria.First().ValidatedAt != null ? "Validée" : "Brouillon";
                 result.Criteria = dto;
             }
 

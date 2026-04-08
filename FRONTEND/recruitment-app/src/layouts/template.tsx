@@ -150,7 +150,6 @@ const Template: React.FC<TemplateProps> = ({ children }) => {
   const hasVoirLogs = useHasHabilitation(user.userId, "Accéder aux logs");
  
   // Gestion de recrutement
-  const hasVoirParametrage = useHasHabilitation(user.userId, "Gérer les paramétrages du recrutement");
   const hasVoirHabilitation = useHasHabilitation(user.userId, "Consulter les habilitations");
   // const hasVoirTableauBord = useHasHabilitation(user.userId, "Accéder au tableau de bord");
 // Vérification de l'accès 
@@ -163,7 +162,6 @@ const Template: React.FC<TemplateProps> = ({ children }) => {
   const habilitationsMap = useMemo(() => ({
     "Utilisateurs": hasVoirUtilisateurs,
     "Rôles & Habilitations": hasVoirDroitAcces,
-    "Paramétrages": false,
     "Entretiens": true,
     "Accès": hasVoirAcces,
     "Référentiel": hasVoirReferentiel,
@@ -171,7 +169,7 @@ const Template: React.FC<TemplateProps> = ({ children }) => {
     "Logs": hasVoirLogs,
     "validations": canSeeValidationInRecruitment || canSeeJobDescriptionValidation,
     "Habilitation": hasVoirHabilitation,
-    "Tableau de bord": false,
+    "Tableau de bord": true,
   }), [
     hasVoirUtilisateurs,
     hasVoirDroitAcces,
@@ -179,7 +177,6 @@ const Template: React.FC<TemplateProps> = ({ children }) => {
     hasVoirReferentiel,
     hasVoirImport,
     hasVoirLogs,
-    hasVoirParametrage,
     hasVoirHabilitation,
     canSeeValidationInRecruitment,
     canSeeJobDescriptionValidation,

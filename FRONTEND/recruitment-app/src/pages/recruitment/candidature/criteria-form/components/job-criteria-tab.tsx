@@ -4,7 +4,7 @@ import LabelValueList from "@/pages/recruitment/job-description/details/componen
 import LabelValue from "@/pages/recruitment/request/details/components/LabelValue";
 import { ButtonConfirm, ButtonConfirmSecondary } from "@/styles/table-styles";
 import React, { useState } from "react";
-import { FaPen } from "react-icons/fa";
+import { FaCheckCircle, FaPen } from "react-icons/fa";
 import PreselectionCriteriaForm from "..";
 
 import Alert from "@/components/alert";
@@ -19,7 +19,6 @@ interface Props {
 
 const JobCriteriaTab: React.FC<Props> = ({ jobId, requestId, criteria }) => {
     const [isOpen, setIsOpen] = useState(false);
-
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const [criteriaState, setCriteriaState] = useState(criteria);
@@ -94,16 +93,14 @@ const JobCriteriaTab: React.FC<Props> = ({ jobId, requestId, criteria }) => {
 
                 <div className="sticky-right">
                     <div className="actions-bar">
-                        <ButtonConfirm
-                            className="tdr-btn"
+                        <ButtonConfirm className="tdr-btn"
                             onClick={() => setIsModalOpen(true)}
                             disabled={criteriaState.totalScore === 0} // optionnel
                         >
-                            Confirmer
+                            <FaCheckCircle /> Confirmer
                         </ButtonConfirm>
 
-                        <ButtonConfirmSecondary
-                            className="tdr-btn"
+                        <ButtonConfirmSecondary className="tdr-btn"
                             onClick={() => setIsOpen(true)}
                             disabled={false}
                         >
@@ -111,7 +108,7 @@ const JobCriteriaTab: React.FC<Props> = ({ jobId, requestId, criteria }) => {
                         </ButtonConfirmSecondary>
                         
                         <LabelValue label="Statut">
-                            <RecruitmentStatusTag status={"brouillon"}/>
+                            <RecruitmentStatusTag status={criteria.status}/>
                         </LabelValue>
                     </div>
                 </div>

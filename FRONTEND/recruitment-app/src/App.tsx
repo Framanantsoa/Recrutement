@@ -55,7 +55,8 @@ function App() {
         <Route path="/profil-page" element={<ProfilePage />} />
         {/* ADMIN */}
         <Route path="/dashboard" element={<Home />} />
-        {/* <Route path="/tableau-bord" element={<TableauBord />} /> */}
+        {/* <Route path="/tableau-bord" element={<Dashboard />} /> */}
+
         <Route path="/utilisateurs" element={<UserList />} />
         <Route path="/logs" element={<LogList />} />
         <Route path="/roles" element={<RoleList />} />

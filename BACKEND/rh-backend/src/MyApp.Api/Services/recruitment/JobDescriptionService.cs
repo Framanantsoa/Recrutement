@@ -262,7 +262,9 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
                             dto.Langages = c.Speakings
                                 .Select(s => new LangageDataDTO
                                 {
+                                    LangageId = s.LangageSpeaking.Langage.Id,
                                     Langage = s.LangageSpeaking.Langage.Name,
+                                    LevelId = s.LangageSpeaking.SpeakingLevel.Id,
                                     Level = s.LangageSpeaking.SpeakingLevel.Name,
                                     Points = s.Points
                                 }).ToList();

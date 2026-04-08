@@ -7,7 +7,7 @@ import type { RequestValidationFormDTO } from '@/pages/recruitment/request/valid
 import { formatParam } from '@/pages/recruitment/request/form';
 // Base key pour React Query
 const SEARCH_REQUESTS_BASE_KEY = ['searchRequests'] as const;
-const SEARCH_REQUEST_DETAILS_BASE_KEY = ['searchRequestDetails'] as const;
+export const SEARCH_REQUEST_DETAILS_BASE_KEY = ['searchRequestDetails'] as const;
 const SEARCH_STATUSES_BASE_KEY = ['searchRequestStatuses'] as const;
 const SEARCH_REASONS_BASE_KEY = ['searchReasons'] as const;
 const SEARCH_PENDED_REQUESTS_BASE_KEY = ['searchPendedRequests'] as const;
@@ -148,8 +148,12 @@ export interface ExperienceDataDTO {
 }
 
 export interface LangageDataDTO {
+  langageId: string;
   langage: string;
+
+  levelId: string;
   level: string;
+
   points: number;
 }
 

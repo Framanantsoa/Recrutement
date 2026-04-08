@@ -1,8 +1,9 @@
 import api from "@/utils/axios-config";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { SEARCH_JOB_DESC_BASE_KEY } from "../service";
+import { SEARCH_JOB_DESC_BASE_KEY, SEARCH_REQUEST_DETAILS_BASE_KEY } from "../service";
 import type { JobCriteriaFormDTO } from "@/pages/recruitment/candidature/criteria-form/hooks/use-save-criteria";
+import { formatParam } from "@/pages/recruitment/request/form";
 
 interface ApiResponse<T> {
   data: T;
@@ -135,18 +136,42 @@ export const useUpdateJobCriteria = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ jobId,data }: {
+        mutationFn: async ({ jobId, requestId, data }: {
             jobId: string; 
+            requestId: string;
             data: JobCriteriaFormDTO;
         }) =>
-            api.put(`/api/recruitment/Preselections/job-criteria/${jobId}`, data)
+            api.put(`/api/recruitment/Preselections/job-criteria/${formatParam(jobId)}`, data)
                 .then(r => r.data),
 
-        onSuccess: (_, variables) => {
-            const id = variables.jobId;
+        onSuccess: async (_, variables) => {
+            const { requestId, jobId } = variables;
+        
+            await queryClient.invalidateQueries({
+                queryKey: [...SEARCH_REQUEST_DETAILS_BASE_KEY, requestId]
+            });
+        
+            await queryClient.invalidateQueries({
+                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, jobId]
+            });
+        }
+    });
+};
 
-            queryClient.invalidateQueries({
-                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, id]
+
+export const useConfirmJobCriteria = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ jobId }: { jobId: string; }) =>
+            api.put(`/api/recruitment/Preselections/job-criteria/${formatParam(jobId)}/confirm`)
+                .then(r => r.data),
+
+        onSuccess: async (_, variables) => {
+            const { jobId } = variables;
+        
+            await queryClient.invalidateQueries({
+                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, jobId]
             });
         }
     });

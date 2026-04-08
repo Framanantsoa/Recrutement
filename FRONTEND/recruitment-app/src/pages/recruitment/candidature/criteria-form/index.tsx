@@ -25,15 +25,24 @@ import JobCriteriaForm from "./components/job-criteria-form";
 interface Props {
   isOpen: boolean;
   jobId: string;
+  requestId: string;
   criteria?: JobCriteriaDTO;
   onClose: () => void;
+  onUpdated?: (updatedCriteria: JobCriteriaDTO) => void;
+  setAlert: React.Dispatch<React.SetStateAction<{
+    isOpen: boolean;
+    type: "error" | "info" | "success" | "warning";
+    message: string;
+  }>>;
 }
 
 const PreselectionCriteriaForm: React.FC<Props> = ({
     isOpen,
     jobId,
+    requestId,
     criteria,
-    onClose
+    onClose, onUpdated, 
+    setAlert
 }) => {
     const [mode, setMode] = useState<"create" | "edit">("create");
 
@@ -61,8 +70,40 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
         addLangage,
         removeLangage,
 
-        validate
+        validate,
+        setFromExistingData,
     } = useSaveCriteria(jobId, mode);
+
+    useEffect(() => {
+        if (criteria) {
+            setMode("edit");
+    
+            setFromExistingData({
+                jobDescId: jobId,
+                levelEducation: criteria.levelEducations.map(l => ({
+                    levelId: l.levelId,
+                    points: l.points
+                })),
+                experiences: criteria.experiences.map(e => ({
+                    minimum: e.minYear,
+                    maximum: e.maxYear,
+                    points: e.points
+                })),
+                langages: criteria.langages.map(l => ({
+                    langageId: l.langageId,
+                    levelId: l.levelId,
+                    points: l.points
+                })),
+                formationsPoints: criteria.formationsPoints,
+                presentationsPoints: criteria.presentationsPoints,
+                experiencesPoints: criteria.experiencesPoints,
+                langagesPoints: criteria.langagesPoints,
+                levelEducationsPoints: criteria.levelEducationsPoints,
+            });
+        } else {
+            setMode("create");
+        }
+    }, [criteria]);
 
 // Chargement des données
     useEffect(() => {
@@ -70,18 +111,6 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
           initializeLevels(levelResp.data);
         }
     }, [levelResp]);
-
-    type AlertType = "error" | "info" | "success" | "warning";
-
-    const [alert, setAlert] = useState<{
-        isOpen: boolean;
-        type: AlertType;
-        message: string;
-    }>({
-        isOpen: false,
-        type: "info",
-        message: ""
-    });
 
     if (!isOpen) return null;
 
@@ -108,8 +137,8 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
                     message: "Critères ajoutés avec succès"
                 });
             } else {
-                await updateCriteria.mutateAsync({
-                    jobId,
+                const updated = await updateCriteria.mutateAsync({
+                    jobId, requestId,
                     data: formData
                 });
 
@@ -118,9 +147,9 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
                     type: "success",
                     message: "Critères mis à jour avec succès"
                 });
+                if (onUpdated) onUpdated(updated.data || formData);
             }
-
-            onClose();
+            onClose()
         } 
         catch (error: any) {
             const message =
@@ -147,12 +176,6 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
                 </PopupHeader>
 
                 <PopupContent>
-                    {alert.isOpen && (
-                        <Alert {...alert} onClose={() =>
-                        setAlert(a => ({ ...a, isOpen: false }))
-                        } />
-                    )}
-
                     <StepItem active>
                         <span>1</span> Définition des critères
                     </StepItem>

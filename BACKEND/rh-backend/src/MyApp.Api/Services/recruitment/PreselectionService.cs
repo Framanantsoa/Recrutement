@@ -10,7 +10,8 @@ public interface IPreselectionService
     Task<List<PreselectionCriteria>> GetAllPreselectionCriteriaAsync();
     Task<List<SpeakingLevel>> GetAllSpeakingLevelsAsync();
     Task AddJobPreselectionCriteria(JobCriteriaFormDTO data);
-    Task UpdateJobPreselectionCriteria(string jobId, JobCriteriaFormDTO data);
+    Task ConfirmCriteria(string jobId);
+    Task<JobCriteriaDTO> UpdateJobPreselectionCriteria(string jobId, JobCriteriaFormDTO data);
 }
 
 
@@ -194,7 +195,7 @@ public class PreselectionService(
     }
 
 
-    public async Task UpdateJobPreselectionCriteria(string jobId, JobCriteriaFormDTO data) {
+    public async Task<JobCriteriaDTO> UpdateJobPreselectionCriteria(string jobId, JobCriteriaFormDTO data) {
         await _dbService.BeginTransactionAsync();
 
         try {
@@ -326,13 +327,87 @@ public class PreselectionService(
 
             // ================= COMMIT =================
             await _dbService.CommitAsync();
-
             _logger.LogInformation("Mise à jour réussie");
+
+            // === Construire l'objet JobCriteriaDTO à retourner ===
+            var levelEducations = new List<LevelEducationDataDTO>();
+            foreach (var l in data.LevelEducation)
+            {
+                var levelName = await _repo.GetLevelNameById(l.LevelId) ?? "";
+                levelEducations.Add(new LevelEducationDataDTO
+                {
+                    LevelId = l.LevelId,
+                    LevelName = levelName,
+                    Points = l.Points
+                });
+            }
+
+            var langages = new List<LangageDataDTO>();
+            foreach (var l in data.Langages)
+            {
+                var langageName = await _repo.GetLangageNameById(l.LangageId) ?? "";
+                var levelName = await _repo.GetLangageLevelById(l.LevelId) ?? "";
+                langages.Add(new LangageDataDTO
+                {
+                    LangageId = l.LangageId,
+                    Langage = langageName,
+                    LevelId = l.LevelId,
+                    Level = levelName,
+                    Points = l.Points
+                });
+            }
+
+            var updatedCriteria = new JobCriteriaDTO
+            {
+                LevelEducationsPoints = data.LevelEducationsPoints,
+                LevelEducations = levelEducations,
+                FormationsPoints = data.FormationsPoints,
+                PresentationsPoints = data.PresentationsPoints,
+                ExperiencesPoints = data.ExperiencesPoints,
+                Experiences = data.Experiences.Select(e => new ExperienceDataDTO
+                {
+                    MinYear = e.Minimum,
+                    MaxYear = e.Maximum,
+                    Points = e.Points
+                }).ToList(),
+                LangagesPoints = data.LangagesPoints,
+                Langages = langages,
+                TotalScore = data.LevelEducationsPoints + data.FormationsPoints +
+                            data.PresentationsPoints + data.ExperiencesPoints + data.LangagesPoints
+            };
+
+            return updatedCriteria;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             await _dbService.RollbackAsync();
             _logger.LogError(ex, "Erreur lors de la mise à jour");
+            throw;
+        }
+    }
+
+
+    public async Task ConfirmCriteria(string jobId) {
+        await _dbService.BeginTransactionAsync();
+
+        try {
+            _logger.LogInformation("Confirmation en cours");
+
+
+            var jobCriteria = await _jobRepo.GetByIdWithCriteria(jobId)
+             ?? throw new ArgumentException("TDR non trouvé");
+
+            var criteria = jobCriteria.Criteria;
+            var now = DateTime.UtcNow;
+
+            foreach (var item in criteria) {
+                item.ValidatedAt = now;
+            }
+
+            await _dbService.CommitAsync();
+        }
+        catch (Exception ex) {
+            _logger.LogError(ex, "Erreur lors de la confirmation.");
+            await _dbService.RollbackAsync();
             throw;
         }
     }

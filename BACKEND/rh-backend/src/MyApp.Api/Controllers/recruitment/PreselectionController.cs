@@ -95,12 +95,36 @@ public class PreselectionController
     public async Task<IActionResult> UpdateJobCriteria(
         string jobId, [FromBody] JobCriteriaFormDTO dto
     ) {
+        jobId = jobId.Replace("_", "/");
+
         // if(!User.Identity?.IsAuthenticated ?? true) {
         //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
         // }
         
         try {
-            await _service.UpdateJobPreselectionCriteria(jobId, dto);
+            var updated = await _service.UpdateJobPreselectionCriteria(jobId, dto);
+            return Ok(new { data = updated, status = 200, message = "Critères mis à jour" });
+        }
+        catch (ArgumentException ex) {
+            return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
+        }
+        catch (Exception ex) {
+            return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
+        }
+    }
+
+
+    [HttpPut("job-criteria/{jobId}/confirm")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ConfirmCriteria(string jobId) {
+        jobId = jobId.Replace("_", "/");
+
+        // if(!User.Identity?.IsAuthenticated ?? true) {
+        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        // }
+        
+        try {
+            await _service.ConfirmCriteria(jobId);
             return Ok(new { data = (object?)null, status = 200, message = "Critères mis à jour" });
         }
         catch (ArgumentException ex) {

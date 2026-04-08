@@ -51,8 +51,12 @@ public class ExperienceDataDTO
 
 public class LangageDataDTO
 {
+    public string LangageId  { get; set; } = null!;
     public string Langage { get; set; } = null!;
+
+    public string LevelId { get; set; } = null!;
     public string Level { get; set; } = null!;
+
     public decimal Points { get; set; }
 }
 

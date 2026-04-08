@@ -1,4 +1,4 @@
-import { useCanValidateJobDescription, useGetRecruitmentRequestDetails, useHasJobDescription, useHasValidationInRecruitment, type JobCriteriaDTO } from "@/api/recruitment/service";
+import { useCanValidateJobDescription, useGetJobDescriptionDetails, useGetRecruitmentRequestDetails, useHasJobDescription, useHasValidationInRecruitment, type JobCriteriaDTO } from "@/api/recruitment/service";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import RequestDetailsCard from "./components/RequestDetailsCard";
 import { ArrowLeft, Check, X } from "lucide-react";
@@ -51,7 +51,7 @@ const RequestDetails: React.FC = () => {
   });
   const [decision, setDecision] = useState<"Approuver" | "Refuser">();
 
-  const [jobCriteria, setJobCriteria] = useState<JobCriteriaDTO | null>(null);
+  // const [jobCriteria, setJobCriteria] = useState<JobCriteriaDTO | null>(null);
   
   const [isValidationModalOpen, setIsValidationModalOpen] = useState<boolean>(false);
   const [isRefuseFormOpen, setIsRefuseFormOpen] = useState<boolean>(false);
@@ -60,6 +60,15 @@ const RequestDetails: React.FC = () => {
   String(searchParams.get("validateur")) : undefined;
 
   const [validationType, setValidationType] = useState<"REQUEST" | "JOB" | null>(null);
+  
+  const { data: validator} = useHasValidationInRecruitment(validatorId);
+  const { data: jobDescValidator} = useCanValidateJobDescription(validatorId);
+
+  const { data, isLoading } = useGetRecruitmentRequestDetails(id ?? "");
+  const { data: jobDescDetails } = useGetJobDescriptionDetails(id ?? "");
+  const { data: jobDescData } = useHasJobDescription(id ?? "");
+
+  const jobCriteria = jobDescDetails?.data?.criteria;
 
   useEffect(() => {
     if (id) {
@@ -76,12 +85,6 @@ const RequestDetails: React.FC = () => {
       setActiveTab("job");
     }
   }, [activeTab, jobCriteria]);
-  
-  const { data: validator} = useHasValidationInRecruitment(validatorId);
-  const { data: jobDescValidator} = useCanValidateJobDescription(validatorId);
-
-  const { data, isLoading } = useGetRecruitmentRequestDetails(id ?? "");
-  const { data: jobDescData } = useHasJobDescription(id ?? "");
 
 
   const [alert, setAlert] = useState({
@@ -263,12 +266,15 @@ const RequestDetails: React.FC = () => {
           details={data.details}
           requestStatus={data.details.status}
           hasJobDescription={jobDescData?.hasJobDescription}
-          onCriteriaLoad={(criteria) => setJobCriteria(criteria)}
         />
       )}
 
       {activeTab === "criteria" && jobDescData?.id && jobCriteria && (
-        <JobCriteriaTab jobId={jobDescData?.id} criteria={jobCriteria} />
+        <JobCriteriaTab
+         jobId={jobDescData?.id}
+         requestId={data.details.id} 
+         criteria={jobCriteria} 
+        />
       )}
 
 

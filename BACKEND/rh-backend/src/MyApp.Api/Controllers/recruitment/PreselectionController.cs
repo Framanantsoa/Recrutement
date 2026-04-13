@@ -124,8 +124,8 @@ public class PreselectionController
         // }
         
         try {
-            await _service.ConfirmCriteria(jobId);
-            return Ok(new { data = (object?)null, status = 200, message = "Critères mis à jour" });
+            string requestId =await _service.ConfirmCriteria(jobId);
+            return Ok(new { data = requestId, status = 200, message = "Critères mis à jour" });
         }
         catch (ArgumentException ex) {
             return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });

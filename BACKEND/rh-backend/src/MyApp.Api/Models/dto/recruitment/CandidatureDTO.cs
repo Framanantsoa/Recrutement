@@ -58,6 +58,7 @@ public class CandidatureDetailsDTO
 // Informations de traitement
     public DateTime SendingDateTime { get; set; }
     public bool IsTreated { get; set; }
+    public DateTime? TreatedAt { get; set; }
 
     public bool? IsPreselected { get; set; }
 }

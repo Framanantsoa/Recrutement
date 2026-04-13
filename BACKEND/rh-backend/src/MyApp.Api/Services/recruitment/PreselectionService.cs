@@ -10,7 +10,7 @@ public interface IPreselectionService
     Task<List<PreselectionCriteria>> GetAllPreselectionCriteriaAsync();
     Task<List<SpeakingLevel>> GetAllSpeakingLevelsAsync();
     Task AddJobPreselectionCriteria(JobCriteriaFormDTO data);
-    Task ConfirmCriteria(string jobId);
+    Task<string> ConfirmCriteria(string jobId);
     Task<JobCriteriaDTO> UpdateJobPreselectionCriteria(string jobId, JobCriteriaFormDTO data);
 }
 
@@ -387,7 +387,7 @@ public class PreselectionService(
     }
 
 
-    public async Task ConfirmCriteria(string jobId) {
+    public async Task<string> ConfirmCriteria(string jobId) {
         await _dbService.BeginTransactionAsync();
 
         try {
@@ -405,6 +405,8 @@ public class PreselectionService(
             }
 
             await _dbService.CommitAsync();
+
+            return jobCriteria.RequestId;
         }
         catch (Exception ex) {
             _logger.LogError(ex, "Erreur lors de la confirmation.");

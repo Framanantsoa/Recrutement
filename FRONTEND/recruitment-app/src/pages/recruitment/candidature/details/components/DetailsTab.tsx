@@ -13,9 +13,10 @@ interface Props {
   isPreselected: boolean | null;
   id?: string;
   details: CandidatureDetailsDTO;
+  canDefineNotes?: boolean;
 }
 
-const DetailsTab: React.FC<Props> = ({ id, details, isPreselected }) => {
+const DetailsTab: React.FC<Props> = ({ id, details, isPreselected, canDefineNotes }) => {
   const [alert, setAlert] = useState<{
     isOpen: boolean;
     type: "success" | "error" | "info";
@@ -126,7 +127,7 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected }) => {
           <LabelValue label="Lettre de motivation (LM)" value={details.lmUrl ?? "N/A"} />
         </nav>
 
-        {!details.isTreated && (
+        {(!details.isTreated && canDefineNotes===true) && (
           <EditableScore
             label={`Note - Clarté de CV et LM (sur ${maxPresentation})`}
             value={scores.candidature}
@@ -151,7 +152,7 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected }) => {
           }
         />
         <LabelValueList label="Diplômes et Formations" items={details.formations} />
-        {!details.isTreated && (
+        {(!details.isTreated && canDefineNotes===true) && (
           <EditableScore
             label={`Note - Diplômes et formations (sur ${maxFormation})`}
             value={scores.formation}
@@ -185,6 +186,13 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected }) => {
           label="Statut de la candidature"
           value={details.isTreated ? "Traitée" : "Non traitée"}
         />
+
+        {details.isTreated && details.treatedAt && (
+          <LabelValue
+            label="Traitée le"
+            value={formatDate(new Date(details.treatedAt + "Z"), "dd/MM/yyyy 'à' HH:mm")}
+          />
+        )}
       </section>
     </div>
   </>);

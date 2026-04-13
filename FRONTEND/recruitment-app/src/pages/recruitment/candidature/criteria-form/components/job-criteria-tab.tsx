@@ -10,6 +10,7 @@ import PreselectionCriteriaForm from "..";
 import Alert from "@/components/alert";
 import Modal from "@/components/modal";
 import { useConfirmJobCriteria } from "@/api/recruitment/preselection/service";
+import { useHasHabilitation } from "@/api/users/services";
 
 interface Props {
     jobId: string;
@@ -29,8 +30,12 @@ const JobCriteriaTab: React.FC<Props> = ({ jobId, requestId, criteria }) => {
         message: string;
     }>({ isOpen: false, type: "info", message: "" });
 
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const userId = user?.userId;
+
 // HOOKS
     const jobConfirm = useConfirmJobCriteria();
+    const canConfirmCriteria = useHasHabilitation(userId, "Gérer les paramétrages du recrutement");
 
 // Confirmation
     const handleConfirm = async() => {
@@ -93,19 +98,23 @@ const JobCriteriaTab: React.FC<Props> = ({ jobId, requestId, criteria }) => {
 
                 <div className="sticky-right">
                     <div className="actions-bar">
-                        <ButtonConfirm className="tdr-btn"
-                            onClick={() => setIsModalOpen(true)}
-                            disabled={criteriaState.totalScore === 0} // optionnel
-                        >
-                            <FaCheckCircle /> Confirmer
-                        </ButtonConfirm>
+                        {(criteriaState.status.toLowerCase() !== "validée"
+                         && canConfirmCriteria===true) && (
+                            <ButtonConfirm className="tdr-btn"
+                                onClick={() => setIsModalOpen(true)}
+                            >
+                                <FaCheckCircle /> Confirmer
+                            </ButtonConfirm>
+                        )}
 
-                        <ButtonConfirmSecondary className="tdr-btn"
-                            onClick={() => setIsOpen(true)}
-                            disabled={false}
-                        >
-                            <FaPen /> Modifier
-                        </ButtonConfirmSecondary>
+                        {canConfirmCriteria===true && (
+                            <ButtonConfirmSecondary className="tdr-btn"
+                                onClick={() => setIsOpen(true)}
+                                disabled={criteria.status.toLowerCase() === "validée"}
+                            >
+                                <FaPen /> Modifier
+                            </ButtonConfirmSecondary>
+                        )}
                         
                         <LabelValue label="Statut">
                             <RecruitmentStatusTag status={criteria.status}/>

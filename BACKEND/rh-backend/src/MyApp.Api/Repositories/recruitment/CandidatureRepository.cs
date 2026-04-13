@@ -1,5 +1,3 @@
-using System.Drawing;
-using DocuSign.eSign.Model;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Api.Data;
 using MyApp.Api.Entities.recruitment;
@@ -39,6 +37,9 @@ public class CandidatureRepository(AppDbContext context,
 {
     private readonly AppDbContext _dbCtx = context;
     private readonly ISequenceGenerator _seq = seq;
+    private readonly ILogger<CandidatureRepository> _logger = 
+        LoggerFactory.Create(builder => builder.AddConsole())
+        .CreateLogger<CandidatureRepository>();
 
     public async Task<IEnumerable<Candidature>> GetByJobDescriptionIdAsync(
         string jobDescId,
@@ -202,6 +203,7 @@ public class CandidatureRepository(AppDbContext context,
          ?? throw new ArgumentException("Candidature non trouvée");
 
         candidature.IsTreated = true;
+        candidature.TreatedAt = DateTime.UtcNow;
 
         var points = candidature.CandidatureScores.Select(n => n.Points);
         
@@ -215,9 +217,7 @@ public class CandidatureRepository(AppDbContext context,
 
         // 2. Calcul du score max du TDR
             var totalMaxScore = candidature.CandidatureScores
-                .Select(cs => cs.Criteria.MaxPoints)
-                .Distinct() // évite doublons si jamais
-                .Sum();
+                .Sum(cs => cs.Criteria.MaxPoints);
 
         // 3. Seuil à 60%
             decimal percentage = 60m;
@@ -225,6 +225,9 @@ public class CandidatureRepository(AppDbContext context,
 
         // 4. Comparaison
             candidature.IsPreselected = totalCandidateScore >= minThreshold;
+
+            _logger.LogInformation("Candidature {CandidatureId} treated with score {Score} / {MaxScore} ({Percentage}%) - Preselected: {IsPreselected}",
+                candidature.Id, totalCandidateScore, totalMaxScore, percentage, candidature.IsPreselected);
         }
 
         await _dbCtx.SaveChangesAsync();
@@ -285,6 +288,7 @@ public class CandidatureRepository(AppDbContext context,
 
                 SendingDateTime = x.c.CreatedAt,
                 IsTreated = x.c.IsTreated,
+                TreatedAt = x.c.TreatedAt,
                 IsPreselected = x.c.IsPreselected
             })
             .FirstOrDefaultAsync();

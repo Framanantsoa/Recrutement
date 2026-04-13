@@ -14,6 +14,7 @@ using MyApp.Api.Entities.users;
 using MyApp.Api.Entities.zones;
 using MyApp.Api.enums;
 using MyApp.Api.Extensions;
+using MyApp.Api.Models.dto.recruitment;
 
 namespace MyApp.Api.Data
 {
@@ -138,7 +139,8 @@ namespace MyApp.Api.Data
                 entity.HasIndex(e => new { e.LastName, e.FirstName });
             });
 
-            modelBuilder.Entity<PendedRequestToValidate>().HasNoKey();      
+            modelBuilder.Entity<PendedRequestToValidate>().HasNoKey();   
+            modelBuilder.Entity<DashboardStatsDTO>().HasNoKey();   
 
             modelBuilder.Entity<PreselectionCriteria>()
                 .ToTable(tb => tb.HasTrigger("trg_update_definitive_scale"));  
@@ -183,6 +185,8 @@ namespace MyApp.Api.Data
         public DbSet<JobCriteriaLevelEducation> JobCriteriaLevelEducations { get; set; }
         public DbSet<JobCriteriaPresentation> JobCriteriaPresentations { get; set; }
         public DbSet<JobCriteriaSpeaking> JobCriteriaSpeakings { get; set; }
+
+        public DbSet<DashboardStatsDTO> DashboardStats { get; set; }
 
         public DbSet<Planing> Planings { get; set; }
         public DbSet<JobInterview> JobInterviews { get; set; }

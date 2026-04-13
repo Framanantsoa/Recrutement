@@ -35,6 +35,7 @@ import RequestDetails from './pages/recruitment/request/details';
 import CandidatureList from './pages/recruitment/candidature/list';
 import CandidatureDetailsPage from './pages/recruitment/candidature/details';
 import DraftPlaningList from './pages/recruitment/job-interview/planing';
+import Dashboard from './pages/recruitment/dashboard';
 // import { useAuthSync } from '@/utils/use-auth-sync';
 function App() {
 
@@ -55,7 +56,7 @@ function App() {
         <Route path="/profil-page" element={<ProfilePage />} />
         {/* ADMIN */}
         <Route path="/dashboard" element={<Home />} />
-        {/* <Route path="/tableau-bord" element={<Dashboard />} /> */}
+        <Route path="/tableau-bord" element={<Dashboard />} />
 
         <Route path="/utilisateurs" element={<UserList />} />
         <Route path="/logs" element={<LogList />} />

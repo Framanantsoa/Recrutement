@@ -453,6 +453,65 @@ END;
 GO
 
 
+CREATE FUNCTION dbo.GetRecruitmentStatsByDirection
+(
+    @DirectionName VARCHAR(50)
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    WITH Requests AS (
+        SELECT rr.request_id, rr.created_at
+        FROM recruitment_requests rr
+        INNER JOIN users u ON rr.applicant_user_id = u.user_id
+        INNER JOIN direction d ON u.department = d.acronym
+        WHERE d.acronym = @DirectionName
+          AND rr.is_deleted = 0
+    ),
+    JobDesc AS (
+        SELECT jd.job_description_id, jd.request_id
+        FROM job_descriptions jd
+    ),
+    CandidaturesCTE AS (
+        SELECT c.*
+        FROM candidatures c
+    ),
+    AvgProcess AS (
+        SELECT 
+            r.request_id,
+            MIN(jc.validated_at) AS validated_at,
+            r.created_at
+        FROM Requests r
+        LEFT JOIN job_descriptions jd ON jd.request_id = r.request_id
+        LEFT JOIN job_criteria jc ON jc.job_description_id = jd.job_description_id
+        GROUP BY r.request_id, r.created_at
+    )
+    SELECT
+        (SELECT COUNT(*) FROM Requests) AS TotalRequests,
+        (
+            SELECT AVG(DATEDIFF(DAY, created_at, validated_at))
+            FROM AvgProcess
+            WHERE validated_at IS NOT NULL
+        ) AS AverageDay,
+        (
+            SELECT COUNT(*)
+            FROM CandidaturesCTE c
+            INNER JOIN JobDesc jd ON c.job_description_id = jd.job_description_id
+            INNER JOIN Requests r ON jd.request_id = r.request_id
+            WHERE c.is_treated = 1
+        ) AS TreatedCandidatures,
+        (
+            SELECT COUNT(*)
+            FROM CandidaturesCTE c
+            INNER JOIN JobDesc jd ON c.job_description_id = jd.job_description_id
+            INNER JOIN Requests r ON jd.request_id = r.request_id
+            WHERE c.is_treated = 1 
+              AND c.is_preselected = 1
+        ) AS PreselectedCandidatures
+);
+
+
 -- 9. Exécution des procédures principales
 -- EXEC sp_upsert_all_validators_main;
 -- GO

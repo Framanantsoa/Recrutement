@@ -502,25 +502,26 @@ export const useAddJobDescription = () => {
 
         onSuccess: async (_, variables) => {
         // Refetch du détail
-            await queryClient.invalidateQueries({
-                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, variables.requestId]
+            const requestId = variables.requestId.replace("/", "_");
+            await queryClient.refetchQueries({
+                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, requestId]
             });
 
-            await queryClient.invalidateQueries({
-                queryKey: [...HAS_JOB_DESC_BASE_KEY, variables.requestId]
+            await queryClient.refetchQueries({
+                queryKey: [...HAS_JOB_DESC_BASE_KEY, requestId]
             });
         }
     });
 };
 
-export const useGetJobDescriptionDetails = (id: string) => {
-    const queryKey = [...SEARCH_JOB_DESC_BASE_KEY, id] as const;
+export const useGetJobDescriptionDetails = (requestId: string) => {
+    const queryKey = [...SEARCH_JOB_DESC_BASE_KEY, requestId] as const;
 
     return useQuery<{data: JobDescriptionDetails}, Error>({
         queryKey,
         queryFn: async () => {
             try {
-                const response = await api.get(`/api/recruitment/job-descriptions/requests/${formatParam(id)}`);
+                const response = await api.get(`/api/recruitment/job-descriptions/requests/${formatParam(requestId)}`);
 
                 return response.data;
             } catch (error) {
@@ -530,18 +531,18 @@ export const useGetJobDescriptionDetails = (id: string) => {
                 throw error;
             }
         },
-        enabled: !!id
+        enabled: !!requestId
     });
 };
 
-export const useHasJobDescription = (id: string) => {
-    const queryKey = [...HAS_JOB_DESC_BASE_KEY, id] as const;
+export const useHasJobDescription = (requestId: string) => {
+    const queryKey = [...HAS_JOB_DESC_BASE_KEY, requestId] as const;
 
     return useQuery<{hasJobDescription:boolean, id?: string}, Error>({
         queryKey,
         queryFn: async () => {
             try {
-                const response = await api.get(`/api/recruitment/job-descriptions/requests/${formatParam(id)}/has`);
+                const response = await api.get(`/api/recruitment/job-descriptions/requests/${formatParam(requestId)}/has`);
                 const respValue = response.data.data;
                 
                 return {hasJobDescription : respValue.value, id: respValue.id};
@@ -552,30 +553,29 @@ export const useHasJobDescription = (id: string) => {
                 throw error;
             }
         },
-        enabled: !!id
+        enabled: !!requestId
     });
 };
 
 
 // UPDATE : Demande de recrutement
-export const useGetRecruitmentRequest = (id?: string) => {
+export const useGetRecruitmentRequest = (requestId?: string) => {
     return useQuery<RequestEditDTO, Error>({
-        queryKey: [...SEARCH_REQUEST_FORM_KEY, id],
+        queryKey: [...SEARCH_REQUEST_FORM_KEY, requestId],
         queryFn: async () => {
-            const response = await api.get(`/api/recruitment/requests/${formatParam(id!)}`);
+            const response = await api.get(`/api/recruitment/requests/${formatParam(requestId!)}`);
             return response.data.data;
         },
-        enabled: !!id, // ⛔️ n'appelle pas si id undefined
+        enabled: !!requestId, // ⛔️ n'appelle pas si id undefined
     });
 };
 
-export const useUpdateRecruitmentRequest = (id?: string) => {
-    if (!id) throw new Error("ID requis pour la mise à jour");
+export const useUpdateRecruitmentRequest = (requestId?: string) => {
     const queryClient = useQueryClient();
 
     return useMutation<CreateRequestResponse, Error, RecruitmentRequestForm>({
         mutationFn: async (data) => 
-            await api.put(`/api/recruitment/requests/${formatParam(id)}`, data)
+            await api.put(`/api/recruitment/requests/${formatParam(requestId!)}`, data)
             .then(r => r.data),
 
         onSuccess: () => {
@@ -584,7 +584,7 @@ export const useUpdateRecruitmentRequest = (id?: string) => {
             });
 
             queryClient.invalidateQueries({
-                queryKey: [...SEARCH_JOB_FORM_KEY, id]
+                queryKey: [...SEARCH_JOB_FORM_KEY, requestId]
             });
         },
     });

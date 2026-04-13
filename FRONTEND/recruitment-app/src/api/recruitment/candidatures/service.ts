@@ -72,6 +72,7 @@ export interface CandidatureDetailsDTO {
 
     sendingDateTime: string;
     isTreated: boolean;
+    treatedAt: string | null;
 
     isPreselected: boolean | null;
 }

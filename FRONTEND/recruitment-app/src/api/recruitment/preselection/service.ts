@@ -167,14 +167,12 @@ export const useConfirmJobCriteria = () => {
             api.put(`/api/recruitment/Preselections/job-criteria/${formatParam(jobId)}/confirm`)
                 .then(r => r.data),
 
-        onSuccess: async (_, variables) => {
-            const { jobId } = variables;
+        onSuccess: async (resp, ) => {
+            const requestId = resp.data;
         
-            await queryClient.invalidateQueries({
-                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, jobId]
+            await queryClient.refetchQueries({
+                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, requestId]
             });
-
-            
         }
     });
 };

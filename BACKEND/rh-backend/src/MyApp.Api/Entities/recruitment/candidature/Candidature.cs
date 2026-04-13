@@ -28,6 +28,9 @@ public class Candidature : BaseEntity
     [Column("is_treated")]
     public bool IsTreated { get; set; } = false;
 
+    [Column("treated_at")]
+    public DateTime? TreatedAt { get; set; }
+
     [Column("job_description_id")]
     public string JobDescriptionId { get; set; } = null!;
 

@@ -11,6 +11,7 @@ import { ButtonView } from "@/styles/table-styles";
 import { useFinishCandidatureTreatment, useSearchCandidatureDetails } from "@/api/recruitment/candidatures/service";
 import PointsTab from "./components/PointsTab";
 import CommentsTab from "./components/CommentsTab";
+import { useHasHabilitation } from "@/api/users/services";
 
 type TabKey = "details" | "points" | "comments";
 
@@ -20,6 +21,13 @@ const CandidatureDetailsPage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<TabKey>("details");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const userId = user?.userId;
+  
+// HOOKS
+  const canDefineNotes = useHasHabilitation(userId, "Gérer les paramétrages du recrutement");
+
 
   const [alert, setAlert] = useState({
     isOpen: false,
@@ -101,7 +109,8 @@ const CandidatureDetailsPage: React.FC = () => {
 
       {/* ===== CONTENT ===== */}
       {activeTab === "details" && (
-        <DetailsTab id={id} details={data} isPreselected={data.isPreselected}/>
+        <DetailsTab id={id} details={data} isPreselected={data.isPreselected}
+         canDefineNotes={canDefineNotes}/>
       )}
 
       {activeTab === "points" && (
@@ -120,7 +129,7 @@ const CandidatureDetailsPage: React.FC = () => {
           <ArrowLeft size={18} /> Retour
         </ButtonView>
 
-        {data.isTreated==false && (
+        {(data.isTreated==false && canDefineNotes===true) && (
           <div className="right-footer">
             <ButtonView style={{ background: "var(--primary-color)", color: "white" }}
               onClick={() => setIsModalOpen(true)}

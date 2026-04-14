@@ -1,4 +1,4 @@
-import { useCanValidateJobDescription, useGetJobDescriptionDetails, useGetRecruitmentRequestDetails, useHasJobDescription, useHasValidationInRecruitment, type JobCriteriaDTO } from "@/api/recruitment/service";
+import { useCanValidateJobDescription, useGetJobDescriptionDetails, useGetRecruitmentRequestDetails, useHasJobDescription, useHasValidationInRecruitment } from "@/api/recruitment/service";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import RequestDetailsCard from "./components/RequestDetailsCard";
 import { ArrowLeft, Check, X } from "lucide-react";
@@ -13,7 +13,7 @@ import Alert from "@/components/alert";
 import RefuseValidationForm, { type RequestValidationFormDTO } from "../validation/components/refuse-request-form";
 import RequestHistoricTab from "./components/RequestHistoricTab";
 import useValidateJobDescription from "../validation/hooks/use-validate-job-description";
-import JobCriteriaTab from "../../candidature/criteria-form/components/job-criteria-tab";
+import JobCriteriaTab from "../../candidature/criteria/components/job-criteria-tab";
 
 interface BackendError {
   message?: string;

@@ -522,13 +522,17 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
             var requestor = await _userRepo.GetByIdAsync(req.HierarchicalManagerId)
             ?? throw new ArgumentException("Supérieur non trouvé");
 
-            interviewers.Add(UserService.MapToDto(requestor));
+            if (interviewers.Select(i => i.UserId).Contains(requestor.UserId)==false) {
+                interviewers.Add(UserService.MapToDto(requestor));
+            }
 
         // 3 - Directeur tutelle (obligatoire)
             var supDirector = await _userRepo.GetDirectorByDepartmentAsync(requestor.Department!)
             ?? throw new ArgumentException("Directeur de tutelle non trouvé");
 
-            interviewers.Add(UserService.MapToDto(supDirector));
+            if (interviewers.Select(i => i.UserId).Contains(supDirector.UserId)==false) {
+                interviewers.Add(UserService.MapToDto(supDirector));
+            }
 
             if (postType.Id == "TYP_POS-0001") {
             // 4 - DRH -> 3e dernier validateur (TYP_POS-0001 seulement)

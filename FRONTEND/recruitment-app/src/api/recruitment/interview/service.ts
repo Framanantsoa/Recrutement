@@ -80,3 +80,19 @@ export const useAddJobInterviewPlaning = () => {
         }
     });
 };
+
+export const usePassToNextInterviewer = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (candId: string) => {
+            const response = await api.post(`${apiBaseUrl}/next-validator/${formatParam(candId)}`);
+            return response.data.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: PLANINGS_BASE_KEY
+            });
+        }
+    });
+};

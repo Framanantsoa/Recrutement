@@ -453,13 +453,34 @@ END;
 GO
 
 
-CREATE FUNCTION dbo.GetRecruitmentStatsByDirection
-(
+-- =============================
+-- FUNCTIONS
+-- =============================
+CREATE FUNCTION dbo.fn_pending_recruitment_requests ( 
+   @validator_id NVARCHAR(50) 
+) 
+RETURNS TABLE AS RETURN 
+( 
+    WITH ranked_validators AS ( 
+        SELECT rpv.*, ROW_NUMBER() OVER (
+            PARTITION BY rpv.request_id ORDER BY rpv.requests_per_validator_id 
+        ) 
+        AS v_order 
+        FROM requests_per_validators rpv 
+        WHERE rpv.is_validated = 0 
+    ) 
+    SELECT rv.* FROM ranked_validators rv 
+    WHERE rv.validator_id = @validator_id AND NOT EXISTS ( 
+        SELECT 1 FROM ranked_validators p 
+        WHERE p.request_id = rv.request_id AND p.v_order < rv.v_order 
+    )
+);
+GO
+
+CREATE FUNCTION dbo.GetRecruitmentStatsByDirection (
     @DirectionName VARCHAR(50)
 )
-RETURNS TABLE
-AS
-RETURN
+RETURNS TABLE AS RETURN
 (
     WITH Requests AS (
         SELECT rr.request_id, rr.created_at
@@ -510,7 +531,6 @@ RETURN
               AND c.is_preselected = 1
         ) AS PreselectedCandidatures
 );
-
 
 -- 9. Exécution des procédures principales
 -- EXEC sp_upsert_all_validators_main;

@@ -14,6 +14,7 @@ import { addDays, format } from "date-fns";
 
 interface Props {
     candidatureId: string;
+    candidateName: string;
     formData: {
         interviewDate: string;
         interviewTime: string;
@@ -27,6 +28,7 @@ interface Props {
 const PlaningContent: React.FC<Props> = ({
     formData,
     candidatureId,
+    candidateName,
     fieldErrors = {},
     handleInputChange
 }) => {
@@ -44,7 +46,7 @@ const PlaningContent: React.FC<Props> = ({
                             disabled={true}
                             type="text"
                             name="candidature"
-                            value={candidatureId}
+                            value={`${candidatureId} - ${candidateName}`}
                         />
                     </FormFieldCell>
                 </FormRow>

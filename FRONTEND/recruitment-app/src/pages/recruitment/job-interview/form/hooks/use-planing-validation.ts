@@ -24,7 +24,7 @@ export const usePlaningValidation = () => {
   const validate = (data: FormData): boolean => {
     const newErrors: Errors = {};
 
-    // ✅ champs obligatoires
+    // champs obligatoires
     if (!data.interviewDate) {
       newErrors.interviewDate = ["La date est obligatoire"];
     }
@@ -33,7 +33,7 @@ export const usePlaningValidation = () => {
       newErrors.interviewTime = ["L'heure est obligatoire"];
     }
 
-    // ✅ validation complète
+    // validation complète
     if (data.interviewDate && data.interviewTime) {
       const dateTime = parseISO(
         `${data.interviewDate}T${data.interviewTime}`
@@ -41,7 +41,7 @@ export const usePlaningValidation = () => {
 
       const now = new Date();
 
-      // 🚫 passé
+      // passé
       if (isBefore(dateTime, now) || isEqual(dateTime, now)) {
         newErrors.interviewDate = [
           ...(newErrors.interviewDate || []),
@@ -49,7 +49,7 @@ export const usePlaningValidation = () => {
         ];
       }
 
-      // 🕐 plage horaire 08:00 → 17:00
+      // plage horaire 08:00 → 17:00
       const start = setMinutes(setHours(dateTime, 8), 0);
       const end = setMinutes(setHours(dateTime, 17), 0);
 

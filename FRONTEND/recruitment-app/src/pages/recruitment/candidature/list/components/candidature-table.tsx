@@ -4,6 +4,8 @@ import CandidatureTableRow from "./candidature-table-row";
 import Pagination from "@/components/pagination";
 import type { CandidatureDTO } from "@/api/recruitment/candidatures/service";
 import PlaningForm from "@/pages/recruitment/job-interview/form";
+import Modal from "@/components/modal";
+import { usePassToNextInterviewer } from "@/api/recruitment/interview/service";
 
 interface CandidatureTableProps {
   candidatures: CandidatureDTO[];
@@ -32,26 +34,63 @@ const CandidatureTable: React.FC<CandidatureTableProps> = ({
   userCanPlan,
   userRequiredToPlan
 }) => {
+// HOOKS
+  const passToNextInterviewer = usePassToNextInterviewer();
 
-  // Transforme un event en nombre pour PageSize
+// Transforme un event en nombre pour PageSize
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = parseInt(e.target.value, 10);
     onPageSizeChange(value);
   };
-
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCandidature, setSelectedCandidature] = useState<string | null>(null);
+  const [selectedCandidateName, setSelectedCandidateName] = useState<string | null>(null);
+  const [selectedCandidatureToPass, setSelectedCandidatureToPass] = useState<string | null>(null);
 
 // userId
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = userData?.userId;
 
+  const handleConfirmToPassInterview = async() => {
+    try {
+      await passToNextInterviewer.mutateAsync(selectedCandidatureToPass || "");
+
+      setIsModalOpen(false);
+      setSelectedCandidatureToPass(null);
+    } 
+    catch (error) {
+      console.error("Erreur lors du passage à l'entretien suivant :", error);
+      setSelectedCandidatureToPass(null);
+    }
+  }
 
   return (<>
+    {isModalOpen && (
+      <Modal
+        type="success"
+        title="Confirmer"
+        message="Voulez-vous faire passer ce candidat à l'entretien suivant ?"
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false); setSelectedCandidatureToPass(null);
+        }}
+        confirmAction={handleConfirmToPassInterview}
+        confirmLabel="Oui"
+        cancelLabel="Non"
+        showActions
+      />
+    )}
+
     <PlaningForm
       isOpen={!!selectedCandidature}
       candidatureId={selectedCandidature || ""}
+      candidateName={selectedCandidateName || ""}
       validatorId={userId}
-      onClose={() => setSelectedCandidature(null)}
+      onClose={() => {
+        setSelectedCandidature(null);
+        setSelectedCandidateName(null);
+      }}
     />
 
     <TableContainer>
@@ -87,7 +126,14 @@ const CandidatureTable: React.FC<CandidatureTableProps> = ({
                 showActions={showActions}
                 userCanPlan={userCanPlan}
                 userRequiredToPlan={userRequiredToPlan}
-                onPlanClick={(id) => setSelectedCandidature(id)}
+                onPlanClick={(id) => {
+                  setSelectedCandidature(id);
+                  setSelectedCandidateName(cand.firstName + " " + cand.lastName);
+                }}
+                onModalOpen={(id) => {
+                  setSelectedCandidatureToPass(id);
+                  setIsModalOpen(true);
+                }}
               />
             ))
           ) : (
@@ -103,7 +149,7 @@ const CandidatureTable: React.FC<CandidatureTableProps> = ({
         pageSize={pageSize}
         totalEntries={totalCount}
         onPageChange={onPageChange}
-        onPageSizeChange={handlePageSizeChange} // ✅ corrigé
+        onPageSizeChange={handlePageSizeChange}
       />
     </TableContainer>
   </>);

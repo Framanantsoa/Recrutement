@@ -13,5 +13,5 @@ public class PlaningFormDTO
 
 
     [Required(ErrorMessage = "La date et heure sont obligatoires")]
-    public DateTime DateTime { get; set; }
+    public DateTime? DateTime { get; set; }
 }

@@ -369,27 +369,3 @@ CREATE TABLE business_sequences (
    updated_at DATETIME2 NOT NULL
 );
 GO
-
--- =============================
--- FUNCTIONS
--- =============================
-CREATE FUNCTION dbo.fn_pending_recruitment_requests ( 
-   @validator_id NVARCHAR(50) 
-) 
-RETURNS TABLE AS RETURN 
-( 
-   WITH ranked_validators AS ( 
-      SELECT rpv.*, ROW_NUMBER() OVER (
-         PARTITION BY rpv.request_id ORDER BY rpv.requests_per_validator_id 
-      ) 
-      AS v_order 
-      FROM requests_per_validators rpv 
-      WHERE rpv.is_validated = 0 
-   ) 
-   SELECT rv.* FROM ranked_validators rv 
-   WHERE rv.validator_id = @validator_id AND NOT EXISTS ( 
-      SELECT 1 FROM ranked_validators p 
-      WHERE p.request_id = rv.request_id AND p.v_order < rv.v_order 
-   )
-);
-GO

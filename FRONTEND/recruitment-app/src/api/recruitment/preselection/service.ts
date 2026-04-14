@@ -2,7 +2,7 @@ import api from "@/utils/axios-config";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { SEARCH_JOB_DESC_BASE_KEY, SEARCH_REQUEST_DETAILS_BASE_KEY } from "../service";
-import type { JobCriteriaFormDTO } from "@/pages/recruitment/candidature/criteria-form/hooks/use-save-criteria";
+import type { JobCriteriaFormDTO } from "@/pages/recruitment/candidature/criteria/hooks/use-save-criteria";
 import { formatParam } from "@/pages/recruitment/request/form";
 
 interface ApiResponse<T> {

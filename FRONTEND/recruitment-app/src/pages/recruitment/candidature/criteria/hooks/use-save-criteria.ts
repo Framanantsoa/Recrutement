@@ -40,7 +40,7 @@ export interface JobCriteriaFormDTO {
   levelEducationsPoints: number;
 }
 
-const useSaveCriteria = (jobDescId: string, mode: "create" | "edit") => {
+const useSaveCriteria = (jobDescId: string) => {
   const initialState: JobCriteriaFormDTO = {
     jobDescId,
     levelEducation: [{ levelId: "", points: 0 }],
@@ -96,7 +96,7 @@ const useSaveCriteria = (jobDescId: string, mode: "create" | "edit") => {
         delete obj[lastKey];
       }
 
-      // 🔹 Nettoyer tous les objets vides dans FieldErrors
+    // Nettoyer tous les objets vides dans FieldErrors
       const clean = (o: any): any => {
         if (Array.isArray(o)) {
           const arr = o.map(clean).filter(item => {
@@ -120,19 +120,19 @@ const useSaveCriteria = (jobDescId: string, mode: "create" | "edit") => {
     });
   };
 
-  // 🔹 Réinitialise le formulaire
+// Réinitialise le formulaire
   const handleReset = () => {
     setFormData(initialState);
     setFieldErrors({});
   };
 
-  // 🔹 Champs simples
+// Champs simples
   const handleFieldChange = (name: keyof JobCriteriaFormDTO, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));
     clearError(name as string);
   };
 
-  // 🔹 Niveau d'éducation
+// Niveau d'éducation
   const updateLevelEducation = (
     index: number,
     field: keyof LevelEducationCriteriaForm,
@@ -150,7 +150,7 @@ const useSaveCriteria = (jobDescId: string, mode: "create" | "edit") => {
     clearError(`levelEducation[${index}].${field}`);
   };
 
-  // 🔹 Expériences
+// Expériences
   const updateExperience = (index: number, field: keyof ExperienceCriteriaForm, value: number) => {
     setFormData(prev => {
       const updated = [...prev.experiences];
@@ -188,7 +188,7 @@ const useSaveCriteria = (jobDescId: string, mode: "create" | "edit") => {
     });
   };
 
-  // 🔹 Langues
+// Langues
   const updateLangage = (index: number, field: keyof LangageSkillCriteriaForm, value: any) => {
     setFormData(prev => {
       const updated = [...prev.langages];
@@ -221,13 +221,13 @@ const useSaveCriteria = (jobDescId: string, mode: "create" | "edit") => {
     });
   };
 
-  // 🔹 Validation
+// Validation
   const validate = (): boolean => {
     const errors: FieldErrors = {};
 
     const levelErrors: FieldErrors["levelEducation"] = [];
 
-  // Niveau d'étude
+// Niveau d'étude
     formData.levelEducation.forEach((lvl, i) => {
       const e: any = {};
 
@@ -238,7 +238,7 @@ const useSaveCriteria = (jobDescId: string, mode: "create" | "edit") => {
     });
     if (levelErrors.length > 0) errors.levelEducation = levelErrors;
 
-    // Formations / Présentations
+  // Formations / Présentations
     if (formData.formationsPoints == null || formData.formationsPoints <= 0) {
       errors.formationsPoints = ["Points de formation requis"];
     }
@@ -247,7 +247,7 @@ const useSaveCriteria = (jobDescId: string, mode: "create" | "edit") => {
       errors.presentationsPoints = ["Points de présentation requis"];
     }
 
-    // Expériences
+  // Expériences
     const expErrors: FieldErrors["experiences"] = [];
     formData.experiences.forEach((exp, i) => {
       const e: typeof expErrors[0] = {};
@@ -269,7 +269,7 @@ const useSaveCriteria = (jobDescId: string, mode: "create" | "edit") => {
 
     if (expErrors.length > 0) errors.experiences = expErrors;
 
-    // Langages
+  // Langages
     const langErrors: FieldErrors["langages"] = [];
     formData.langages.forEach((l, i) => {
       const e: typeof langErrors[0] = {};
@@ -280,7 +280,7 @@ const useSaveCriteria = (jobDescId: string, mode: "create" | "edit") => {
       if (Object.keys(e).length > 0) langErrors[i] = e;
     });
 
-// Vérifier s'il y a des erreurs
+  // Vérifier s'il y a des erreurs
     const hasErrors = Object.keys(errors).some(k => {
       const val = (errors as any)[k];
       if (Array.isArray(val)) return val.length > 0;

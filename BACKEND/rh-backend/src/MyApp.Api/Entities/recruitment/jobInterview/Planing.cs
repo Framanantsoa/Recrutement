@@ -18,7 +18,7 @@ public class Planing : BaseEntity
     public string ValidatorId { get; set; } = null!;
 
     [Column("planified_datetime")]
-    public DateTime DateTime { get; set; }
+    public DateTime? DateTime { get; set; }
 
 
     [ForeignKey(nameof(CandidatureId))]

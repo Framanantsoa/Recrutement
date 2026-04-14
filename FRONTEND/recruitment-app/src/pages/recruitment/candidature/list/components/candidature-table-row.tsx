@@ -14,6 +14,7 @@ interface CandidatureTableRowProps {
   userRequiredToPlan?: boolean;
 
   onPlanClick?: (candidatureId: string) => void;
+  onModalOpen?: (id: string) => void;
 }
 
 const CandidatureTableRow: React.FC<CandidatureTableRowProps> = ({
@@ -21,14 +22,14 @@ const CandidatureTableRow: React.FC<CandidatureTableRowProps> = ({
   showActions,
   userCanPlan,
   userRequiredToPlan,
-  onPlanClick
+  onPlanClick,
+  onModalOpen,
 }) => {
-
-  // ✅ récupérer userId
+// récupérer userId
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = userData?.userId;
 
-  // HOOKS
+// HOOKS
   const { data:checkResponse } = useCanUserPlanJobInterviewByCandidature(userId, candidature.id);
 
   const getScoreColorClass = (points: number, max: number): string => {
@@ -42,9 +43,9 @@ const CandidatureTableRow: React.FC<CandidatureTableRowProps> = ({
     return "score-good";
   };
 
-  return (
-    <>
-      {/* ✅ LIGNE TABLE */}
+
+  return (<>
+    {/* LIGNE TABLE */}
       <TableRow>
         <TableCell style={{ textAlign: "center" }}>
           <label style={{ display: "inline-block", position: "relative", width: 18, height: 18 }}>
@@ -115,7 +116,7 @@ const CandidatureTableRow: React.FC<CandidatureTableRowProps> = ({
               )}
 
               {(userRequiredToPlan && checkResponse) && (
-                <ButtonConfirmSecondary>
+                <ButtonConfirmSecondary onClick={() => {onModalOpen?.(candidature.id)}}>
                   <Check size={16} />
                 </ButtonConfirmSecondary>
               )}

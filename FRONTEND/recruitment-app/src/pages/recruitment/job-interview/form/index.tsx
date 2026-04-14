@@ -29,6 +29,7 @@ import { useAddJobInterviewPlaning, type PlaningFormDTO } from "@/api/recruitmen
 interface PlaningFormProps {
     isOpen: boolean;
     candidatureId: string;
+    candidateName: string;
     validatorId: string;
     onClose: () => void;
 }
@@ -36,6 +37,7 @@ interface PlaningFormProps {
 const PlaningForm: React.FC<PlaningFormProps> = ({
     isOpen,
     candidatureId,
+    candidateName,
     validatorId,
     onClose
 }) => {
@@ -90,7 +92,7 @@ const PlaningForm: React.FC<PlaningFormProps> = ({
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // ✅ VALIDATION
+    // VALIDATION
         if (!validate(formData)) {
             showError("Veuillez corriger les champs");
             return;
@@ -153,6 +155,7 @@ const PlaningForm: React.FC<PlaningFormProps> = ({
                                     handleInputChange={handleInputChange}
                                     fieldErrors={errors}
                                     candidatureId={candidatureId}
+                                    candidateName={candidateName}
                                 />
 
                                 <StepNavigation>

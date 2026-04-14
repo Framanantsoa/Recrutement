@@ -10,7 +10,7 @@ import { formatDate } from "date-fns";
 import RecruitmentStatusTag from "@/components/recruitment-status";
 import { useNavigate } from "react-router-dom";
 import { formatParam } from "../../request/form";
-import PreselectionCriteriaForm from "../../candidature/criteria-form";
+import PreselectionCriteriaForm from "../../candidature/criteria";
 
 import Alert from "@/components/alert";
 

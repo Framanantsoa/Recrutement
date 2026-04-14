@@ -103,4 +103,42 @@ public class JobInterviewController(IJobInterviewService s1)
             return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
         }
     }
+
+
+    [HttpPost("next-validator/{cadId}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> PassToNextInterviewValidator([FromRoute] string cadId) {
+        cadId = cadId.Replace("_", "/");
+
+        try {
+            await _service.PassToNextInterviewValidator(cadId);
+            return Ok(new { data = (object?)null, status = 200, message = "Candidature passée au prochain validateur" });
+        }
+        catch(ArgumentException ex) {
+            return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
+        }
+        catch(Exception ex) {
+            return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
+        }
+    }
+
+
+    [HttpGet("users/{userId}/planings")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAllPlaningsToDoForUser([FromRoute] string userId,
+     [FromQuery] DateOnly? dateMin, [FromQuery] DateOnly? dateMax
+    ) {
+        try {
+            var planings = await _service.GetAllPlaningsToDoForUser(userId, dateMin, dateMax);
+            var result = new { planings, totalCount=planings.Count };
+
+            return Ok(new { data = result, status = 200, message = "Planifications obtenues avec succès" });
+        }
+        catch(ArgumentException ex) {
+            return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
+        }
+        catch(Exception ex) {
+            return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
+        }
+    }
 }

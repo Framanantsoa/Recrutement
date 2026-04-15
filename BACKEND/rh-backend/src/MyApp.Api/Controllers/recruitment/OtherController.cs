@@ -6,7 +6,7 @@ namespace MyApp.Api.Controllers.recruitment;
 
 [ApiController]
 [Route("api/recruitment/params")]
-public class JobDescriptionHelpController(IJobDescriptionRepository repo) 
+public class OtherController(IJobDescriptionRepository repo) 
  : ControllerBase
 {
     private readonly IJobDescriptionRepository _repo = repo;

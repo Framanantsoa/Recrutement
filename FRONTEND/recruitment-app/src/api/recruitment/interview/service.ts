@@ -2,6 +2,7 @@ import { formatParam } from "@/pages/recruitment/request/form";
 import api from "@/utils/axios-config";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import type { DocumentDTO } from "../service";
 
 const CAN_PLAN_BASE_KEY = ['userCanPlanInterview'] as const;
 const CAN_PLAN_CANDIDATURE_BASE_KEY = ['userCanPlanInterviewByCandidature'] as const;
@@ -12,6 +13,22 @@ export interface PlaningFormDTO {
     candidatureId: string;
     validatorId: string;
     dateTime: string;
+}
+
+export interface PlaningDTO {
+    id: string;
+    candidatureId: string;
+    validatorId: string;
+    dateTime: string | null;
+    validator: DocumentDTO;
+    candidature: DocumentDTO;
+    createdAt: string;
+    updatedAt: string | null;
+}
+
+export interface UpdateDateTimeDTO {
+    planingId: string;
+    dateTime: Date;
 }
 
 export const useCanUserPlanJobInterview = (userId: string, jobId: string) => {
@@ -91,6 +108,62 @@ export const usePassToNextInterviewer = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
+                queryKey: PLANINGS_BASE_KEY
+            });
+            queryClient.refetchQueries({
+                queryKey: CAN_PLAN_CANDIDATURE_BASE_KEY
+            })
+        }
+    });
+};
+
+export const useGetPlaningsToDoForUser = (userId?: string, filters?: {
+    minDate?: string;
+    maxDate?: string;
+}, page?: number, pageSize?: number) => {
+
+    const queryKey = [...PLANINGS_BASE_KEY, { userId,
+        dateMin: filters?.minDate,
+        dateMax: filters?.maxDate,
+     page, pageSize }] as const;
+
+    return useQuery<{planings:PlaningDTO[], totalCount: number}, Error>({
+        queryKey,
+        queryFn: async () => {
+            if (!userId) throw new Error("userId requis");
+
+            const response = await api.get(`${apiBaseUrl}/users/${userId}/planings`, {
+                params: {
+                    dateMin: filters?.minDate,
+                    dateMax: filters?.maxDate,
+                    page, pageSize
+                }
+            });
+            return response.data.data;
+        },
+        enabled: !!userId,
+        staleTime: 1000 * 60 // 1 minute
+    });
+};
+
+
+export const useUpdatePlaningDateTime = () => {
+    const queryClient = useQueryClient();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return useMutation<any, Error, UpdateDateTimeDTO>({
+        mutationFn: async ({planingId, dateTime}) => {
+            if(!planingId) throw new Error("ID de planification requis");
+            if(!dateTime) throw new Error("Nouvelle date et heure requises");
+
+            const response = await api.put(`${apiBaseUrl}/planings/${formatParam(planingId)}`,
+            {
+                dateTime: dateTime.toISOString()
+            });
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.refetchQueries({
                 queryKey: PLANINGS_BASE_KEY
             });
         }

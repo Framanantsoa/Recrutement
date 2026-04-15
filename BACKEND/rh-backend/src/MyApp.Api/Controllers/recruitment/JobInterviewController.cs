@@ -126,13 +126,30 @@ public class JobInterviewController(IJobInterviewService s1)
     [HttpGet("users/{userId}/planings")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAllPlaningsToDoForUser([FromRoute] string userId,
-     [FromQuery] DateOnly? dateMin, [FromQuery] DateOnly? dateMax
+     [FromQuery] DateOnly? dateMin, [FromQuery] DateOnly? dateMax, [FromQuery] int page = 1, [FromQuery] int pageSize = 10
     ) {
         try {
-            var planings = await _service.GetAllPlaningsToDoForUser(userId, dateMin, dateMax);
-            var result = new { planings, totalCount=planings.Count };
+            var planings = await _service.GetAllPlaningsToDoForUser(userId, dateMin, dateMax, page, pageSize);
+            var result = new { planings = planings.Item1, totalCount = planings.Item2 };
 
             return Ok(new { data = result, status = 200, message = "Planifications obtenues avec succès" });
+        }
+        catch(ArgumentException ex) {
+            return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
+        }
+        catch(Exception ex) {
+            return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
+        }
+    }
+
+
+    [HttpPut("planings/{planId}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UpdatePlaning([FromRoute] string planId,
+     [FromBody] UpdateDateTimeDTO data) {
+        try {
+            await _service.UpdatePlaningDatetime(planId, data.DateTime);
+            return Ok(new { data = (object?)null, status = 200, message = "Planification mise à jour avec succès" });
         }
         catch(ArgumentException ex) {
             return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });

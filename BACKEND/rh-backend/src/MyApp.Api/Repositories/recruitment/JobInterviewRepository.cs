@@ -10,11 +10,14 @@ public interface IJobInterviewRepository
 {
     Task AddPlaning(Planing plan);
     Task<Planing?> GetPlaningByIdAsync(string planId);
+    Task UpdatePlaningAsync(Planing planing);
     Task AddJobInterview(JobInterview job);
     Task<JobInterview?> GetJobInterviewByIdAsync(string jobId);
     Task<RecruitmentRequest> GetRequestByPlaning(Planing plan);
     Task<List<Planing>> GetPlaningsByCandidature(string jobDescId);
     Task<List<Planing>> GetAllPlaningsToDoForUser(User user, int year, int month);
+    Task<(List<Planing>, int)> GetAllPlaningsToDoForUser(User user,
+     DateOnly? dateMin, DateOnly? dateMax, int page, int pageSize);
 }
 
 public class JobInterviewRepository(AppDbContext ctx, ISequenceGenerator seq)
@@ -53,6 +56,13 @@ public class JobInterviewRepository(AppDbContext ctx, ISequenceGenerator seq)
             .FirstOrDefaultAsync(p => p.Id == planId);
         
         return planification;
+    }
+
+
+    public async Task UpdatePlaningAsync(Planing planing) {
+        _dbCtx.Planings.Update(planing);
+
+        await _dbCtx.SaveChangesAsync();
     }
 
 
@@ -112,5 +122,35 @@ public class JobInterviewRepository(AppDbContext ctx, ISequenceGenerator seq)
             .ToListAsync();
 
         return planings;
+    }
+
+
+    public async Task<(List<Planing>, int)> GetAllPlaningsToDoForUser(User user,
+     DateOnly? dateMin, DateOnly? dateMax, int page, int pageSize) {
+        var query = _dbCtx.Planings
+            .Include(p => p.Validator)
+            .Include(p => p.Candidature)
+            .Where(p => p.ValidatorId == user.UserId && p.DateTime==null)
+            .AsQueryable();
+
+        if(dateMin.HasValue) {
+            var minDateTime = dateMin.Value.ToDateTime(TimeOnly.MinValue);
+            query = query.Where(p => p.CreatedAt >= minDateTime);
+        }
+
+        if(dateMax.HasValue) {
+            var maxDateTime = dateMax.Value.ToDateTime(TimeOnly.MaxValue);
+            query = query.Where(p => p.CreatedAt <= maxDateTime);
+        }
+
+        var planings = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .AsNoTracking()
+            .ToListAsync();
+
+        var totalPlanings = await query.CountAsync();
+
+        return (planings, totalPlanings);
     }
 }

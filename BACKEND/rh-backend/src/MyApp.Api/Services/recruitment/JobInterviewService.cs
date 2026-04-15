@@ -12,13 +12,14 @@ namespace MyApp.Api.Services.recruitment;
 public interface IJobInterviewService
 {
     Task AddPlaning(PlaningFormDTO plan);
+    Task UpdatePlaningDatetime(string planingId, DateTime newDateTime);
     Task<List<Planing>> GetPlaningsPerMonthAsync(string userId, int? year, int? month);
     Task AddJobInterview(JobInterview interview);
     Task<(bool, bool)> CanUserPlanJobInterview(string userId, string jobDescId);
     Task<bool> CanUserPlanJobInterviewByCandidature(string userId, string candId);
     Task PassToNextInterviewValidator(string candId);
-    Task<List<Planing>> GetAllPlaningsToDoForUser(string userId,
-     DateOnly dateMin, DateOnly dateMax);
+    Task<(List<PlaningDTO>, int)> GetAllPlaningsToDoForUser(string userId,
+     DateOnly? dateMin, DateOnly? dateMax, int page, int pageSize);
 }
 
 public class JobInterviewService(IJobInterviewRepository jobRep,
@@ -241,9 +242,34 @@ public class JobInterviewService(IJobInterviewRepository jobRep,
         }
     }
 
+    private PlaningDTO MapToDto(Planing planing) {
+        return new PlaningDTO
+        {
+            Id = planing.Id,
+            CandidatureId = planing.CandidatureId,
+            ValidatorId = planing.ValidatorId,
+            DateTime = planing.DateTime,
+            CreatedAt = planing.CreatedAt,
+            UpdatedAt = planing.UpdatedAt,
 
-    public async Task<List<Planing>> GetAllPlaningsToDoForUser(string userId,
-     DateOnly dateMin, DateOnly dateMax) {
+            Validator = new DocumentDTO
+            {
+                Id = planing.ValidatorId,
+                Name = planing.Validator.Name ?? "N/A"
+            },
+
+            Candidature = new DocumentDTO
+            {
+                Id = planing.CandidatureId,
+                Name = planing.Candidature.FirstName + " " 
+                    + planing.Candidature.LastName ?? "N/A"
+            }
+        };
+    }
+
+
+    public async Task<(List<PlaningDTO>, int)> GetAllPlaningsToDoForUser(string userId,
+     DateOnly? dateMin, DateOnly? dateMax, int page, int pageSize) {
         try {
             _logger.LogInformation(
                 "Extraction de toutes les planifications à faire pour l'utilisateur {userId}", userId
@@ -252,13 +278,52 @@ public class JobInterviewService(IJobInterviewRepository jobRep,
             var user = await _uRepo.GetByIdAsync(userId)
                 ?? throw new ArgumentException($"Utilisateur ID {userId} non trouvé");
 
-            var planings = await _interviewRepo
-                .GetAllPlaningsToDoForUser(user, dateMin.Year, dateMin.Month);
-                
-            return planings;
+            var (planings, totalCount) = await _interviewRepo
+                .GetAllPlaningsToDoForUser(user, dateMin, dateMax, page, pageSize);
+
+            var planingDtos = planings
+                .Select(p => MapToDto(p))
+                .ToList();
+
+            return (planingDtos, totalCount);
         }
         catch (Exception ex) {
             _logger.LogError(ex, "Erreur lors de l'extraction des planifications");
+            throw;
+        }
+    }
+
+
+    public async Task UpdatePlaningDatetime(string planingId, DateTime newDateTime) {
+        try {
+            _logger.LogInformation("Mise à jour de la date et heure de la planification {planingId} en cours", planingId);
+            
+            var planing = await _interviewRepo.GetPlaningByIdAsync(planingId)
+                ?? throw new ArgumentException($"Planification ID {planingId} non trouvée");
+
+        // Vérification : Pas de date passée
+            if (newDateTime <= DateTime.Now)
+                throw new ArgumentException("La date doit être au moins un jour dans le futur.");
+            
+        // Vérification : Pas de week-end
+            if (newDateTime.DayOfWeek == DayOfWeek.Saturday ||
+             newDateTime.DayOfWeek == DayOfWeek.Sunday) {
+                throw new ArgumentException("Les entretiens ne peuvent pas être planifiés le week-end.");
+            }
+
+        // Vérification : Heure entre 8h et 17h
+            if (newDateTime.Hour < 8 || newDateTime.Hour >= 17) {
+                throw new ArgumentException("Les entretiens doivent être planifiés entre 08h et 17h.");
+            }
+
+            planing.DateTime = newDateTime;
+
+            await _interviewRepo.UpdatePlaningAsync(planing);
+
+            _logger.LogInformation("Date et heure de la planification {planingId} mises à jour avec succès", planingId);
+        }
+        catch (Exception ex) {
+            _logger.LogWarning(ex, "Erreur lors de la mise à jour de la date et heure de la planification {planingId}", planingId);
             throw;
         }
     }

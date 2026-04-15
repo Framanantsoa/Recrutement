@@ -304,6 +304,7 @@ export const ActionButton = styled.button`
     justify-content: center;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-family: var(--font-family);
 
     /* Style par défaut pour "Voir détails" */
     background-color: var(--primary-bg);

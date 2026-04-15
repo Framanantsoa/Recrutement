@@ -7,20 +7,17 @@ import {
   TableHeader,
 } from "@/styles/table-styles";
 
-import { 
-    useCanValidateJobDescription, 
-    useSearchPendedRequests, 
+import {
     type FilterPendedRequestDTO 
 } from "@/api/recruitment/service";
 
 import Alert from "@/components/alert";
-import { useNavigate } from "react-router-dom";
-import DraftRequestCards from "./components/draft-planing-card";
 import DraftPlaningFilters, { type PlaningFiltersState } from "./components/planing-filters";
 import { formatDate } from "date-fns";
 import type { TabValidationKey } from "./components/planing-tabs";
-import { formatParam } from "../../request/form";
 import PlaningTabs from "./components/planing-tabs";
+import DraftPlaningCards from "./components/draft-planing-card";
+import { useGetPlaningsToDoForUser } from "@/api/recruitment/interview/service";
 
 interface AlertState {
     isOpen: boolean;
@@ -35,20 +32,11 @@ const DraftPlaningList: React.FC = () => {
         dateRange: [null, null],
     });
 
-    const validator = JSON.parse(localStorage.getItem("user") || "{}");
-    const validatorId = validator?.userId || "";
-
-// Gestion des habilitations
-
-    const {data: tdrValidator} = useCanValidateJobDescription(validatorId);
-    const canViewJobDescriptions = tdrValidator?.hasValidation;
+    // const validator = JSON.parse(localStorage.getItem("user") || "{}");
+    // const validatorId = validator?.userId || "";
     
     const [activeTab, setActiveTab] = useState<TabValidationKey>(() => {
-        let saved = sessionStorage.getItem("lastActiveInterviewTab") as TabValidationKey | null;
-        if(canViewJobDescriptions) saved = "planing";
-        else saved = "draft";
-
-        return saved;
+        return sessionStorage.getItem("lastActiveInterviewTab") as TabValidationKey || "draft";
     });
 
     const [appliedFilters, setAppliedFilters] = useState<PlaningFiltersState>({ ...filters });
@@ -56,34 +44,40 @@ const DraftPlaningList: React.FC = () => {
     const [pageSize, setPageSize] = useState(10);
     const [totalCount, setTotalCount] = useState(0);
 
-    const navigate = useNavigate();
+// Préparer filtres pour le backend
+    const formatDateOnly = (date: Date) =>
+        date.toLocaleDateString("en-CA");
 
-    // Préparer filtres pour le backend
     const searchFilters: FilterPendedRequestDTO = useMemo(() => {
         const [startDate, endDate] = appliedFilters.dateRange;
+
         return {
-            minDate: startDate ? startDate.toISOString().split("T")[0] : undefined,
-            maxDate: endDate ? endDate.toISOString().split("T")[0] : undefined,
+            minDate: startDate ? formatDateOnly(startDate) : undefined,
+            maxDate: endDate ? formatDateOnly(endDate) : undefined,
         };
     }, [appliedFilters]);
 
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
     const userId = userData?.userId || "";
 
-// Demandes en attente / TDR en attente
-    const { data: requestResponse, isLoading, error, refetch } 
-        = useSearchPendedRequests(userId, searchFilters, page, pageSize);
-    const requests = useMemo(() => requestResponse?.list || [], [requestResponse]);
 
-    // Mise à jour totalCount
+// Demandes de planification 
+    const { data: requestResponse, isLoading, error, refetch: refetchRequest } 
+        = useGetPlaningsToDoForUser(userId, searchFilters, page, pageSize);
+    const requestsPlaning = useMemo(() => requestResponse?.planings || [], [requestResponse]);
+
+// Planifications
+
+
+// Mise à jour totalCount
     useEffect(() => {
         setTotalCount(requestResponse?.totalCount || 0);
     }, [requestResponse]);
 
-    // Refetch quand appliedFilters, page ou pageSize changent
+// Refetch quand appliedFilters, page ou pageSize changent
     useEffect(() => {
-        refetch();
-    }, [appliedFilters, page, pageSize, refetch]);
+        refetchRequest();
+    }, [appliedFilters, page, pageSize, refetchRequest]);
 
     const handleFilterSubmit = useCallback(() => {
         setAppliedFilters(filters);
@@ -135,11 +129,11 @@ const DraftPlaningList: React.FC = () => {
         <TableContainer>
             {activeTab === "draft" && (<>
                 <TableHeader>
-                    <TableTitle>Liste des planifications</TableTitle>
+                    <TableTitle>Liste des demandes de planification</TableTitle>
                 </TableHeader>
 
-                <DraftRequestCards
-                    requests={requests}
+                <DraftPlaningCards
+                    planings={requestsPlaning}
                     isLoading={isLoading}
                     totalEntries={totalCount}
                     currentPage={page}
@@ -148,8 +142,9 @@ const DraftPlaningList: React.FC = () => {
                     handlePageSizeChange={handlePageSizeChange}
                     formatDate={(date) => formatDate(new Date(date), "dd/MM/yyyy à HH:mm")}
                     handleRowClick={(id) => {
-                        navigate(`/recrutement/demandes/${formatParam(id)}/details?validateur=${userId}`);
+                        console.log("Planing clicked:", id);
                     }}
+                    setAlert={setAlert}
                 />
             </>)}
             

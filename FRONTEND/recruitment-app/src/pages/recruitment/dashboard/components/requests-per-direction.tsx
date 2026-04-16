@@ -43,15 +43,34 @@ const RequestsPerDirection: React.FC = () => {
     ],
   };
 
+  const options = {
+    maintainAspectRatio: false,
+    responsive: true,
+    scales: {
+      x: {
+        ticks: {
+          autoSkip: false,
+        },
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          precision: 0,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          callback: function (value: any) {
+            return value.toString();
+          },
+        },
+      },
+    }
+  };
+
   return (
     <div style={{ height: 250 }}>
-      <Bar
-        data={chartData}
-        options={{
-          maintainAspectRatio: false,
-          responsive: true,
-        }}
-      />
+      <Bar data={chartData} options={options} />
     </div>
   );
 };

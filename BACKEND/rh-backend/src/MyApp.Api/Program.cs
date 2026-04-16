@@ -11,8 +11,8 @@ using MyApp.Api.Models.classes.notifications;
 using MyApp.Api.Services.mission;
 
 var builder = WebApplication.CreateBuilder(args);
-// string frontUrl = "http://10.0.105.194:5173";
-string frontUrl = "http://localhost:5173";
+string frontUrl = "http://10.0.105.194:5273";
+// string frontUrl = "http://localhost:5273";
 
 if (OperatingSystem.IsLinux())
 {
@@ -21,7 +21,7 @@ if (OperatingSystem.IsLinux())
 
 var frontendUrl = builder.Configuration["API_FRONT"] ?? frontUrl;
 builder.WebHost.UseUrls(
-    "http://0.0.0.0:5183"
+    "http://0.0.0.0:5283"
 );
 
 builder.Services.AddCors(options =>

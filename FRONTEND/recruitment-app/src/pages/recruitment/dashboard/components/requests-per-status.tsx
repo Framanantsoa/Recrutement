@@ -1,6 +1,13 @@
 import { Pie } from "react-chartjs-2";
 import { useGetRequestsPerStatus } from "@/api/recruitment/dashboard/service";
-import colors from "./colors";
+// import colors from "./colors";
+
+const statusColors: Record<string, string> = {
+  "En cours": "#3498db",
+  "En attente": "#e67e22",
+  "Refusée": "#e74c3c",
+  "Validée": "#2ecc71",
+};
 
 interface Props {
   direction?: string;
@@ -30,7 +37,9 @@ const RequestsPerStatus: React.FC<Props> = ({ direction }) => {
   // Transformation API → Chart.js
   const labels = data.map((item) => item.status);
   const values = data.map((item) => item.count);
-  const backgroundColors = data.map((_, i) => colors[i % colors.length]);
+  const backgroundColors = data.map((item) => 
+    statusColors[item.status] || "#bdc3c7" // gris par défaut si inconnu
+  );
 
   const chartData = {
     labels,

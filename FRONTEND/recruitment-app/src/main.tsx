@@ -4,9 +4,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import "@/styles/global.css";
-import "@fullcalendar/core/index.css";
-import "@fullcalendar/daygrid/index.css";
-
 import App from './App.tsx'
 
 const queryClient = new QueryClient();

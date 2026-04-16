@@ -341,12 +341,13 @@ INSERT INTO module (module_id, module_name, description, created_at, updated_at)
 
 
 INSERT INTO menu (menu_id, menu_key, icon, link, is_enabled, position, module_id, section, is_visible, created_at, updated_at) VALUES
-('MEN_001', 'Tableau de bord', 'fa-tachometer-alt', '/tableau-bord', 1, 1, 'MOD_001', 'navigation', 1, GETDATE(), GETDATE()),
-('MEN_002', 'Suivi de recrutement', 'fa-briefcase', '/recrutement', 1, 2, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
+('MEN_002', 'Suivi de recrutement', 'fa-briefcase', '/recrutement', 1, 1, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
 ('MEN_002_1', 'validations', 'fa-tasks', '/recrutement/a-valider', 1, 1, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
-('MEN_002_2', 'Workflow des validateurs', 'fa-users-cog', '/recrutement/validateurs', 1, 2, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
-('MEN_002_3', 'demandes', 'fa-list', '/recrutement/liste-demandes', 1, 3, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
-('MEN_002_4', 'Entretiens', 'fa-reg-calendar', '/recrutement/liste-entretiens', 1, 5, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
+('MEN_002_2', 'demandes', 'fa-list', '/recrutement/liste-demandes', 1, 2, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
+('MEN_002_3', 'Postes disponibles', 'fa-tags', '/recrutement/liste-postes', 1, 3, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
+('MEN_002_4', 'Entretiens', 'fa-reg-calendar', '/recrutement/liste-entretiens', 1, 4, 'MOD_002', 'navigation', 1, GETDATE(), GETDATE()),
+('MEN_001', 'Tableau de bord', 'fa-tachometer-alt', '/tableau-bord', 1, 2, 'MOD_001', 'navigation', 1, GETDATE(), GETDATE()),
+('MEN_008', 'Workflow des validateurs', 'fa-users-cog', '/recrutement/validateurs', 1, 3, 'MOD_003', 'navigation', 1, GETDATE(), GETDATE()),
 -- Administration
 ('MEN_003', 'utilisateurs', 'fa-users', '/utilisateurs', 1, 1, 'MOD_003', 'administration', 1, GETDATE(), GETDATE()),
 ('MEN_004', 'Rôles & Habilitations', 'fa-shield-alt', '/droit-acces', 1, 2, 'MOD_004', 'administration', 1, GETDATE(), GETDATE()),
@@ -361,11 +362,12 @@ INSERT INTO menu_hierarchy (hierarchy_id, parent_menu_id, menu_id, created_at, u
 -- MENUS RACINES
 ('H_001', NULL, 'MEN_001', GETDATE(), GETDATE()), -- Tableau de bord
 ('H_002', NULL, 'MEN_002', GETDATE(), GETDATE()), -- Suivi recrutement
-('H_003', NULL, 'MEN_003', GETDATE(), GETDATE()), -- Utilisateurs
-('H_004', NULL, 'MEN_004', GETDATE(), GETDATE()), -- Droit & Accès
-('H_005', NULL, 'MEN_006', GETDATE(), GETDATE()), -- Référentiel
-('H_006', NULL, 'MEN_007', GETDATE(), GETDATE()), -- Données
-('H_007', NULL, 'MEN_005', GETDATE(), GETDATE()), -- Logs
+('H_003', NULL, 'MEN_008', GETDATE(), GETDATE()), -- Workflow
+('H_004', NULL, 'MEN_003', GETDATE(), GETDATE()), -- Utilisateurs
+('H_005', NULL, 'MEN_004', GETDATE(), GETDATE()), -- Droit & Accès
+('H_006', NULL, 'MEN_006', GETDATE(), GETDATE()), -- Référentiel
+('H_007', NULL, 'MEN_007', GETDATE(), GETDATE()), -- Données
+('H_008', NULL, 'MEN_005', GETDATE(), GETDATE()), -- Logs
 -- SOUS-MENUS RECRUTEMENT
 ('H_002_1', 'MEN_002', 'MEN_002_1', GETDATE(), GETDATE()),
 ('H_002_2', 'MEN_002', 'MEN_002_2', GETDATE(), GETDATE()),

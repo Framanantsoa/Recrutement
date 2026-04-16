@@ -297,7 +297,7 @@ public class CandidatureService(ICandidatureRepository rep,
         // Infos générales
             Candidature newCandidature = new() {
                 FirstName = data.FirstName,
-                LastName = data.LastName,
+                LastName = data.LastName.ToUpper(),
                 EmailContact = data.Email,
                 CvUrl = data.CvUrl, 
                 LmUrl = data.LmUrl,

@@ -710,16 +710,16 @@ const Template: React.FC<TemplateProps> = ({ children }) => {
     }
     
     // RECRUTEMENT - Demandes
-    else if (currentPath === "/recrutement/demandes/liste") {
+    else if (currentPath === "/recrutement/liste-demandes") {
       breadcrumbs.push({
         title: "Recrutement",
-        path: "/recrutement/demandes/liste",
+        path: "/recrutement/liste-demandes",
         isActive: false,
         clickable: false,
       });
       breadcrumbs.push({
         title: "Demandes",
-        path: "/recrutement/demandes/liste",
+        path: "/recrutement/liste-demandes",
         isActive: true,
       });
     }

@@ -42,28 +42,28 @@ public class AuthService : IAuthService
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             return new ValidationResult { Message = "Username and password are required", Type = "invalid_input" };
-        try
-        {
-            var ldapResult = await ValidateLdapCredentialsAsync(username, password);
-            if (ldapResult.Type == "success")
-            {
-                var dbUser = await GetUserFromDatabaseAsync(ldapResult.EmailAddress);
-                return ValidateUserAccess(dbUser);
-            }
-            else if (ldapResult.Type == "ldap_unavailable" || ldapResult.Type == "ldap_error")
-            {
-                return await FallbackValidateAsync(username, password);
-            }
-            else
-            {
-                return new ValidationResult { Message = ldapResult.Message, Type = ldapResult.Type };
-            }
-        }
-        
         // try
         // {
-        //     return await FallbackValidateAsync(username, password);
+        //     var ldapResult = await ValidateLdapCredentialsAsync(username, password);
+        //     if (ldapResult.Type == "success")
+        //     {
+        //         var dbUser = await GetUserFromDatabaseAsync(ldapResult.EmailAddress);
+        //         return ValidateUserAccess(dbUser);
+        //     }
+        //     else if (ldapResult.Type == "ldap_unavailable" || ldapResult.Type == "ldap_error")
+        //     {
+        //         return await FallbackValidateAsync(username, password);
+        //     }
+        //     else
+        //     {
+        //         return new ValidationResult { Message = ldapResult.Message, Type = ldapResult.Type };
+        //     }
         // }
+        
+        try
+        {
+            return await FallbackValidateAsync(username, password);
+        }
         catch (Exception ex)
         {
             return new ValidationResult { Message = $"An error occurred during authentication: {ex.Message}", Type = "error" };

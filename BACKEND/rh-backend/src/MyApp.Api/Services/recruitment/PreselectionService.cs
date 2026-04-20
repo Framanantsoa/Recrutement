@@ -97,8 +97,11 @@ public class PreselectionService(
             };
             await _repo.AddJobPreselectionCriteria(educationCriteria);
 
-            foreach (var l in data.LevelEducation)
-            {
+            foreach (var l in data.LevelEducation) {
+                if(data.LevelEducationsPoints < l.Points) {
+                    throw new ArgumentException($"Chaque score sur le niveau d'étude doit être inférieur ou égal à {data.LevelEducationsPoints} pts");
+                }
+
                 await _repo.AddLevelEducation(new JobCriteriaLevelEducation
                 {
                     JobCriteriaId = educationCriteria.Id,
@@ -149,9 +152,13 @@ public class PreselectionService(
             };
             await _repo.AddJobPreselectionCriteria(languageCriteria);
 
-            foreach (var lang in data.Langages)
-            {
+            decimal langagePointsCheck = 0;
+            foreach (var lang in data.Langages) {
                 var speaking = dict[(lang.LangageId, lang.LevelId)];
+                
+                if(langagePointsCheck+lang.Points > data.LangagesPoints) {
+                    throw new ArgumentException($"Le total des scores sur la langue ne peut pas dépasser {data.LangagesPoints} pts.");
+                }
 
                 await _repo.AddSpeaking(new JobCriteriaSpeaking
                 {
@@ -159,6 +166,7 @@ public class PreselectionService(
                     LangageSpeakingId = speaking.Id,
                     Points = lang.Points
                 });
+                langagePointsCheck += lang.Points;
             }
 
         // ================= EXPERIENCE =================
@@ -171,8 +179,11 @@ public class PreselectionService(
             };
             await _repo.AddJobPreselectionCriteria(experienceCriteria);
 
-            foreach (var exp in data.Experiences)
-            {
+            foreach (var exp in data.Experiences) {
+                if(data.ExperiencesPoints < exp.Points) {
+                    throw new ArgumentException($"Chaque score sur l'expérience doit être inférieur ou égal à {data.ExperiencesPoints} pts.");
+                }
+
                 await _repo.AddExperience(new JobCriteriaExperience
                 {
                     JobCriteriaId = experienceCriteria.Id,
@@ -296,9 +307,13 @@ public class PreselectionService(
 
             await _repo.RemoveSpeakings(languageCriteria.Id);
 
-            foreach (var lang in data.Langages)
-            {
+            decimal langagePointsCheck = 0;
+            foreach (var lang in data.Langages) {
                 var speaking = dict[(lang.LangageId, lang.LevelId)];
+
+                if(langagePointsCheck+lang.Points > data.LangagesPoints) {
+                    throw new ArgumentException($"Le total des scores sur la langue ne peut pas dépasser {data.LangagesPoints} pts.");
+                }
 
                 await _repo.AddSpeaking(new JobCriteriaSpeaking
                 {
@@ -306,6 +321,7 @@ public class PreselectionService(
                     LangageSpeakingId = speaking.Id,
                     Points = lang.Points
                 });
+                langagePointsCheck+=lang.Points;
             }
 
             // ================= PRESENTATION =================

@@ -11,8 +11,8 @@ using MyApp.Api.Models.classes.notifications;
 using MyApp.Api.Services.mission;
 
 var builder = WebApplication.CreateBuilder(args);
-string frontUrl = "http://10.0.105.194:5273";
-// string frontUrl = "http://localhost:5273";
+// string frontUrl = "http://10.0.105.194:5273";
+string frontUrl = "http://localhost:5273";
 
 if (OperatingSystem.IsLinux())
 {

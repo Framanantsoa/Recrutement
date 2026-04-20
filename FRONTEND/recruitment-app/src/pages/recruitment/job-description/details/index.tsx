@@ -49,7 +49,7 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit, onCriteri
   if (!data) return <p>Aucun TDR trouvé.</p>;
 
   const job = data.data;
-  const createdAt = new Date(job.createdAt + "Z");
+  const createdAt = new Date(job.createdAt);
   const createdAtDateStr = formatDate(createdAt, "dd/MM/yyyy à HH:mm");
 
   return (<>

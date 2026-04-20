@@ -17,6 +17,7 @@ const HAS_JOB_DESC_BASE_KEY = ['hasJobDescription'] as const;
 export const SEARCH_JOB_DESC_BASE_KEY = ['searchJobDescriptions'] as const;
 const SEARCH_POST_TYPES_KEY = ['searchPostTypes'] as const;
 
+const SEARCH_JOB_DESC_BY_ID = ['getJobDescriptionById'] as const;
 const SEARCH_JOB_FORM_KEY = ['getJobDescriptionFormById'] as const;
 const SEARCH_REQUEST_FORM_KEY = ['getRequestFormById'] as const;
 
@@ -190,6 +191,11 @@ export interface JobDescriptionDetails {
   lastStatus: string;
   postTypeName: string;
   criteria: JobCriteriaDTO;
+}
+
+export interface JobDescriptionValidationDTO {
+    jobDescId: string;
+    validatorId: string;
 }
 
 
@@ -594,12 +600,12 @@ export const useUpdateRecruitmentRequest = (requestId?: string) => {
 // UPDATE : Fiche de poste
 export const useGetJobDescription = (id: string | null) => {
     return useQuery<JobDescriptionEditForm, Error>({
-        queryKey: ["getJobDescriptionById", id],
+        queryKey: [...SEARCH_JOB_DESC_BY_ID, id],
         queryFn: async () => {
             const response = await api.get(`/api/recruitment/job-descriptions/${formatParam(id)}`);
             return response.data.data;
         },
-        enabled: !!id, // ⛔️ n'appelle pas si id undefined
+        enabled: !!id,
     });
 };
 
@@ -618,7 +624,10 @@ export const useUpdateJobDescription = (requestId : string | null) => {
 
             queryClient.invalidateQueries({
                 queryKey: [...SEARCH_JOB_FORM_KEY, resp.data]
-            })
+            });
+            queryClient.invalidateQueries({
+                queryKey: [...SEARCH_JOB_DESC_BY_ID, resp.data]
+            });
         },
     });
 };
@@ -635,11 +644,6 @@ export const useCanValidateJobDescription = (userId: string | undefined) => {
         enabled: !!userId, // ⛔️ n'appelle pas si id undefined
     });
 };
-
-export interface JobDescriptionValidationDTO {
-    jobDescId: string;
-    validatorId: string;
-}
 
 export const useValidateJobDescriptionMutation = () => {
     const queryClient = useQueryClient();

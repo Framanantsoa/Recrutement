@@ -84,7 +84,7 @@ const CandidatureFilters: React.FC<CandidatureFiltersProps> = ({
             <FiltersContent>
               <FieldsContainer>
                 <FormFieldWrapper>
-                  <FormLabelSearch>Nom ou prénom</FormLabelSearch>
+                  <FormLabelSearch>Nom</FormLabelSearch>
                   <FormInputSearch
                     name="name"
                     value={filters.name}

@@ -302,7 +302,8 @@ INSERT INTO habilitations (habilitation_id, group_id, label, description) VALUES
 ('HAB_017', 'HABG_002', 'Consulter les demandes des collaborateurs', 'Permet de voir les demandes des collaborateurs (N-1).'),
 ('HAB_018', 'HABG_002', 'Gérer les paramétrages du recrutement', 'Autorise la configuration des paramètres liés au recrutement.'),
 ('HAB_028', 'HABG_002', 'Valider un TDR', 'Autorise la validation d’un TDR.'),
-('HAB_029', 'HABG_002', 'Consulter des candidats présélectionnées', 'Permet d’afficher la liste des candidats présélectionnés.');
+('HAB_029', 'HABG_002', 'Consulter des candidats présélectionnées', 'Permet d’afficher la liste des candidats présélectionnés.'),
+('HAB_030', 'HABG_002', 'Consulter toutes les tdr', 'Permet d’afficher toutes les TDR disponibles.');
 -- ================= NAVIGATION =================
 INSERT INTO habilitations (habilitation_id, group_id, label, description) VALUES
 ('HAB_019', 'HABG_003', 'Accéder aux logs', 'Permet d’afficher le menu Logs.'),

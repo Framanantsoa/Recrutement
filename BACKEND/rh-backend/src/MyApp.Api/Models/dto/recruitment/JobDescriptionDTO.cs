@@ -34,6 +34,26 @@ public class JobDescriptionDTO
 }
 
 
+public class JobDescriptionCardDTO
+{
+    public string Id { get; set; } = null!;
+    public string Post { get; set; } = null!;
+    public string Direction { get; set; } = null!;
+    public string ApplicantUser { get; set; } = null!;
+    public string HierarchicalManager { get; set; } = null!;
+    public DateTime CreatedAt { get; set; }
+    public string LastStatus { get; set; } = null!;
+}
+
+public class JobDescriptionFiltersDTO
+{
+    public string? Post { get; set; }
+    public string? Direction { get; set; }
+    public DateOnly? MinDate { get; set; }
+    public DateOnly? MaxDate { get; set; }
+}
+
+
 public class JobDescriptionDetailsDTO
 {
     public string Id { get; set; } = null!;

@@ -36,6 +36,7 @@ import CandidatureList from './pages/recruitment/candidature/list';
 import CandidatureDetailsPage from './pages/recruitment/candidature/details';
 import DraftPlaningList from './pages/recruitment/job-interview/planing';
 import Dashboard from './pages/recruitment/dashboard';
+import JobDescriptionList from './pages/recruitment/job-description/list';
 // import { useAuthSync } from '@/utils/use-auth-sync';
 function App() {
 
@@ -91,6 +92,7 @@ function App() {
         <Route path="/recrutement/demandes/:id/details" element={<RequestDetails />} />
         <Route path="/recrutement/a-valider" element={<DraftRequestList />} />
         <Route path="/recrutement/candidatures/tdr/:jobId" element={<CandidatureList />} />
+        <Route path="/recrutement/liste-postes" element={<JobDescriptionList />} />
         <Route path="/recrutement/candidatures/:id/details" element={<CandidatureDetailsPage />} />
         <Route path="/recrutement/liste-entretiens" element={<DraftPlaningList />} />
 

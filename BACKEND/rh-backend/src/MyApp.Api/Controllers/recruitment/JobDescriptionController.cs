@@ -55,6 +55,30 @@ public class JobDescriptionController(IJobDescriptionService service)
     }
 
 
+    [HttpGet("users/{userId}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAllJobDescriptions([FromRoute] string userId, [FromQuery] JobDescriptionFiltersDTO filters,
+     [FromQuery] bool all = false, [FromQuery] int page = 1, [FromQuery] int pageSize = 10) {
+        // if(!User.Identity?.IsAuthenticated ?? true) {
+        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        // }
+
+        try {
+            var (jobDescriptions, totalCount) = await _service.GetAllJobDescriptions(userId, filters.Post, all,
+             filters.Direction, filters.MinDate, filters.MaxDate, page, pageSize);
+
+            var result = new { results = jobDescriptions, totalCount, page, pageSize };
+            return Ok(new { data = result, status = 200, message = "Fiches de poste trouvées avec succès" });
+        }
+        catch(ArgumentException ex) {
+            return BadRequest(new { data = (object?)null, status = 400, message = ex.Message });
+        }
+        catch(Exception ex) {
+            return StatusCode(500, new { data = (object?)null, status = 500, message = ex.Message });
+        }
+    }
+
+
     [HttpPut("{id}")]
     [AllowAnonymous]
     public async Task<IActionResult> UpdateJobDescription([FromRoute] string id, 

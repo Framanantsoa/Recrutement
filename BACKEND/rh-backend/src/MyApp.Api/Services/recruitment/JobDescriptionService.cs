@@ -17,6 +17,8 @@ public interface IJobDescriptionService
     Task<(List<JobDescriptionDetailsDTO>, int)> GetAllPendedJobDescriptions(
         FilterRequestListDTO filters, int page, int pageSize
     );
+    Task<(IEnumerable<JobDescriptionCardDTO>, int)> GetAllJobDescriptions(string userId, string? post,
+     bool all, string? direction, DateOnly? minDate, DateOnly? maxDate, int page, int pageSize);
     Task<string> AddJobDescription(JobDescriptionFormDTO data);
     Task<JobDescriptionDTO?> GetJobDescription(string requestId);
     Task<(bool, string?)> HasJobDescription(string requestId);
@@ -162,6 +164,34 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
         catch (Exception ex) {
             // await _unitOfWork.RollbackAsync();
             _log.LogError(ex, "Erreur de création d'un TDR");
+            throw;
+        }
+    }
+
+
+    public async Task<(IEnumerable<JobDescriptionCardDTO>, int)> GetAllJobDescriptions(string userId, string? post, bool all,
+     string? direction, DateOnly? minDate, DateOnly? maxDate, int page, int pageSize) {
+        try {
+            _log.LogInformation("Récupération de tous les TDRs en cours");
+            var user = await _userRepo.GetByIdAsync(userId)
+             ?? throw new ArgumentException("Utilisateur non trouvé");
+
+            var (jobDescriptions, totalCount) = await _jobDescRepo.GetAllJobDescriptions(user, all, post, direction, minDate, maxDate,
+             page, pageSize);
+
+            return (jobDescriptions.Select(j => new JobDescriptionCardDTO
+            {
+                Id = j.Id,
+                Post = j.Request.Post,
+                Direction = j.Request.ApplicantUser.Department ?? "N/A",
+                ApplicantUser = j.Request.ApplicantUser.Name ?? "N/A",
+                HierarchicalManager = j.Request.HierarchicalManager?.Name ?? "N/A",
+                CreatedAt = j.CreatedAt,
+                LastStatus = j.LastStatus
+            }).ToList(), totalCount);
+        }
+        catch (Exception ex) {
+            _log.LogError(ex, "Erreur lors de la récupération de tous les TDRs");
             throw;
         }
     }

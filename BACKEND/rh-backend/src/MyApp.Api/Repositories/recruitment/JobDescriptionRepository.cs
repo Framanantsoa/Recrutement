@@ -2,6 +2,7 @@ using Hangfire.Common;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Api.Data;
 using MyApp.Api.Entities.recruitment;
+using MyApp.Api.Entities.users;
 using MyApp.Api.Models.dto.recruitment;
 using MyApp.Api.Utils.generator;
 
@@ -33,6 +34,9 @@ public interface IJobDescriptionRepository
     Task<bool> SoftSkillExistsByLabel(string label);
     Task<bool> DoesExistsById(string id);
     Task UpdateJobDescription(JobDescription last, JobDescription newJob);
+
+    Task<(ICollection<JobDescription>, int)> GetAllJobDescriptions(User user, bool all, string? post,
+     string? direction, DateOnly? minDate, DateOnly? maxDate, int page, int pageSize);
 
 // Commit de transaction
     Task SaveChangesAsync();
@@ -340,6 +344,47 @@ public class JobDescriptionRepository(AppDbContext ctx, ISequenceGenerator seq) 
             })
             .ToListAsync();
 
+        return (items, totalCount);
+    }
+
+
+    public async Task<(ICollection<JobDescription>, int)> GetAllJobDescriptions(User user, bool all, string? post,
+     string? direction, DateOnly? minDate, DateOnly? maxDate, int page, int pageSize) {
+        var query = _dbCtx.JobDescriptions.AsNoTracking()
+            .Include(jd => jd.Request)
+                .ThenInclude(r => r.HierarchicalManager)
+            .Include(jd => jd.Request)
+                .ThenInclude(r => r.ApplicantUser)
+            .Where(jd => jd.LastStatus.ToLower() != "en attente");
+
+        if (all == false)
+            query = query.Where(jd => jd.Request.ApplicantUser.Department == user.Department
+             || jd.Request.HierarchicalManager.Department == user.Department);
+
+        if (!string.IsNullOrWhiteSpace(post))
+            query = query.Where(jd =>
+                jd.Request.Post.ToLower().Contains(post.ToLower()));
+
+        if (!string.IsNullOrWhiteSpace(direction))
+            query = query.Where(jd => 
+                jd.Request.HierarchicalManager.Department==direction);
+
+        if (minDate.HasValue)
+            query = query.Where(jd =>
+                jd.Request.CreatedAt >= minDate.Value
+                    .ToDateTime(TimeOnly.MinValue));
+
+        if (maxDate.HasValue)
+            query = query.Where(jd =>
+                jd.Request.CreatedAt <= maxDate.Value
+                    .ToDateTime(TimeOnly.MaxValue));
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(jd => jd.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
         return (items, totalCount);
     }
 }

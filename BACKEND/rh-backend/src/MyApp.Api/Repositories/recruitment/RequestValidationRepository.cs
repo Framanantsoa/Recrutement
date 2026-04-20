@@ -17,7 +17,7 @@ public interface IRequestValidationRepository
     Task<List<UserDto>> GetAllDirectorValidator(string requestId);
     Task<UserDto?> GetNextValidator(string requestId);
     Task<RequestStatus> GetNextStatus(RecruitmentRequest req);
-    Task<RecruitmentRequest> ValidateRequest(CreateRequestValidationDTO data);
+    Task<(RecruitmentRequest, bool)> ValidateRequest(CreateRequestValidationDTO data);
     Task<bool> HasNotYetValidatedRequest(User user, RecruitmentRequest req);
     Task<(List<RequestDetailsDTO>, int)> GetAllPendedRecruitmentRequest(string validatorId, FilterRequestListDTO filters
      , int page, int pageSize);
@@ -195,7 +195,7 @@ public class RequestValidationRepository : IRequestValidationRepository
     }
 
 
-    public async Task<RecruitmentRequest> ValidateRequest(CreateRequestValidationDTO data) {
+    public async Task<(RecruitmentRequest, bool)> ValidateRequest(CreateRequestValidationDTO data) {
         var userValidator = await _dbCtx.Users.FindAsync(data.ValidatorId)
             ?? throw new ArgumentException("Validateur introuvable");
 
@@ -233,20 +233,17 @@ public class RequestValidationRepository : IRequestValidationRepository
         };
 
         // 3. Déterminer le statut à appliquer après validation
-        if (data.Status.Equals("Approuver", StringComparison.OrdinalIgnoreCase))
-        {
+        if (data.Status.Equals("Approuver", StringComparison.OrdinalIgnoreCase)) {
             validation.StatusId = (await this.GetNextStatus(request)).Id; // Correctement calculé après la mise à jour
         }
-        else if (data.Status.Equals("Refuser", StringComparison.OrdinalIgnoreCase))
-        {
+        else if (data.Status.Equals("Refuser", StringComparison.OrdinalIgnoreCase)) {
             if (string.IsNullOrWhiteSpace(data.Comments))
                 throw new ArgumentException("Commentaires obligatoires pour un refus");
 
             validation.StatusId = (await _dbCtx.RequestStatuses.FindAsync("STD_004"))?.Id
                 ?? throw new ArgumentException("Statut de demande introuvable");
         }
-        else
-        {
+        else {
             throw new ArgumentException("Décision inconnue");
         }
 
@@ -254,7 +251,7 @@ public class RequestValidationRepository : IRequestValidationRepository
         await _dbCtx.RequestValidations.AddAsync(validation);
         await _dbCtx.SaveChangesAsync();
 
-        return request;
+        return (request, validation.StatusId!="STD_004");
     }
 
 

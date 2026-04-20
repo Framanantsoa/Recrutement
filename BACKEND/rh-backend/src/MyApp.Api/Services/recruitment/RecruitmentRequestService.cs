@@ -80,8 +80,7 @@ public class RecruitmentRequestService(
             if(nextValidator!=null) {
                 validatorsIds.Add(nextValidator.UserId);
 
-                var notification = new NotificationFormDTO
-                {
+                var notification = new NotificationFormDTO {
                     Title = $"Nouvelle demande créée par {requestor.Name ?? "Inconnu"}",
                     Message = $"Demande de recrutement au poste de '{data.Post}' en attente de validation.",
                     Type = "recruitment",

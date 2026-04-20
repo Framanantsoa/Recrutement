@@ -45,7 +45,7 @@ public class RequestValidationService(
     public async Task ValidateRequest(CreateRequestValidationDTO data) {
         try {
             _logger.LogInformation("En cours de faire la validation ...");
-            var request = await _repo.ValidateRequest(data);
+            var (request, isValidated) = await _repo.ValidateRequest(data);
 
         // Le prochain validateur seulement
             var validators = await _reqService.GetNextValidator(data.RequestId);
@@ -73,6 +73,22 @@ public class RequestValidationService(
                 {
                     Title = $"Votre demande de recrutement est validée",
                     Message = $"Votre demande de recrutement au poste de '{request.Post}' est complètement validée .",
+                    Type = "recruitment",
+                    RelatedTable = "recruitment_requests",
+                    RelatedMenu = "collaborateur",
+                    RelatedId = request.Id,
+                    Priority = 2,
+                    UserIds = [request.ApplicantUser.UserId],
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _notifService.CreateAsync(notification, null);
+            }
+
+            if(isValidated == false) {
+                var notification = new NotificationFormDTO
+                {
+                    Title = $"Votre demande de recrutement est refusée",
+                    Message = $"Votre demande de recrutement au poste de '{request.Post}' est refusée.",
                     Type = "recruitment",
                     RelatedTable = "recruitment_requests",
                     RelatedMenu = "collaborateur",

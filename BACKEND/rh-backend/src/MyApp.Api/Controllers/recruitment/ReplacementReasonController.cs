@@ -13,9 +13,9 @@ public class ReplacementReasonController
     [HttpPost]
     [AllowAnonymous]
     public async Task<IActionResult> AddReplacement([FromBody] ReplacementReason data) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             await _service.AddReplacement(data);
@@ -34,9 +34,9 @@ public class ReplacementReasonController
     [AllowAnonymous]
     public async Task<IActionResult> DeleteReplacement([FromRoute] string id)
     {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             await _service.DeleteReplacement(id);
@@ -54,9 +54,9 @@ public class ReplacementReasonController
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetAllReasons() {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var reasons = await _service.GetAllReasons();

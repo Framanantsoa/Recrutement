@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import CandidatureTable from "./components/candidature-table";
 import CandidatureAlert from "./components/candidature-alert";
 import CandidatureFilters from "./components/candidature-filters";
+import CandidatureHeader from "./components/candidature-header";
 import { useSearchCandidatures, type FilterCandidatureDTO } from "@/api/recruitment/candidatures/service";
 import { useNavigate, useParams } from "react-router-dom";
 import CandidatureTabs, { type TabKey } from "./components/candidature-tabs";
@@ -96,6 +97,8 @@ const CandidatureList: React.FC = () => {
     searchResponse?.list || [], [searchResponse]
   );
 
+  const details = searchResponse?.details;
+
   useEffect(() => {
     setTotalCount(searchResponse?.totalCount || 0);
   }, [searchResponse]);
@@ -123,6 +126,8 @@ const CandidatureList: React.FC = () => {
   return (<>
     <CandidatureAlert alert={alert} onClose={() => setAlert({ ...alert, isOpen: false })} />
 
+    <CandidatureHeader details={details} />
+    
     <CandidatureFilters
       filters={filters}
       setFilters={setFilters}

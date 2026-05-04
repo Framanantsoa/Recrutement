@@ -17,9 +17,9 @@ public class JobDescriptionController(IJobDescriptionService service)
     [AllowAnonymous]
     public async Task<IActionResult> AddJobDescription([FromBody] 
      JobDescriptionFormDTO data) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var jobId = await _service.AddJobDescription(data);
@@ -37,9 +37,9 @@ public class JobDescriptionController(IJobDescriptionService service)
     [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetJobDescriptionById([FromRoute] string id) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             id = id.Replace("_", "/");
@@ -59,9 +59,9 @@ public class JobDescriptionController(IJobDescriptionService service)
     [AllowAnonymous]
     public async Task<IActionResult> GetAllJobDescriptions([FromRoute] string userId, [FromQuery] JobDescriptionFiltersDTO filters,
      [FromQuery] bool all = false, [FromQuery] int page = 1, [FromQuery] int pageSize = 10) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var (jobDescriptions, totalCount) = await _service.GetAllJobDescriptions(userId, filters.Post, all,
@@ -83,9 +83,9 @@ public class JobDescriptionController(IJobDescriptionService service)
     [AllowAnonymous]
     public async Task<IActionResult> UpdateJobDescription([FromRoute] string id, 
         [FromBody] JobDescriptionFormDTO data) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             id = id.Replace("_", "/");
@@ -104,9 +104,9 @@ public class JobDescriptionController(IJobDescriptionService service)
     [HttpGet("requests/{requestId}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetJobDescription([FromRoute] string requestId) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         requestId = requestId.Replace("_", "/");
         try {
@@ -125,9 +125,9 @@ public class JobDescriptionController(IJobDescriptionService service)
     [HttpGet("requests/{requestId}/has")]
     [AllowAnonymous]
     public async Task<IActionResult> HasJobDescription([FromRoute] string requestId) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             requestId = requestId.Replace("_", "/");
@@ -146,9 +146,9 @@ public class JobDescriptionController(IJobDescriptionService service)
     [HttpGet("can-validate/{userId}")]
     [AllowAnonymous]
     public async Task<IActionResult> CanValidateJobDescription([FromRoute] string userId) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var value = await _service.CanValidateJobDescription(userId);
@@ -166,9 +166,9 @@ public class JobDescriptionController(IJobDescriptionService service)
     [HttpPost("validate")]
     [AllowAnonymous]
     public async Task<IActionResult> ValidateJobDescription([FromBody] JobDescriptionValidationDTO dto) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             await _service.ValidateJobDescription(dto);
@@ -189,9 +189,9 @@ public class JobDescriptionController(IJobDescriptionService service)
         [FromQuery] FilterRequestListDTO filters, 
         [FromQuery] int page = 1, [FromQuery] int pageSize = 10
     ) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var (results, totalCount) = await _service.GetAllPendedJobDescriptions(
@@ -215,9 +215,9 @@ public class JobDescriptionController(IJobDescriptionService service)
     [HttpGet("{id}/interviewers")]
     [AllowAnonymous]
     public async Task<IActionResult> GetJobDescriptionInterviewers([FromRoute] string id) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             id = id.Replace("_", "/");

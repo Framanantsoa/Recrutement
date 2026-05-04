@@ -1,6 +1,6 @@
 import { Save, X } from "lucide-react";
 import * as FaIcons from "react-icons/fa";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 import {
     PopupOverlay,
@@ -24,7 +24,6 @@ import {
     FirstStepNavigation
 } from "@/styles/form-container";
 
-import Alert from "@/components/alert";
 import AttributionStep from "./components/attribution-step";
 import axios from "axios";
 import useCreateJobDescriptionForm from "./hooks/use-job-form";
@@ -91,20 +90,7 @@ const JobDescriptionForm: React.FC<JobDescriptionFormProps> = ({
     const createJobDescription = useAddJobDescription();
     const updateJobDescription = useUpdateJobDescription(requestId);
 
-    const [alert, setAlert] = useState<{
-        isOpen: boolean;
-        type: "success" | "info" | "error";
-        message: string;
-    }>({ isOpen: false, type: "info", message: "" });
-
-    const closeAlert = useCallback(
-        () => setAlert(a => ({ ...a, isOpen: false })), []
-    );
-
     if (!isOpen) return null;
-
-    const showError = (message: string) =>
-        setAlert({ isOpen: true, type: "error", message });
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -114,7 +100,7 @@ const JobDescriptionForm: React.FC<JobDescriptionFormProps> = ({
         }
 
         if(!validateStep3()) {
-            showError("Veuillez corriger les erreurs avant validation.");
+            onFormSuccess("error", "Veuillez corriger les erreurs avant validation.");
             return;
         }
 
@@ -127,21 +113,11 @@ const JobDescriptionForm: React.FC<JobDescriptionFormProps> = ({
                 navigate(`/recrutement/demandes/${formatParam(requestId)}/details`);
             
                 onFormSuccess("success", "TDR mise à jour avec succès !");
-                setAlert({
-                    isOpen: true,
-                    type: "success",
-                    message: "TDR modifiée avec succès !"
-                });
             } else {
                 await createJobDescription.mutateAsync(formData);
                 navigate(`/recrutement/demandes/${formatParam(requestId)}/details`);
 
                 onFormSuccess("success", "TDR créée avec succès !");
-                setAlert({
-                    isOpen: true,
-                    type: "success",
-                    message: "TDR créée avec succès !"
-                });
             }
 
             handleReset();
@@ -149,11 +125,11 @@ const JobDescriptionForm: React.FC<JobDescriptionFormProps> = ({
         } 
         catch (error: unknown) {
             if (axios.isAxiosError(error)) {
-                showError(error.response?.data?.message || error.message);
+                onFormSuccess("error", error.response?.data?.message || error.message);
             } else if (error instanceof Error) {
-                showError(error.message);
+                onFormSuccess("error", error.message);
             } else {
-                showError("Erreur inconnue");
+                onFormSuccess("error", "Erreur inconnue");
             }
         }
     };
@@ -172,10 +148,6 @@ const JobDescriptionForm: React.FC<JobDescriptionFormProps> = ({
                 </PopupHeader>
 
                 <PopupContent>
-                    {alert.isOpen && (
-                        <Alert {...alert} onClose={closeAlert} />
-                    )}
-
                     <StepperWrapper>
                         <StepItem active={currentStep === 1}><span>1</span> Poste</StepItem>
                         <StepItem active={currentStep === 2}><span>2</span> Formations</StepItem>

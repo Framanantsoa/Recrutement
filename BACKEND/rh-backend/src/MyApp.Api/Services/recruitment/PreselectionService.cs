@@ -410,10 +410,10 @@ public class PreselectionService(
             _logger.LogInformation("Confirmation en cours");
 
 
-            var jobCriteria = await _jobRepo.GetByIdWithCriteria(jobId)
+            var jobDescription = await _jobRepo.GetByIdWithCriteria(jobId)
              ?? throw new ArgumentException("TDR non trouvé");
 
-            var criteria = jobCriteria.Criteria;
+            var criteria = jobDescription.Criteria;
             var now = DateTime.UtcNow;
 
             foreach (var item in criteria) {
@@ -422,7 +422,7 @@ public class PreselectionService(
 
             await _dbService.CommitAsync();
 
-            return jobCriteria.RequestId;
+            return jobDescription.RequestId;
         }
         catch (Exception ex) {
             _logger.LogError(ex, "Erreur lors de la confirmation.");

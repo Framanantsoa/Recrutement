@@ -4,6 +4,7 @@ import JobDescriptionForm from "@/pages/recruitment/job-description/form";
 import { ButtonPrimary } from "@/styles/popup-styles";
 import { Plus } from "lucide-react";
 import type { JobCriteriaDTO, RequestDetailsDTO } from "@/api/recruitment/service";
+import Alert from "@/components/alert";
 
 const JobTabContent: React.FC<{
   requestId: string;
@@ -11,7 +12,27 @@ const JobTabContent: React.FC<{
   requestStatus: string;
   hasJobDescription?: boolean;
   onCriteriaLoad?: (criteria: JobCriteriaDTO) => void;
-}> = ({ requestId, details, requestStatus, hasJobDescription, onCriteriaLoad }) => {
+}> = ({ 
+  requestId, 
+  details, 
+  requestStatus, 
+  hasJobDescription, 
+  onCriteriaLoad 
+}) => {
+  const [alert, setAlert] = useState<{
+    isOpen: boolean;
+    type: "success" | "info" | "error";
+    message: string;
+  }>({
+    isOpen: false,
+    type: "info",
+    message: ""
+  });
+
+  const showAlert = (type: "success" | "info" | "error", message: string) => {
+    setAlert({ isOpen: true, type, message });
+  };
+
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = userData?.userId || "";
 
@@ -38,6 +59,10 @@ const JobTabContent: React.FC<{
   const closeForm = () => setIsFormOpen(false);
 
   return (<>
+    {alert.isOpen && (
+      <Alert {...alert} onClose={() => setAlert(a => ({ ...a, isOpen: false }))} />
+    )}
+
     {!hasJobDescription ? (
       <div className="empty-state">
         <h3>Aucun terme de référence</h3>
@@ -69,9 +94,7 @@ const JobTabContent: React.FC<{
       jobId={jobId}
       mode={mode}
       onClose={closeForm}
-      onFormSuccess={(type, message) => {
-        console.log(type, message);
-      }}
+      onFormSuccess={showAlert}
     />
   </>);
 };

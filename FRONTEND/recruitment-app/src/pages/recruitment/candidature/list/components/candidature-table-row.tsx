@@ -105,7 +105,7 @@ const CandidatureTableRow: React.FC<CandidatureTableRowProps> = ({
             : "-"}
         </TableCell>
 
-        {showActions && (
+        {/* {showActions && (
           <TableCell style={{ textAlign: "center" }}>
             <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
 
@@ -123,7 +123,7 @@ const CandidatureTableRow: React.FC<CandidatureTableRowProps> = ({
 
             </div>
           </TableCell>
-        )}
+        )} */}
       </TableRow>
     </>
   );

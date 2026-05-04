@@ -13,9 +13,9 @@ public class PreselectionController
     [HttpGet("langages")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAllLangages() {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var results = await _service.GetAllLangagesAsync();
@@ -33,9 +33,9 @@ public class PreselectionController
     [HttpGet("speaking-levels")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAllSpeakingLevels() {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var results = await _service.GetAllSpeakingLevelsAsync();
@@ -53,9 +53,9 @@ public class PreselectionController
     [HttpGet("criterias")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAllCriterias() {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var results = await _service.GetAllPreselectionCriteriaAsync();
@@ -73,9 +73,9 @@ public class PreselectionController
     [HttpPost("job-criteria")]
     [AllowAnonymous]
     public async Task<IActionResult> AddJobCriteria([FromBody] JobCriteriaFormDTO dto) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             await _service.AddJobPreselectionCriteria(dto);
@@ -97,9 +97,9 @@ public class PreselectionController
     ) {
         jobId = jobId.Replace("_", "/");
 
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
         
         try {
             var updated = await _service.UpdateJobPreselectionCriteria(jobId, dto);
@@ -119,9 +119,9 @@ public class PreselectionController
     public async Task<IActionResult> ConfirmCriteria(string jobId) {
         jobId = jobId.Replace("_", "/");
 
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
         
         try {
             string requestId =await _service.ConfirmCriteria(jobId);

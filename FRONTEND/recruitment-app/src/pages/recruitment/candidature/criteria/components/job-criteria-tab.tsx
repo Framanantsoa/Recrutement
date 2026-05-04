@@ -22,7 +22,7 @@ const JobCriteriaTab: React.FC<Props> = ({ jobId, requestId, criteria }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const [criteriaState, setCriteriaState] = useState(criteria);
+    const criteriaState = criteria;
 
     const [alert, setAlert] = useState<{
         isOpen: boolean;
@@ -110,14 +110,15 @@ const JobCriteriaTab: React.FC<Props> = ({ jobId, requestId, criteria }) => {
                         {canConfirmCriteria===true && (
                             <ButtonConfirmSecondary className="tdr-btn"
                                 onClick={() => setIsOpen(true)}
-                                disabled={criteria.status.toLowerCase() === "validée"}
+                                disabled={criteriaState.status.toLowerCase() === "validée"}
                             >
                                 <FaPen /> Modifier
                             </ButtonConfirmSecondary>
                         )}
                         
                         <LabelValue label="Statut">
-                            <RecruitmentStatusTag status={criteria.status}/>
+                            <RecruitmentStatusTag status={criteriaState.status}/>
+                            {/* <p>{criteriaState.status}</p> */}
                         </LabelValue>
                     </div>
                 </div>
@@ -162,7 +163,7 @@ const JobCriteriaTab: React.FC<Props> = ({ jobId, requestId, criteria }) => {
             requestId={requestId}
             criteria={criteriaState}
             onClose={() => setIsOpen(false)}
-            onUpdated={(updatedCriteria) => setCriteriaState(updatedCriteria)}
+            onUpdated={() => {}}
             setAlert={setAlert}
         />
     </>);

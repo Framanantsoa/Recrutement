@@ -285,10 +285,19 @@ public class CandidatureService(ICandidatureRepository rep,
         try {
             _logger.LogInformation("Insertion de la nouvelle candidature de : {email}...", data.Email);
             
-            var jobCriteria = await _jobDescRepo.GetByIdWithCriteria(jobId);
+            DateTime dateTimeNow = DateTime.UtcNow;
+            var jobDescription = await _jobDescRepo.GetByIdWithCriteria(jobId)
+             ?? throw new ArgumentException("Poste ou TDR non trouvé");
+            
+            _logger.LogInformation($"Date de début : {jobDescription?.Request.BeginningDate} -- {DateOnly.FromDateTime(dateTimeNow)}");
 
-            if (jobCriteria?.Criteria == null || !jobCriteria.Criteria.Any() || 
-             jobCriteria.Criteria.Any(c => c.ValidatedAt == null)) {
+            if(jobDescription?.Request == null ||
+             jobDescription.Request.BeginningDate <  DateOnly.FromDateTime(dateTimeNow)) {
+                throw new ArgumentException("Ce poste n'est plus disponible");
+            }
+
+            if (jobDescription?.Criteria == null || !jobDescription.Criteria.Any() || 
+             jobDescription.Criteria.Any(c => c.ValidatedAt == null)) {
                 throw new ArgumentException("Les critères du poste ne sont pas encore validés.");
             }
 
@@ -301,7 +310,7 @@ public class CandidatureService(ICandidatureRepository rep,
                 EmailContact = data.Email,
                 CvUrl = data.CvUrl, 
                 LmUrl = data.LmUrl,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = dateTimeNow,
                 JobDescriptionId = jobId
             };
             var jobDesc = await _jobDescRepo.GetJobDescriptionById(jobId);

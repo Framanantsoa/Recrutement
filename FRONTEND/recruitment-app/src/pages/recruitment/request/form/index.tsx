@@ -80,6 +80,12 @@ const RecruitmentRequestForm: React.FC<RecruitmentRequestFormProps> = ({
         data: usersByDirection
     } = useGetUsersByDirection(sharedDirection, true);
 
+    useEffect(() => {
+        if (formData.direction) {
+            setSharedDirection(formData.direction);
+        }
+    }, [formData.direction]);
+
 // Mutations
     const createRequest = useCreateRecruitmentRequest();
     const updateRequest = useUpdateRecruitmentRequest(requestId);

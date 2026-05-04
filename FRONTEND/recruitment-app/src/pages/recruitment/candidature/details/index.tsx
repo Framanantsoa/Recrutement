@@ -28,7 +28,6 @@ const CandidatureDetailsPage: React.FC = () => {
 // HOOKS
   const canDefineNotes = useHasHabilitation(userId, "Gérer les paramétrages du recrutement");
 
-
   const [alert, setAlert] = useState({
     isOpen: false,
     type: "info" as "success" | "info" | "error",
@@ -62,12 +61,12 @@ const CandidatureDetailsPage: React.FC = () => {
   if (isLoading || !data) return <p>Chargement...</p>;
 
   return ( <>
-    {/* ALERT */}
+  {/* ALERT */}
     {alert.isOpen && (
       <Alert {...alert} onClose={() => setAlert(a => ({ ...a, isOpen: false }))} />
     )}
 
-    {/* MODAL */}
+  {/* MODAL */}
     {isModalOpen && (
       <Modal
         type="success"

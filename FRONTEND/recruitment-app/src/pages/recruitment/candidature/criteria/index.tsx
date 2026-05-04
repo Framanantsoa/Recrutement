@@ -71,7 +71,7 @@ const PreselectionCriteriaForm: React.FC<Props> = ({
 
         validate,
         setFromExistingData,
-    } = useSaveCriteria(jobId, mode);
+    } = useSaveCriteria(jobId);
 
     useEffect(() => {
         if (criteria) {

@@ -415,7 +415,7 @@ public class RecruitmentRequestRepository : IRecruitmentRequestRepository
             for(int i=0; i<data.Sites.Length; i++) {
                 var siteRequest = new SiteRequest
                 {
-                    Id = _generator.GenerateSequence("seq_id_site_request", "DMD_REC_SITE"),
+                    Id = _generator.GenerateSequence("seq_site_request_id", "DMD_REC_SITE"),
                     RequestId = lastRequest.Id,
                     SiteId = data.Sites[i]
                 };

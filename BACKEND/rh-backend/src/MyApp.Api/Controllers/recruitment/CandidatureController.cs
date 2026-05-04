@@ -17,9 +17,9 @@ public class CandidatureController(ICandidatureService s1)
     public async Task<IActionResult> GetCandidaturesByJobDescriptionId(
      [FromRoute] string id, [FromQuery] CandidatureFiltersDTO filters,
      [FromQuery] int page=1, [FromQuery] int pageSize=10) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         id = id.Replace("_", "/");
         try {
@@ -46,9 +46,9 @@ public class CandidatureController(ICandidatureService s1)
     [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetCandidatureDetails([FromRoute] string id) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         id = id.Replace("_", "/");
         try {
@@ -90,9 +90,9 @@ public class CandidatureController(ICandidatureService s1)
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCandidatureNote([FromRoute] string id, 
      [FromBody] CandidatureNoteUpdateFormDTO data) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         id = id.Replace("_", "/");
         try {
@@ -111,9 +111,9 @@ public class CandidatureController(ICandidatureService s1)
 
     [HttpPut("{id}/finish")]
     public async Task<IActionResult> FinishCandidatureTreatment([FromRoute] string id) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+         }
 
         id = id.Replace("_", "/");
         try {
@@ -137,6 +137,10 @@ public class CandidatureController(ICandidatureService s1)
     public async Task<IActionResult> GetCandidatureComments(
         [FromRoute] string id, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
+
         id = id.Replace("_", "/");
         try {
             var comments = await _service.GetPaginatedCommentsAsync(id, page, pageSize);
@@ -162,6 +166,10 @@ public class CandidatureController(ICandidatureService s1)
         [FromRoute] string id,
         [FromBody] CandidatureCommentFormDTO data)
     {
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
+
         id = id.Replace("_", "/");
         try {
             await _service.AddCandidatureComment(id, data);
@@ -187,6 +195,10 @@ public class CandidatureController(ICandidatureService s1)
         [FromRoute] string id,
         [FromBody] CandidatureCommentFormDTO data)
     {
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
+
         id = id.Replace("_", "/");
         try {
             await _service.UpdateCandidatureComment(id, data);
@@ -208,8 +220,11 @@ public class CandidatureController(ICandidatureService s1)
 
     [HttpDelete("comments/{id}")]
     [AllowAnonymous]
-    public async Task<IActionResult> DeleteCandidatureComment([FromRoute] string id)
-    {
+    public async Task<IActionResult> DeleteCandidatureComment([FromRoute] string id) {
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
+
         id = id.Replace("_", "/");
         try {
             await _service.DeleteCandidatureComment(id);

@@ -222,7 +222,7 @@ const JobCriteriaForm: React.FC<Props> = ({
 
             <FormRow>
               <FormFieldCell colSpan={4}>
-                <button type="button" onClick={addExperience}>
+                <button type="button" onClick={addExperience}  style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px" }}>
                   <Plus size={16} /> Ajouter une expérience
                 </button>
               </FormFieldCell>
@@ -308,7 +308,7 @@ const JobCriteriaForm: React.FC<Props> = ({
 
             <FormRow>
               <FormFieldCell colSpan={4}>
-                <button type="button" onClick={addLangage}>
+                <button type="button" onClick={addLangage} style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px" }}>
                   <Plus size={16} /> Ajouter une langue
                 </button>
               </FormFieldCell>

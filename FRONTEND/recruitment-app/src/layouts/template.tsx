@@ -162,7 +162,7 @@ const Template: React.FC<TemplateProps> = ({ children }) => {
   const habilitationsMap = useMemo(() => ({
     "Utilisateurs": hasVoirUtilisateurs,
     "Rôles & Habilitations": hasVoirDroitAcces,
-    "Entretiens": true,
+    "Entretiens": false,
     "Accès": hasVoirAcces,
     "Référentiel": hasVoirReferentiel,
     "Import": hasVoirImport,
@@ -721,6 +721,78 @@ const Template: React.FC<TemplateProps> = ({ children }) => {
         title: "Demandes",
         path: "/recrutement/liste-demandes",
         isActive: true,
+      });
+    }
+
+    else if (currentPath === "/recrutement/a-valider") {
+      breadcrumbs.push({
+        title: "Recrutement",
+        path: "/recrutement/a-valider",
+        isActive: false,
+        clickable: false,
+      });
+      breadcrumbs.push({
+        title: "Validations",
+        path: "/recrutement/a-valider",
+        isActive: true,
+      });
+    }
+
+    else if (currentPath.startsWith("/recrutement/demandes/") && currentPath.endsWith("/details")) {
+      breadcrumbs.push({
+        title: "Recrutement",
+        path: "/recrutement/liste-demandes",
+        isActive: false,
+        clickable: false,
+      });
+    
+      breadcrumbs.push({
+        title: "Demandes",
+        path: "/recrutement/liste-demandes",
+        isActive: false,
+        clickable: true,
+      });
+    
+      breadcrumbs.push({
+        title: "Détails",
+        path: currentPath,
+        isActive: true,
+      });
+    }
+
+    else if (currentPath === "/recrutement/liste-postes") {
+      breadcrumbs.push({
+        title: "Recrutement",
+        path: "/recrutement/liste-postes",
+        isActive: false,
+        clickable: false,
+      });
+      breadcrumbs.push({
+        title: "Postes",
+        path: "/recrutement/liste-postes",
+        isActive: true,
+      });
+    }
+
+    else if (currentPath.startsWith("/recrutement/candidatures/tdr")) {
+      breadcrumbs.push({
+        title: "Recrutement",
+        path: "/recrutement/liste-postes",
+        isActive: false,
+        clickable: false,
+      });
+      breadcrumbs.push({
+        title: "TDR",
+        path: "/recrutement/liste-postes",
+        isActive: false,
+        clickable: true,
+      });
+    
+      breadcrumbs.push({
+        title: "Candidatures",
+        path: "/recrutement/liste-postes",
+        isActive: false,
+        clickable: false,
       });
     }
     

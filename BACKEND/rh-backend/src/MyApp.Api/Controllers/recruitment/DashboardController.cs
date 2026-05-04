@@ -14,9 +14,9 @@ public class DashboardController(IDashboardService s1)
     [HttpGet("stats/{direction}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetGlobalStats([FromRoute] string direction) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var stats = await _dashboardService.GetDashboardStatsAsync(direction);
@@ -35,9 +35,9 @@ public class DashboardController(IDashboardService s1)
     [HttpGet("requests-per-direction")]
     [AllowAnonymous]
     public async Task<IActionResult> GetRequestsPerDirection() {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var stats = await _dashboardService.GetRequestsPerDirectionAsync();
@@ -56,9 +56,9 @@ public class DashboardController(IDashboardService s1)
     [HttpGet("requests-per-status/{direction}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetRequestsPerStatus([FromRoute] string direction) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var stats = await _dashboardService.GetRequestsPerStatusAsync(direction);
@@ -78,9 +78,9 @@ public class DashboardController(IDashboardService s1)
     [AllowAnonymous]
     public async Task<IActionResult> GetCandidaturesPerMonth([FromRoute] string direction,
      [FromRoute] int year) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var stats = await _dashboardService.GetCandidaturesPerMonthAsync(direction, year);

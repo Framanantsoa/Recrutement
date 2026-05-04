@@ -108,9 +108,9 @@ const CandidatureTable: React.FC<CandidatureTableProps> = ({
             <TableHeadCell style={{ textAlign:"center" }}>Contact</TableHeadCell>
             <TableHeadCell style={{ textAlign:"center" }}>Date de réception</TableHeadCell>
             <TableHeadCell style={{ textAlign:"center" }}>Points</TableHeadCell>
-            {showActions && (
+            {/* {showActions && (
               <TableHeadCell style={{ textAlign:"center", width:"40px" }}>Actions</TableHeadCell>
-            )}
+            )} */}
             
           </tr>
         </thead>

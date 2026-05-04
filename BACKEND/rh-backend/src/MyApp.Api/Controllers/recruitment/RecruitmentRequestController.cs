@@ -104,9 +104,9 @@ public class RecruitmentRequestController(IRecruitmentRequestService _service,
     [HttpGet("{id}/details")]
     [AllowAnonymous]
     public async Task<IActionResult> GetRequestDetails([FromRoute] string id) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             id = id.Replace("_", "/");
@@ -157,9 +157,9 @@ public class RecruitmentRequestController(IRecruitmentRequestService _service,
     [HttpGet("{id}/validators")]
     [AllowAnonymous]
     public async Task<IActionResult> GetRequestValidators([FromRoute] string id) {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             id = id.Replace("_", "/");

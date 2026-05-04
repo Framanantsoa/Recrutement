@@ -112,6 +112,8 @@ public class JobDescriptionRepository(AppDbContext ctx, ISequenceGenerator seq) 
             .Include(r => r.Criteria)
             .Include(r => r.Request)
                 .ThenInclude(req => req.HierarchicalManager)
+            .Include(r => r.Request)
+                .ThenInclude(req => req.Contract)
             .FirstOrDefaultAsync(r => r.Id == id) ?? 
             throw new ArgumentException("Terme de référence introuvable");
 
@@ -146,6 +148,7 @@ public class JobDescriptionRepository(AppDbContext ctx, ISequenceGenerator seq) 
 
     public async Task<JobDescription?> GetByIdWithCriteria(string id) {
         return await _dbCtx.JobDescriptions
+            .Include(j => j.Request)
             .Include(j => j.Criteria)
                 .ThenInclude(c => c.LevelEducations)
             .Include(j => j.Criteria)

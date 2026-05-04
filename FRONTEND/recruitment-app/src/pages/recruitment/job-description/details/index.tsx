@@ -13,6 +13,7 @@ import { formatParam } from "../../request/form";
 import PreselectionCriteriaForm from "../../candidature/criteria";
 
 import Alert from "@/components/alert";
+import { useHasHabilitation } from "@/api/users/services";
 
 interface Props {
   requestId: string;
@@ -27,8 +28,11 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit, onCriteri
 
   const [isCriteriaOpen, setIsCriteriaOpen] = useState(false);
 
+// Vérifier la permission
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = userData?.userId || "";
+
+  const canCreateCriteria = useHasHabilitation(userId, "Gérer les paramétrages du recrutement");
 
   const [alert, setAlert] = useState<{
       isOpen: boolean;
@@ -82,7 +86,7 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit, onCriteri
               <ButtonConfirmSecondary
                 className="tdr-btn"
                 onClick={() => onEdit(job.id)}
-                disabled={userId!==details.applicantUserId}
+                disabled={userId!==details.applicantUserId && !canCreateCriteria}
               >
                 <FaPen /> Modifier
               </ButtonConfirmSecondary>
@@ -90,6 +94,7 @@ const JobDetailsCard: React.FC<Props> = ({ requestId, details, onEdit, onCriteri
              : job.criteria === null ? (
               <ButtonConfirmSecondary
                 onClick={() => { setIsCriteriaOpen(true) }}
+                disabled={!canCreateCriteria}
               >
                 <FaPenAlt /> Définir les critères
               </ButtonConfirmSecondary>

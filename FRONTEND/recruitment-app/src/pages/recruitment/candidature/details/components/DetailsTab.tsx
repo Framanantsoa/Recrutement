@@ -5,9 +5,7 @@ import LabelValue from "@/pages/recruitment/request/details/components/LabelValu
 import { useAssignNoteForCandidat, type CandidatureDetailsDTO } from "@/api/recruitment/candidatures/service";
 import LabelValueList from "@/pages/recruitment/job-description/details/components/LabelValueList";
 import EditableScore from "@/components/EditableScore";
-import { ButtonConfirm } from "@/styles/table-styles";
 import { useNavigate } from "react-router-dom";
-import { Palette } from "lucide-react";
 
 interface Props {
   isPreselected: boolean | null;
@@ -46,6 +44,12 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected, canDefineNote
     candidature: getPoint("CRIT_005"),
     formation: getPoint("CRIT_002"),
   }));
+
+  const getPreselection = (isPreselected: boolean | null) => {
+    if(isPreselected==true) return "OUI";
+    else if(isPreselected==false) return "NON";
+    else return " - ";
+  }
 
   const handleSave = (criteriaId: string, val: number) => {
     if (!id) return;
@@ -94,10 +98,10 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected, canDefineNote
       {/* ===== STICKY HEADER ===== */}
       <div className="sticky-top-full">
         <div className="sticky-left">
-          <LabelValue label="Présélectionné" value={isPreselected==true ? "OUI":"NON"} />
+          <LabelValue label="Présélectionné" value={getPreselection(isPreselected)} />
         </div>
 
-        {isPreselected==true && (
+        {/* {isPreselected==true && (
           <div className="sticky-right">
             <div className="actions-bar">
               <ButtonConfirm style={{ background:"var(--primary-color)" }}
@@ -107,7 +111,7 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected, canDefineNote
               </ButtonConfirm>
             </div>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* ===== INFORMATIONS GÉNÉRALES ===== */}

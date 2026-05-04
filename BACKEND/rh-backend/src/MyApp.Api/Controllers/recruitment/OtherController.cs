@@ -15,9 +15,9 @@ public class OtherController(IJobDescriptionRepository repo)
     [HttpGet("level-educations")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAllLevelEducations() {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var results = await _repo.GetAllLevelEducations();
@@ -35,9 +35,9 @@ public class OtherController(IJobDescriptionRepository repo)
     [HttpGet("post-types")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAllPostTypes() {
-        // if(!User.Identity?.IsAuthenticated ?? true) {
-        //     return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
-        // }
+        if(!User.Identity?.IsAuthenticated ?? true) {
+            return Unauthorized(new { data = (object?)null, status = 401, message = "unauthorized" });
+        }
 
         try {
             var results = await _repo.GetAllPostTypes();

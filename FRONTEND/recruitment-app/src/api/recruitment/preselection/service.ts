@@ -125,7 +125,7 @@ export const useAddJobCriteria = () => {
             const id = variables.jobDescId;
 
         // Refetch du détail
-            queryClient.invalidateQueries({
+            queryClient.refetchQueries({
                 queryKey: [...SEARCH_JOB_DESC_BASE_KEY, id]
             });
         }
@@ -145,14 +145,14 @@ export const useUpdateJobCriteria = () => {
                 .then(r => r.data),
 
         onSuccess: async (_, variables) => {
-            const { requestId, jobId } = variables;
+            const { requestId } = variables;
         
             await queryClient.invalidateQueries({
                 queryKey: [...SEARCH_REQUEST_DETAILS_BASE_KEY, requestId]
             });
         
             await queryClient.invalidateQueries({
-                queryKey: [...SEARCH_JOB_DESC_BASE_KEY, jobId]
+                queryKey: [...SEARCH_JOB_DESC_BASE_KEY]
             });
         }
     });
@@ -170,7 +170,7 @@ export const useConfirmJobCriteria = () => {
         onSuccess: async (resp, ) => {
             const requestId = resp.data;
         
-            await queryClient.refetchQueries({
+            await queryClient.invalidateQueries({
                 queryKey: [...SEARCH_JOB_DESC_BASE_KEY, requestId]
             });
         }

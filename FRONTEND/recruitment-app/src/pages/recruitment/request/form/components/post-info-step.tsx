@@ -173,14 +173,15 @@ const PostInformationStep: React.FC<PostInformationStepProps> = ({
 	useEffect(() => {
 		if (hierarchicalUser?.direction) {
 			handleInputChange({
-				target: {
-					name: "direction", value: hierarchicalUser.direction
-				}
+			target: {
+				name: "direction",
+				value: hierarchicalUser.direction
+			}
 			});
 
 			onDirectionChange?.(hierarchicalUser.direction);
 		}
-	}, [hierarchicalUser?.direction, handleInputChange, onDirectionChange]);
+	}, [hierarchicalUser?.direction]);
 
 
 	useEffect(() => {

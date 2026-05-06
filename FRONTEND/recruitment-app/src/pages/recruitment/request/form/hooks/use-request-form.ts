@@ -180,7 +180,7 @@ const useRecruitmentForm = ({
       } else {
         setFormData((prev) => ({
           ...prev,
-          [name]: value === "" ? "" : value
+          [name]: value === "" || value === null ? prev[name] : value
         }));
 
         setFieldErrors((prev) => {

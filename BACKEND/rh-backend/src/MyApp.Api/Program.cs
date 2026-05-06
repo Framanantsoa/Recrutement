@@ -12,6 +12,7 @@ using MyApp.Api.Services.mission;
 
 var builder = WebApplication.CreateBuilder(args);
 // string frontUrl = "http://10.0.105.194:5273";
+// string frontUrl = "http://10.0.180.37:8089";
 string frontUrl = "http://localhost:5273";
 
 if (OperatingSystem.IsLinux())
@@ -124,11 +125,6 @@ var app = builder.Build();
 // app.UseHangfireDashboard("/hangfire");
 
 ServiceProviderAccessor.Initialize(app.Services);
-
-// RecurringJob.AddOrUpdate(
-//     "update-mission-statuses",
-//     () => MissionStatusUpdater.UpdateMissionStatuses(),
-//     Cron.Minutely);
 
 app.UseForwardedHeaders();
 

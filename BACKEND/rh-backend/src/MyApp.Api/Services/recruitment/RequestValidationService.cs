@@ -68,7 +68,7 @@ public class RequestValidationService(
                 };
                 await _notifService.CreateAsync(notification, null);
             }
-            else {
+            else if(validators==null && isValidated == true) {
                 var notification = new NotificationFormDTO
                 {
                     Title = $"Votre demande de recrutement est validée",
@@ -83,8 +83,7 @@ public class RequestValidationService(
                 };
                 await _notifService.CreateAsync(notification, null);
             }
-
-            if(isValidated == false) {
+            else if(isValidated == false) {
                 var notification = new NotificationFormDTO
                 {
                     Title = $"Votre demande de recrutement est refusée",

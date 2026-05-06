@@ -105,6 +105,7 @@ const RecruitmentRequestForm: React.FC<RecruitmentRequestFormProps> = ({
     const buildPayload = () => ({
         ...formData,
         effective: formData.effective ? Number(formData.effective) : null,
+        direction: formData.direction ?? sharedDirection ?? "",
         monthDuration: formData.monthDuration ? Number(formData.monthDuration) : null,
         contractId: formData.contractId === "other" ? null : formData.contractId,
         replacementReasonId: formData.replacementReasonId === "other" ? null : formData.replacementReasonId,

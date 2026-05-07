@@ -48,13 +48,26 @@ const JobDescriptionList: React.FC = () => {
 // Gestion des habilitations
     const canViewAllJobDescriptions = useHasHabilitation(userId, "Consulter toutes les tdr");
     
-    const [activeTab, setActiveTab] = useState<JobTabKey>(() => {
+    const [activeTab, setActiveTab] = useState<JobTabKey>("mes");
+
+    useEffect(() => {
+        // Si l'utilisateur n'a pas accès à "Tous"
+        if (!canViewAllJobDescriptions) {
+            setActiveTab("mes");
+            sessionStorage.setItem("lastJobListTab", "mes");
+            return;
+        }
+
+        // Sinon on récupère le dernier tab sauvegardé
         const saved = sessionStorage.getItem("lastJobListTab") as JobTabKey | null;
 
-        if (saved) return saved;
+        if (saved) {
+            setActiveTab(saved);
+        } else {
+            setActiveTab("tous");
+        }
+    }, [canViewAllJobDescriptions]);
 
-        return canViewAllJobDescriptions ? "tous" : "mes";
-    });
     const [appliedFilters, setAppliedFilters] = useState<FiltersState>({ ...filters });
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);

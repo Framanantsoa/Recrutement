@@ -1,10 +1,9 @@
 import React from "react";
-import { TableRow, TableCell, ButtonConfirm, ButtonConfirmSecondary } from "@/styles/table-styles";
+import { TableRow, TableCell } from "@/styles/table-styles";
 import { Link } from "react-router-dom";
 import type { CandidatureDTO } from "@/api/recruitment/candidatures/service";
 import { formatParam } from "@/pages/recruitment/request/form";
-import { Check, Pin } from "lucide-react";
-import { useCanUserPlanJobInterviewByCandidature } from "@/api/recruitment/interview/service";
+// import { useCanUserPlanJobInterviewByCandidature } from "@/api/recruitment/interview/service";
 
 interface CandidatureTableRowProps {
   candidature: CandidatureDTO;
@@ -19,18 +18,18 @@ interface CandidatureTableRowProps {
 
 const CandidatureTableRow: React.FC<CandidatureTableRowProps> = ({
   candidature,
-  showActions,
-  userCanPlan,
-  userRequiredToPlan,
-  onPlanClick,
-  onModalOpen,
+  // showActions,
+  // userCanPlan,
+  // userRequiredToPlan,
+  // onPlanClick,
+  // onModalOpen,
 }) => {
 // récupérer userId
-  const userData = JSON.parse(localStorage.getItem("user") || "{}");
-  const userId = userData?.userId;
+  // const userData = JSON.parse(localStorage.getItem("user") || "{}");
+  // const userId = userData?.userId;
 
 // HOOKS
-  const { data:checkResponse } = useCanUserPlanJobInterviewByCandidature(userId, candidature.id);
+  // const { data:checkResponse } = useCanUserPlanJobInterviewByCandidature(userId, candidature.id);
 
   const getScoreColorClass = (points: number, max: number): string => {
     if (points === 0) return "score-bad";

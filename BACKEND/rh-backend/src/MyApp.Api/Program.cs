@@ -12,7 +12,11 @@ using MyApp.Api.Services.mission;
 
 var builder = WebApplication.CreateBuilder(args);
 // string frontUrl = "http://10.0.105.194:5273";
+<<<<<<< Updated upstream
 // string frontUrl = "http://10.0.180.37:8089";
+=======
+// string frontUrl = "http://10.0.180.37:8099";
+>>>>>>> Stashed changes
 string frontUrl = "http://localhost:5273";
 
 if (OperatingSystem.IsLinux())
@@ -22,6 +26,7 @@ if (OperatingSystem.IsLinux())
 
 var frontendUrl = builder.Configuration["API_FRONT"] ?? frontUrl;
 builder.WebHost.UseUrls(
+    // "http://0.0.0.0:8098"
     "http://0.0.0.0:5283"
 );
 
@@ -31,7 +36,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(frontendUrl, frontUrl)
             .AllowAnyMethod()
-            .AllowAnyHeader();
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
 });
 

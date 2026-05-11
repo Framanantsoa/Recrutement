@@ -189,6 +189,7 @@ const FormationExperienceStep: React.FC<Props> = ({
                                 type="text"
                                 placeholder="Années d'expérience"
                                 value={exp.years}
+                                min={0} max={100}
                                 onChange={(e) => updateExperience(index, "years", e.target.value)}
                                 style={{ flex: 1, borderColor: hasError ? "red" : undefined }}
                                 />

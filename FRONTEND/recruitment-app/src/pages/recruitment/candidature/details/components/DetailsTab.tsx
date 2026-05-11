@@ -5,7 +5,6 @@ import LabelValue from "@/pages/recruitment/request/details/components/LabelValu
 import { useAssignNoteForCandidat, type CandidatureDetailsDTO } from "@/api/recruitment/candidatures/service";
 import LabelValueList from "@/pages/recruitment/job-description/details/components/LabelValueList";
 import EditableScore from "@/components/EditableScore";
-import { useNavigate } from "react-router-dom";
 
 interface Props {
   isPreselected: boolean | null;
@@ -24,8 +23,6 @@ const DetailsTab: React.FC<Props> = ({ id, details, isPreselected, canDefineNote
     type: "info",
     message: "",
   });
-
-  const navigate = useNavigate();
 
 // Points statiques 
   const maxFormation = details.scores.filter(s => s.criteriaId==="CRIT_002").map(s => s.max)[0] ?? 5;

@@ -1,8 +1,6 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Api.Services.ldap.user;
 using MyApp.Api.Services.users;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyApp.Api.Data;
 using MyApp.Api.Services.logs;

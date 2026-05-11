@@ -42,28 +42,28 @@ public class AuthService : IAuthService
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             return new ValidationResult { Message = "Username and password are required", Type = "invalid_input" };
-        // try
-        // {
-        //     var ldapResult = await ValidateLdapCredentialsAsync(username, password);
-        //     if (ldapResult.Type == "success")
-        //     {
-        //         var dbUser = await GetUserFromDatabaseAsync(ldapResult.EmailAddress);
-        //         return ValidateUserAccess(dbUser);
-        //     }
-        //     else if (ldapResult.Type == "ldap_unavailable" || ldapResult.Type == "ldap_error")
-        //     {
-        //         return await FallbackValidateAsync(username, password);
-        //     }
-        //     else
-        //     {
-        //         return new ValidationResult { Message = ldapResult.Message, Type = ldapResult.Type };
-        //     }
-        // }
-        
         try
         {
-            return await FallbackValidateAsync(username, password);
+            var ldapResult = await ValidateLdapCredentialsAsync(username, password);
+            if (ldapResult.Type == "success")
+            {
+                var dbUser = await GetUserFromDatabaseAsync(ldapResult.EmailAddress);
+                return ValidateUserAccess(dbUser);
+            }
+            else if (ldapResult.Type == "ldap_unavailable" || ldapResult.Type == "ldap_error")
+            {
+                return await FallbackValidateAsync(username, password);
+            }
+            else
+            {
+                return new ValidationResult { Message = ldapResult.Message, Type = ldapResult.Type };
+            }
         }
+        
+        // try
+        // {
+        //     return await FallbackValidateAsync(username, password);
+        // }
         catch (Exception ex)
         {
             return new ValidationResult { Message = $"An error occurred during authentication: {ex.Message}", Type = "error" };
@@ -97,17 +97,17 @@ public class AuthService : IAuthService
             ["00222"] = ("1234", "felana.ratsimbazafy@ravinala-airports.aero"),
             ["00354"] = ("1234", "tahiana.rakotondrasoa@ravinala-airports.aero"),
 
-        // TEST
-            ["01431"] = ("1234", "jean.dupont@gmail.com"),
-            ["01182"] = ("1234", "marie.rakoto@gmail.com"),
-            ["01425"] = ("1234", "paul.martin@gmail.com"),
-            ["01386"] = ("1234", "nicolas.razafindrakoto@gmail.com"),
-            ["01358"] = ("1234", "luc.andriana@gmail.com"),
-            ["01383"] = ("1234", "sophie.rabeharisoa@gmail.com"),
-            ["01418"] = ("1234", "eric.randrianarisoa@gmail.com"),
-            ["01446"] = ("1234", "laura.rakotonirina@gmail.com"),
-            ["01024"] = ("1234", "honorine.bakomalala@gmail.com"),
-            ["01416"] = ("1234", "hery.razanakoto@gmail.com")
+        // // TEST
+        //     ["01431"] = ("1234", "jean.dupont@gmail.com"),
+        //     ["01182"] = ("1234", "marie.rakoto@gmail.com"),
+        //     ["01425"] = ("1234", "paul.martin@gmail.com"),
+        //     ["01386"] = ("1234", "nicolas.razafindrakoto@gmail.com"),
+        //     ["01358"] = ("1234", "luc.andriana@gmail.com"),
+        //     ["01383"] = ("1234", "sophie.rabeharisoa@gmail.com"),
+        //     ["01418"] = ("1234", "eric.randrianarisoa@gmail.com"),
+        //     ["01446"] = ("1234", "laura.rakotonirina@gmail.com"),
+        //     ["01024"] = ("1234", "honorine.bakomalala@gmail.com"),
+        //     ["01416"] = ("1234", "hery.razanakoto@gmail.com")
         };
 
         if (hardcodedUsers.TryGetValue(username, out var info) && info.Password == password)
@@ -150,7 +150,7 @@ public class AuthService : IAuthService
                 return new LdapValidationResult { Type = "invalid_email", Message = "Matricule ou mot de passe incorrect" };
 
             // bool isValid = context.ValidateCredentials(username, password, ContextOptions.Negotiate);
-             bool isValid = password == "1234";
+            bool isValid = password == "Recr@1234";
             
             if (!isValid)
             {

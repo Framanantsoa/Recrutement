@@ -54,6 +54,10 @@ public class JobDescriptionService(IJobDescriptionRepository rep,
             await _unitOfWork.BeginTransactionAsync();
 
             RecruitmentRequest request = await _reqRepo.GetRecruitmentRequestById(data.RequestId);
+
+            if(data.Experiences.Any(e => e.Years<0 || e.Years>100))
+                throw new ArgumentException("Les années d'expérience doivent être entre 0 et 100");
+
             if(!request.LastStatus.ToLower().Equals("validée")) 
                 throw new ArgumentException("Impossible d'en créer avec une demande non validée");
 

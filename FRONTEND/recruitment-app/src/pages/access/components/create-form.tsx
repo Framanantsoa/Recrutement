@@ -75,8 +75,8 @@ const useAlert = (onSuccessClose?: () => void) => {
     message: "",
   });
   
-  const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const alertTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const alertTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearTimers = useCallback(() => {
     if (closeTimerRef.current) {

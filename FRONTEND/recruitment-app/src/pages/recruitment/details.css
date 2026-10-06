@@ -1,0 +1,298 @@
+/* =========================================================
+   VARIABLES
+========================================================= */
+:root {
+  --border-soft: #e5e7eb;
+  --text-dark: #111827;
+  --text-muted: #6b7280;
+  --bg-page: #ffffff;
+}
+
+/* =========================================================
+   PAGE
+========================================================= */
+.request-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--bg-page);
+}
+
+/* =========================================================
+   TABS
+========================================================= */
+.tabs {
+  display: inline-flex;
+  gap: 6px;
+  background: #f3f4f6;
+  padding: 6px;
+  border-radius: 12px;
+}
+
+.tab {
+  all: unset;
+  cursor: pointer;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.tab.active {
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* =========================================================
+   DETAILS LAYOUT
+========================================================= */
+.request-details-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* =========================================================
+   STICKY HEADER (Référence / Statut / Actions)
+========================================================= */
+.sticky-top-full {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 500;
+  background: #fff;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-soft);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.sticky-left,
+.sticky-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Actions (PDF) */
+.actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+/* =========================================================
+   SECTIONS (sans cadre)
+========================================================= */
+.details-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.details-section:last-child {
+  border-bottom: none;
+}
+
+.details-section h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  padding-bottom: 6px;
+  border-bottom: 2px solid rgba(29, 78, 216, 0.15);
+}
+
+/* =========================================================
+   STATUS CHIP
+========================================================= */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* Status colors */
+.status-en-attente {
+  background: rgba(251, 146, 60, 0.15);
+  color: #9a3412;
+}
+.status-en-attente .status-dot { background: #fb923c; }
+
+/* Status colors */
+.status-brouillon {
+  background: rgba(251, 146, 60, 0.15);
+  color: #9a3412;
+}
+.status-brouillon .status-dot { background: #fb923c; }
+
+.status-en-cours {
+  background: rgba(59, 130, 246, 0.15);
+  color: #1e40af;
+}
+.status-en-cours .status-dot { background: #3b82f6; }
+
+.status-validee {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+.status-validee .status-dot { background: #10b981; }
+
+.status-confirmee {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+.status-confirmee .status-dot { background: #10b981; }
+
+.status-refusee {
+  background: rgba(239, 68, 68, 0.15);
+  color: #991b1b;
+}
+.status-refusee .status-dot { background: #ef4444; }
+
+/* =========================================================
+   VALIDATION TABLE
+========================================================= */
+.validation-card {
+  margin-top: 12px;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.validation-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.validation-table th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  padding-bottom: 8px;
+}
+
+.validation-table td {
+  font-size: 0.85rem;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-soft);
+}
+
+.pending-label {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+.request-footer {
+  display: flex;
+  padding: 16px 0;
+  justify-content: space-between;
+}
+
+.right-footer {
+  display: flex;
+  justify-content: flex-start;
+  padding: 0;
+  column-gap: 15px;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+@media (max-width: 768px) {
+  .sticky-top-full {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+
+/* =========================================================
+   AUTRES CLASSES POUR TDR
+========================================================= */
+.details-section nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+/* =========================================================
+   SCORE ROW (NOUVEAU)
+========================================================= */
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 10px 14px;
+  border-radius: 8px;
+
+  margin-top: 8px;
+
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.score-label {
+  color: var(--text-dark);
+}
+
+.score-value {
+  font-weight: 700;
+}
+
+/* Divider */
+.score-divider {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 12px 0;
+}
+
+/* ================= COLORS ================= */
+
+/* 🔴 Mauvais */
+.score-bad {
+  background: rgba(235, 48, 48, 0.267);
+  color: #991b1b;
+}
+
+/* 🟡 Moyen */
+.score-warning {
+  background: rgba(231, 173, 26, 0.233);
+  color: #92400e;
+}
+
+/* 🟢 Bon */
+.score-good {
+  background: rgba(26, 226, 159, 0.301);
+  color: #065f46;
+}

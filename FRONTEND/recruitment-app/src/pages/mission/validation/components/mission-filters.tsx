@@ -1,0 +1,350 @@
+"use client";
+
+import { useState } from "react";
+import {
+  FiltersContainer,
+  FiltersHeader,
+  FiltersTitle,
+  FiltersControls,
+  FilterControlButton,
+  FiltersSection,
+  FormTableSearch,
+  FormRow,
+  FormFieldCell,
+  FormLabelSearch,
+  FormInputSearch,
+  StyledAutoCompleteInput,
+  FiltersActions,
+  ButtonReset,
+  ButtonSearch,
+  FiltersToggle,
+  ButtonShowFilters,
+} from "@/styles/table-styles";
+import { X, List, ChevronDown, ChevronUp, Filter } from "lucide-react";
+
+// Types from previous context
+interface Filter {
+  employeeId: string;
+  employeeName: string;
+  employeeMatricule: string;
+  status: string;
+  validationDateFrom?: string;
+  validationDateTo?: string;
+  requestDateFrom?: string;
+  requestDateTo?: string;
+}
+
+interface BeneficiarySuggestion {
+  id: string;
+  name: string;
+  displayName: string;
+  acronym: string;
+  matricule?: string;
+}
+
+interface Suggestions {
+  beneficiary: BeneficiarySuggestion[];
+}
+
+interface LoadingState {
+  missions: boolean;
+  comments: boolean;
+  employees: boolean;
+  stats: boolean;
+}
+
+interface MissionFiltersProps {
+  isHidden: boolean;
+  setIsHidden: React.Dispatch<React.SetStateAction<boolean>>;
+  filters: Filter;
+  setFilters: React.Dispatch<React.SetStateAction<Filter>>;
+  suggestions: Suggestions;
+  isLoading: LoadingState;
+  handleFilterSubmit: () => void;
+  handleResetFilters: () => void;
+}
+
+const MissionFilters: React.FC<MissionFiltersProps> = ({
+  isHidden,
+  setIsHidden,
+  filters,
+  setFilters,
+  suggestions,
+  isLoading,
+  handleFilterSubmit,
+  handleResetFilters,
+}) => {
+  const [isMinimized, setIsMinimized] = useState<boolean>(false);
+
+  const handleFilterChange = (name: keyof Filter, value: string) => {
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const toggleMinimize = () => setIsMinimized((prev) => !prev);
+  const toggleHide = () => setIsHidden((prev) => !prev);
+
+  const handleEmployeeNameChange = (value: string) => {
+    const selectedEmployee = suggestions.beneficiary.find(
+      (emp) => emp.displayName === value
+    );
+    
+    setFilters((prev) => ({
+      ...prev,
+      employeeName: value,
+      employeeId: selectedEmployee ? selectedEmployee.id : "",
+      employeeMatricule: selectedEmployee ? selectedEmployee.matricule || "" : "",
+    }));
+  };
+
+  const handleMatriculeChange = (value: string) => {
+    const selectedEmployee = suggestions.beneficiary.find(
+      (emp) => emp.matricule === value
+    );
+    
+    setFilters((prev) => ({
+      ...prev,
+      employeeMatricule: value,
+      employeeName: selectedEmployee ? selectedEmployee.displayName : "",
+      employeeId: selectedEmployee ? selectedEmployee.id : "",
+    }));
+  };
+
+  const isFilterEmpty = (): boolean => {
+    return (
+      !filters.employeeName &&
+      !filters.employeeMatricule &&
+      !filters.status &&
+      !filters.validationDateFrom &&
+      !filters.validationDateTo &&
+      !filters.requestDateFrom &&
+      !filters.requestDateTo
+    );
+  };
+
+  const matriculeSuggestions = suggestions.beneficiary
+    .filter(emp => emp.matricule && emp.matricule.trim() !== "")
+    .map(emp => ({
+      value: emp.matricule as string,
+      label: emp.matricule as string,
+      data: emp
+    }))
+    .filter((item, index, self) => 
+      self.findIndex(t => t.value === item.value) === index
+    );
+
+  const employeeNameSuggestions = suggestions.beneficiary
+    .map(emp => ({
+      value: emp.displayName,
+      label: emp.displayName,
+      data: emp
+    }));
+
+  return (
+    <>
+      {!isHidden && (
+        <FiltersContainer $isMinimized={isMinimized}>
+          <FiltersHeader>
+            <FiltersTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Filter size={18} />
+              Filtres avancés
+            </FiltersTitle>
+            <FiltersControls>
+              <FilterControlButton
+                $isMinimized={isMinimized}
+                onClick={toggleMinimize}
+                title={isMinimized ? "Développer" : "Réduire"}
+              >
+                {isMinimized ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+              </FilterControlButton>
+              <FilterControlButton $isClose onClick={toggleHide} title="Fermer">
+                <X size={16} />
+              </FilterControlButton>
+            </FiltersControls>
+          </FiltersHeader>
+          {!isMinimized && (
+            <FiltersSection>
+              <form
+                onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
+                  e.preventDefault();
+                  handleFilterSubmit();
+                }}
+              >
+                <FormTableSearch>
+                  <tbody>
+                    <FormRow>
+                      <FormFieldCell>
+                        <FormLabelSearch>Matricule</FormLabelSearch>
+                        <StyledAutoCompleteInput
+                          value={filters.employeeMatricule || ""}
+                          onChange={handleMatriculeChange}
+                          suggestions={matriculeSuggestions
+                            .filter((item) =>
+                              item.value
+                                .toLowerCase()
+                                .includes((filters.employeeMatricule || "").toLowerCase()) ||
+                              item.data.name
+                                .toLowerCase()
+                                .includes((filters.employeeMatricule || "").toLowerCase())
+                            )
+                            .map(item => item.value)}
+                          maxVisibleItems={5}
+                          placeholder="Rechercher par matricule..."
+                          disabled={isLoading.employees || isLoading.missions}
+                          fieldType="matricule"
+                          fieldLabel="matricule"
+                          showAddOption={false}
+                        />
+                      </FormFieldCell>
+                      <FormFieldCell>
+                        <FormLabelSearch>Collaborateur</FormLabelSearch>
+                        <StyledAutoCompleteInput
+                          value={filters.employeeName || ""}
+                          onChange={handleEmployeeNameChange}
+                          suggestions={employeeNameSuggestions
+                            .filter((item) =>
+                              item.data.name
+                                .toLowerCase()
+                                .includes((filters.employeeName || "").toLowerCase()) ||
+                              (item.data.matricule && item.data.matricule
+                                .toLowerCase()
+                                .includes((filters.employeeName || "").toLowerCase()))
+                            )
+                            .map(item => item.value)}
+                          maxVisibleItems={5}
+                          placeholder="Rechercher par nom ou matricule..."
+                          disabled={isLoading.employees || isLoading.missions}
+                          fieldType="beneficiary"
+                          fieldLabel="collaborateur"
+                          showAddOption={false}
+                        />
+                      </FormFieldCell>
+                      <FormFieldCell>
+                        <FormLabelSearch>Statut</FormLabelSearch>
+                        <FormInputSearch
+                          as="select"
+                          name="status"
+                          value={filters.status}
+                          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleFilterChange("status", e.target.value)}
+                          disabled={isLoading.missions}
+                        >
+                          <option value="">Tous les statuts</option>
+                          <option value="pending">En attente</option>
+                          <option value="approved">Validé</option>
+                          <option value="rejected">Rejeté</option>
+                          <option value="Annulé">Annulé</option>
+                        </FormInputSearch>
+                      </FormFieldCell>
+                    </FormRow>
+                    <FormRow>
+                      <FormFieldCell>
+                        <fieldset style={{ 
+                          display: "grid", 
+                          gridTemplateColumns: "1fr 1fr", 
+                          gap: "var(--spacing-md)",
+                          background: "var(--bg-primary, #ffffff)",
+                          padding: "var(--spacing-md)",
+                          border: "1px solid var(--border-color, #ddd)",
+                          borderRadius: "var(--border-radius, 4px)",
+                          margin: "0"
+                        }}>
+                          <legend style={{ 
+                            fontWeight: "var(--font-weight-semibold)",
+                            color: "var(--text-color)",
+                            padding: "0 var(--spacing-sm)",
+                            fontSize: "0.75rem"
+                          }}>
+                            Date de Demande
+                          </legend>
+                          <div>
+                            <FormLabelSearch>Du</FormLabelSearch>
+                            <FormInputSearch
+                              type="date"
+                              value={filters.requestDateFrom || ""}
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFilterChange("requestDateFrom", e.target.value)}
+                              disabled={isLoading.missions}
+                            />
+                          </div>
+                          <div>
+                            <FormLabelSearch>Au</FormLabelSearch>
+                            <FormInputSearch
+                              type="date"
+                              value={filters.requestDateTo || ""}
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFilterChange("requestDateTo", e.target.value)}
+                              disabled={isLoading.missions}
+                            />
+                          </div>
+                        </fieldset>
+                      </FormFieldCell>
+                      
+                      <FormFieldCell>
+                        <fieldset style={{ 
+                          display: "grid", 
+                          gridTemplateColumns: "1fr 1fr", 
+                          gap: "var(--spacing-md)",
+                          background: "var(--bg-primary, #ffffff)",
+                          padding: "var(--spacing-md)",
+                          border: "1px solid var(--border-color, #ddd)",
+                          borderRadius: "var(--border-radius, 4px)",
+                          margin: "0"
+                        }}>
+                          <legend style={{ 
+                            fontWeight: "var(--font-weight-semibold)",
+                            color: "var(--text-color)",
+                            padding: "0 var(--spacing-sm)",
+                            fontSize: "0.75rem"
+                          }}>
+                            Date Validation
+                          </legend>
+                          <div>
+                            <FormLabelSearch>Du</FormLabelSearch>
+                            <FormInputSearch
+                              type="date"
+                              value={filters.validationDateFrom || ""}
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFilterChange("validationDateFrom", e.target.value)}
+                              disabled={isLoading.missions}
+                            />
+                          </div>
+                          <div>
+                            <FormLabelSearch>Au</FormLabelSearch>
+                            <FormInputSearch
+                              type="date"
+                              value={filters.validationDateTo || ""}
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFilterChange("validationDateTo", e.target.value)}
+                              disabled={isLoading.missions}
+                            />
+                          </div>
+                        </fieldset>
+                      </FormFieldCell>
+                    </FormRow>
+                  </tbody>
+                </FormTableSearch>
+                <FiltersActions>
+                  <ButtonReset
+                    type="button"
+                    onClick={handleResetFilters}
+                    disabled={isLoading.missions || isFilterEmpty()}
+                  >
+                    Effacer filtres
+                  </ButtonReset>
+                  <ButtonSearch type="submit" disabled={isLoading.missions}>
+                    {isLoading.missions ? "Recherche..." : "Rechercher"}
+                  </ButtonSearch>
+                </FiltersActions>
+              </form>
+            </FiltersSection>
+          )}
+        </FiltersContainer>
+      )}
+      {isHidden && (
+        <FiltersToggle>
+          <ButtonShowFilters type="button" onClick={toggleHide}>
+            <List size={16} style={{ marginRight: "var(--spacing-sm)" }} />
+            Afficher les filtres
+          </ButtonShowFilters>
+        </FiltersToggle>
+      )}
+    </>
+  );
+};
+
+export default MissionFilters;

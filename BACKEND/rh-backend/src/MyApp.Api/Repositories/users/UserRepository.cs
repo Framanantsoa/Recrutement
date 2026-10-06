@@ -1,0 +1,578 @@
+using Microsoft.EntityFrameworkCore;
+using MyApp.Api.Data;
+using MyApp.Api.Entities.users;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using MyApp.Api.Models.classes.user;
+using MyApp.Api.Models.dto.users;
+
+namespace MyApp.Api.Repositories.users
+{
+    public interface IUserRepository
+    {
+        Task<(IEnumerable<User>, int)> SearchAsync(UserSearchFiltersDTO filters, int page, int pageSize);
+        Task<(IEnumerable<UserDto>, int)> GetAllPaginatedAsync(int page, int pageSize);
+        Task<IAsyncEnumerable<IEnumerable<UserDto>>> GetAllInBatchesAsync(int batchSize = 1000);
+        Task<IEnumerable<UserDto>> GetAllAsync();
+        Task<User?> GetByIdAsync(string id);
+        Task<User?> GetByEmailAsync(string email);
+        Task<User?> GetByMatriculeAsync(string matricule);
+        Task AddAsync(User user);
+        Task UpdateAsync(User user);
+        Task DeleteAsync(User user);
+        Task AddUsersAsync(List<User> users);
+        Task UpdateUsersAsync(List<User> users);
+        Task DeleteUsersAsync(List<User> users);
+        Task SaveChangesAsync();
+        Task<IEnumerable<User>> GetCollaboratorsAsync(string userId);
+        Task<IEnumerable<string>> GetCollaboratorsMatriculesAsync(string userId);
+        Task<IEnumerable<UserInfoDto>> GetUserInfo(string userId);
+        Task<IEnumerable<User>> GetUsersInfo(string[] userIds);
+        Task<User?> GetSuperiorAsync(string matricule);
+        Task<User?> GetDrhAsync();
+        Task<IEnumerable<string>> GetUserRolesAsync(string userId);
+        Task<IEnumerable<string>> GetUserHabilitationAsync(string userId);
+        Task<User?> GetDirectorByDepartmentAsync(string department);
+        Task<User?> GetGeneralDirector();
+        Task<IEnumerable<string>> GetDistinctDepartmentsAsync();
+        Task<int> GetUserCountByRoleAsync(string role);
+        Task<IEnumerable<UserDto2>> GetUsersByDirection(string name);
+        Task<IEnumerable<UserDto2>> GetUsersByAdmin();
+        Task<bool> IsEmailAdmin(string email);
+    }
+
+    public class UserRepository : IUserRepository
+    {
+        private readonly AppDbContext _context;
+
+        public UserRepository(AppDbContext context)
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
+
+        public async Task<IEnumerable<string>> GetDistinctDepartmentsAsync()
+        {
+            return await _context.Users
+                .Where(u => !string.IsNullOrWhiteSpace(u.Department))
+                .Select(u => u.Department!)
+                .Distinct()
+                .OrderBy(d => d)
+                .ToListAsync();
+        }
+        
+        public async Task<User?> GetDrhAsync()
+        {
+            return await _context.Users
+                .AsNoTracking()
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .Where(u => u.Department == "DRH" &&
+                            (u.Position == "Directeur des Ressources Humaines" ||
+                             u.Position == "Directrice des Ressources Humaines" ||
+                             u.Position == "DRH"))
+                .OrderBy(u => u.Name)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<User?> GetSuperiorAsync(string matricule)
+        {
+            if (string.IsNullOrWhiteSpace(matricule))
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(matricule));
+
+            var user = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Matricule == matricule);
+
+            if (user == null || string.IsNullOrWhiteSpace(user.SuperiorId))
+                return null;
+
+            return await _context.Users
+                .AsNoTracking()
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.UserId == user.SuperiorId);
+        }
+
+        public async Task<User?> GetDirectorByDepartmentAsync(string department)
+        {
+            if (string.IsNullOrWhiteSpace(department))
+                throw new ArgumentException("Department cannot be null or empty.", nameof(department));
+
+            var currentDG = await GetGeneralDirector();
+            return await _context.Users
+                .AsNoTracking()
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .Where(u => u.Department == department &&
+                    u.Name!=null && !u.Name.Equals("") &&
+                    u.Position != null &&
+                        (u.Position.Contains("Directeur") ||
+                        u.Position.Contains("Directrice") ||
+                        u.Position.Contains("Director")) &&
+                    u.SuperiorId!.Equals(currentDG!.UserId)
+                )
+                .OrderBy(u => u.Name)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<User?> GetGeneralDirector() {
+            return await _context.Users
+                .AsNoTracking()
+                .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .Where(u => u.Name!=null && !u.Name.Equals("") &&
+                    u.Position != null &&
+                        (u.Position.Contains("Directeur") ||
+                        u.Position.Contains("Directrice") ||
+                        u.Position.Contains("Director")) &&
+                    u.Department!=null && u.Department.Equals("DGE") &&
+                    u.SuperiorId==null
+                )
+                .OrderBy(u => u.Name)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<(IEnumerable<User>, int)> SearchAsync(UserSearchFiltersDTO filters, int page, int pageSize)
+        {
+            var query = _context.Users
+                .AsNoTracking()
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filters.Name))
+            {
+                var name = filters.Name.ToLower();
+                query = query.Where(u => u.Name != null && u.Name.ToLower().Contains(name));
+            }
+            if (!string.IsNullOrWhiteSpace(filters.Matricule))
+            {
+                var matricule = filters.Matricule.ToLower();
+                query = query.Where(u => u.Matricule != null && u.Matricule.ToLower().Contains(matricule));
+            }
+
+            if (!string.IsNullOrWhiteSpace(filters.Department))
+            {
+                var department = filters.Department.ToLower();
+                query = query.Where(u => u.Department != null && u.Department.ToLower().Contains(department));
+            }
+
+            if (!string.IsNullOrWhiteSpace(filters.Role))
+            {
+                var role = filters.Role.ToLower();
+                query = query.Where(u => u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name.ToLower().Contains(role)));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var results = await query
+                .OrderBy(u => u.Matricule)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (results, totalCount);
+        }
+
+        public async Task<IEnumerable<User>> GetUsersInfo(string[] userIds)
+        {
+            if (userIds == null || userIds.Length == 0)
+                throw new ArgumentException("User IDs cannot be null or empty.", nameof(userIds));
+
+            return await _context.Users
+                .AsNoTracking()
+                .Where(u => userIds.Contains(u.UserId))
+                .ToListAsync();
+        }
+
+
+        public async Task<IEnumerable<UserInfoDto>> GetUserInfo(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
+
+            var user = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+                return Enumerable.Empty<UserInfoDto>();
+
+            string? superiorName = null;
+            if (!string.IsNullOrEmpty(user.SuperiorId))
+            {
+                superiorName = await _context.Users
+                    .AsNoTracking()
+                    .Where(s => s.UserId == user.SuperiorId)
+                    .Select(s => s.Name)
+                    .FirstOrDefaultAsync();
+            }
+
+            var dto = new UserInfoDto
+            {
+                UserId = user.UserId,
+                Name = user.Name,
+                Email = user.Email,
+                Matricule = user.Matricule,
+                Department = user.Department,
+                Position = user.Position,
+                SuperiorId = user.SuperiorId,
+                SuperiorName = superiorName,
+                Roles = user.UserRoles.Select(ur => new UserRole
+                {
+                    UserId = ur.UserId,
+                    RoleId = ur.RoleId,
+                    Role = new Role
+                    {
+                        RoleId = ur.Role!.RoleId,
+                        Name = ur.Role.Name,
+                        Description = ur.Role.Description,
+                        CreatedAt = ur.Role.CreatedAt,
+                        UpdatedAt = ur.Role.UpdatedAt
+                    },
+                    CreatedAt = ur.CreatedAt,
+                    UpdatedAt = ur.UpdatedAt
+                })
+            };
+
+            return new[] { dto };
+        }
+
+        public async Task<IEnumerable<User>> GetCollaboratorsAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
+
+            var allUsers = await _context.Users.AsNoTracking().ToListAsync();
+
+            var hierarchy = allUsers.ToLookup(u => u.SuperiorId ?? string.Empty);
+
+            var queue = new Queue<string>();
+            queue.Enqueue(userId);
+
+            var visited = new HashSet<string> { userId };
+
+            var subordinates = new HashSet<User>();
+
+            while (queue.Count > 0)
+            {
+                var currentId = queue.Dequeue();
+
+                var directs = hierarchy[currentId];
+
+                foreach (var direct in directs)
+                {
+                    if (!visited.Contains(direct.UserId))
+                    {
+                        visited.Add(direct.UserId);
+                        subordinates.Add(direct);
+                        queue.Enqueue(direct.UserId);
+                    }
+                }
+            }
+
+            return subordinates;
+        }
+
+
+        public async Task<IEnumerable<string>> GetCollaboratorsMatriculesAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
+
+            var userMatricule = await _context.Users
+                .AsNoTracking()
+                .Where(u => u.UserId == userId)
+                .Select(u => u.Matricule)
+                .FirstOrDefaultAsync();
+
+            if (string.IsNullOrWhiteSpace(userMatricule))
+                return Enumerable.Empty<string>();
+
+            var allUsers = await _context.Users
+                .AsNoTracking()
+                .Select(u => new { u.UserId, u.SuperiorId, u.Matricule })
+                .ToListAsync();
+
+            var hierarchy = allUsers.ToLookup(u => u.SuperiorId ?? string.Empty);
+
+            var queue = new Queue<string>();
+            queue.Enqueue(userId);
+
+            var visited = new HashSet<string> { userId };
+
+            var subordinatesMatricules = new HashSet<string>();
+
+            while (queue.Count > 0)
+            {
+                var currentId = queue.Dequeue();
+
+                var directs = hierarchy[currentId];
+
+                foreach (var direct in directs)
+                {
+                    if (!visited.Contains(direct.UserId))
+                    {
+                        visited.Add(direct.UserId);
+                        if (!string.IsNullOrWhiteSpace(direct.Matricule))
+                        {
+                            subordinatesMatricules.Add(direct.Matricule);
+                        }
+                        queue.Enqueue(direct.UserId);
+                    }
+                }
+            }
+
+            return new[] { userMatricule }.Concat(subordinatesMatricules);
+        }
+
+        public async Task<(IEnumerable<UserDto>, int)> GetAllPaginatedAsync(int page, int pageSize)
+        {
+            var query = _context.Users
+                .AsNoTracking()
+                .OrderBy(u => u.Matricule)
+                .Select(u => new UserDto
+                {
+                    UserId = u.UserId,
+                    Email = u.Email,
+                    Name = u.Name,
+                    Department = u.Department,
+                    Position = u.Position,
+                    SuperiorId = u.SuperiorId,
+                    SuperiorName = u.SuperiorName
+                })
+                .AsQueryable();
+
+            var totalCount = await query.CountAsync();
+
+            var results = await query
+                .OrderBy(dto => dto.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (results, totalCount);
+        }
+
+        public async Task<IEnumerable<UserDto>> GetAllAsync()
+        {
+            return await _context.Users
+                .AsNoTracking()
+                .OrderBy(u => u.Matricule)
+                .Select(u => new UserDto
+                {
+                    UserId = u.UserId,
+                    Email = u.Email,
+                    Name = u.Name,
+                    Department = u.Department,
+                    Matricule = u.Matricule,
+                    Position = u.Position,
+                    SuperiorId = u.SuperiorId,
+                    SuperiorName = u.SuperiorName
+                })
+                .ToListAsync();
+        }
+
+        public async Task<IAsyncEnumerable<IEnumerable<UserDto>>> GetAllInBatchesAsync(int batchSize = 1000)
+        {
+            async IAsyncEnumerable<IEnumerable<UserDto>> GetBatches()
+            {
+                int page = 1;
+                while (true)
+                {
+                    var batch = await _context.Users
+                        .AsNoTracking()
+                        .OrderBy(u => u.Matricule)
+                        .Select(u => new UserDto
+                        {
+                            UserId = u.UserId,
+                            Email = u.Email,
+                            Name = u.Name,
+                            Matricule = u.Matricule,
+                            Department = u.Department,
+                            Position = u.Position,
+                            SuperiorId = u.SuperiorId,
+                            SuperiorName = u.SuperiorName
+                        })
+                        .Skip((page - 1) * batchSize)
+                        .Take(batchSize)
+                        .ToListAsync();
+
+                    if (!batch.Any()) yield break;
+
+                    yield return batch;
+                    page++;
+                }
+            }
+
+            return await Task.FromResult(GetBatches());
+        }
+
+        public async Task<IEnumerable<string>> GetUserHabilitationAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
+
+            return await _context.UserHabilitations
+                .AsNoTracking()
+                .Where(ur => ur.UserId == userId)
+                .Select(ur => ur.HabilitationId)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<string>> GetUserRolesAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
+
+            return await _context.UserRoles
+                .AsNoTracking()
+                .Where(ur => ur.UserId == userId)
+                .Select(ur => ur.RoleId)
+                .ToListAsync();
+        }
+
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                throw new ArgumentException("Email cannot be null or empty.", nameof(email));
+
+            return await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<User?> GetByIdAsync(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                throw new ArgumentException("Id cannot be null or empty.", nameof(id));
+
+            return await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserId == id);
+        }
+
+        public async Task<User?> GetByMatriculeAsync(string matricule)
+        {
+            if (string.IsNullOrWhiteSpace(matricule))
+                throw new ArgumentException("Matricule cannot be null or empty.", nameof(matricule));
+
+            return await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Matricule == matricule);
+        }
+
+        public async Task AddAsync(User user)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+
+            await _context.Users.AddAsync(user);
+        }
+
+        public async Task UpdateAsync(User user)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+
+            _context.Users.Update(user);
+            await Task.CompletedTask;
+        }
+
+        public async Task DeleteAsync(User user)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+
+            _context.Users.Remove(user);
+            await Task.CompletedTask;
+        }
+
+        public async Task AddUsersAsync(List<User> users)
+        {
+            if (users == null || users.Count == 0)
+                throw new ArgumentException("User list cannot be null or empty.", nameof(users));
+
+            await _context.Users.AddRangeAsync(users);
+        }
+
+        public async Task UpdateUsersAsync(List<User> users)
+        {
+            if (users == null || users.Count == 0)
+                throw new ArgumentException("User list cannot be null or empty.", nameof(users));
+
+            _context.Users.UpdateRange(users);
+            await Task.CompletedTask;
+        }
+
+        public async Task DeleteUsersAsync(List<User> users)
+        {
+            if (users == null || users.Count == 0)
+                throw new ArgumentException("User list cannot be null or empty.", nameof(users));
+
+            _context.Users.RemoveRange(users);
+            await Task.CompletedTask;
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new InvalidOperationException($"Failed to save changes to the database: {ex.Message}", ex);
+            }
+        }
+
+        // Nouvelle implémentation ajoutée
+        public async Task<int> GetUserCountByRoleAsync(string role)
+        {
+            if (string.IsNullOrWhiteSpace(role))
+                throw new ArgumentException("Role cannot be null or empty.", nameof(role));
+
+            return await _context.UserRoles
+                .AsNoTracking()
+                .Where(ur => ur.Role!.Name == role)
+                .Select(ur => ur.UserId)
+                .Distinct()
+                .CountAsync();
+        }
+
+
+        public async Task<IEnumerable<UserDto2>> GetUsersByDirection(string name) {
+            var users = await _context.Users
+                .Where(u => (u.Department??"").ToLower().Equals(name.ToLower()))
+                .OrderBy(u => u.Matricule)
+                .Select(u => new UserDto2 {
+                    Id = u.UserId, 
+                    Name = (u.Name!=null && u.Name.Trim()!="") ? u.Name : u.Matricule,
+                }).AsNoTracking().ToListAsync();
+
+            return users;
+        }
+
+
+        public async Task<bool> IsEmailAdmin(string email) {
+            if (string.IsNullOrWhiteSpace(email)) return false;
+
+            return await _context.UserRoles.AnyAsync(u =>
+                u.User != null &&
+                u.Role != null &&
+                u.User.Email.ToLower().Equals(email.ToLower()) &&
+                u.Role.Name.ToLower().Equals("admin")
+            );
+        }
+
+
+        public async Task<IEnumerable<UserDto2>> GetUsersByAdmin() {
+            var users = await _context.Users
+                .OrderBy(u => u.Matricule)
+                .Select(u => new UserDto2 {
+                    Id = u.UserId, 
+                    Name = (u.Name!=null && u.Name.Trim()!="") ? u.Name : u.Matricule,
+                }).AsNoTracking().ToListAsync();
+
+            return users;
+        }
+    }
+}

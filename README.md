@@ -88,7 +88,7 @@ Le serveur d'API écoute sur le **Port 5432**.
     cd BACKEND/rh-backend/src/MyApp.Api
     ```
 2.  **Lancement :** Choisissez l'option de démarrage :
-      * **Par défaut (localhost:5183) :**
+      * **Par défaut (localhost:port) :**
         ```bash
         dotnet run
         ```
@@ -125,7 +125,7 @@ Le client web écoute sur le **Port 5173**.
 # GESTION-RH
 
 - **FRONTEND**
-  - recruitment-app
+  - mission-app
     - src
 - **BACKEND**
   - rh-backend
@@ -141,7 +141,7 @@ Le client web écoute sur le **Port 5173**.
 
 | Composant | Technologie | Port |
 | :--- | :--- | :--- |
-| **Backend** | .NET 8 (API) | **5183** |
+| **Backend** | .NET 8 (API) | **5432** |
 | **Frontend** | Node/React | **5173** |
 
 

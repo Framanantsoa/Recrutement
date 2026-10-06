@@ -1,0 +1,575 @@
+"use client";
+
+import { FileText, Download, Eye, ChevronDown, X, Folder } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import {
+    SectionTitle,
+    IndemnityTable,
+    TableHeader,
+    TableCell,
+    TotalRow,
+    Separator,
+    ResponsiveTableWrapper,
+    FolderContainer,
+    FolderHeader,
+    AttachmentsList,
+    AttachmentItem,
+    IconButton,
+    ChartCard,
+    ModalOverlay,
+    ModalContentStyled,
+    ModalHeader,
+    ModalTitle,
+    ModalCloseButton,
+    ModalBody,
+    FilePreview,
+    ImagePreview,
+    ErrorMessage,
+    centerTextPlugin,
+    Badge,
+} from "@/styles/detailsmission-styles";
+import { NoDataMessage } from "@/styles/table-styles";
+import { formatNumber } from "@/utils/format";
+import { useExpenseReportsByMissionId, useStatusByMissionId } from "@/api/mission/expense_report/services";
+import { useGetMissionById } from "@/api/mission/services";
+import { useCurrencies } from "@/api/currency/services";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import type { TooltipItem, ChartOptions } from "chart.js";
+import { Doughnut } from "react-chartjs-2";
+import { handleFileView, handleFileDownload } from "@/utils/file-utils";
+import type { Mission } from "@/api/mission/services";
+import styled from "styled-components";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
+const ChartGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+`;
+
+interface ApiResponse<T> {
+    status: number;
+    data?: T;
+    message?: string;
+}
+
+interface Props {
+    selectedMissionId?: string;
+    isLoading: boolean;
+    onError: (error: Error) => void;
+}
+
+interface ExpenseLine {
+    expenseReportId?: string;
+    titled?: string;
+    description?: string;
+    type?: string;
+    currencyUnit?: string;
+    amount?: number;
+    amountMGA?: number;
+    rate?: number;
+}
+
+interface Attachment {
+    fileName?: string;
+    fileSize?: number;
+    fileContent?: string;
+    fileType?: string;
+}
+
+interface FullExpenseResponse {
+    reports: ExpenseLine[];
+    totalAmount?: number;
+    attachments: Attachment[];
+}
+
+interface ModalContent {
+    fileName?: string;
+    fileUrl?: string;
+    isBlobUrl?: boolean;
+    extension?: string;
+    error?: string;
+}
+
+// === COMPOSANTS ===
+
+interface FilePreviewModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    content: ModalContent;
+}
+
+const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ isOpen, onClose, content }) => {
+    useEffect(() => {
+        // Cleanup Blob URL when modal closes
+        return () => {
+            if (content.isBlobUrl && content.fileUrl) {
+                window.URL.revokeObjectURL(content.fileUrl);
+            }
+        };
+    }, [content.fileUrl, content.isBlobUrl]);
+
+    if (!isOpen) return null;
+
+    return (
+        <ModalOverlay onClick={onClose}>
+            <ModalContentStyled onClick={(e) => e.stopPropagation()}>
+                <ModalHeader>
+                    <ModalTitle>{content.fileName || "Prévisualisation"}</ModalTitle>
+                    <ModalCloseButton onClick={onClose} $variant="primary" style={{ color: 'black' }}>
+                        <X size={20} />
+                    </ModalCloseButton>
+                </ModalHeader>
+                <ModalBody>
+                    {content.error ? (
+                        <ErrorMessage>{content.error}</ErrorMessage>
+                    ) : content.extension === "pdf" ? (
+                        <FilePreview src={content.fileUrl} title={content.fileName} style={{ borderRadius: 0 }} />
+                    ) : (
+                        <ImagePreview src={content.fileUrl} alt={content.fileName || ""} />
+                    )}
+                </ModalBody>
+            </ModalContentStyled>
+        </ModalOverlay>
+    );
+};
+
+interface EmployeeAttachmentsProps {
+    userName: string;
+    attachments: Attachment[];
+    isOpen: boolean;
+    onToggle: () => void;
+}
+
+const EmployeeAttachments: React.FC<EmployeeAttachmentsProps> = ({ userName, attachments, isOpen, onToggle }) => {
+    const [modalOpen, setModalOpen] = useState<boolean>(false);
+    const [modalContent, setModalContent] = useState<ModalContent>({});
+
+    const uniqueAttachments = useMemo(() => {
+        const fileNames = new Set<string>();
+        const unique: Attachment[] = [];
+        (attachments || []).forEach((att: Attachment) => {
+            if (att && att.fileName && !fileNames.has(att.fileName)) {
+                fileNames.add(att.fileName);
+                unique.push(att);
+            }
+        });
+        return unique;
+    }, [attachments]);
+
+    const handlePreview = useCallback((att: Attachment) => {
+        handleFileView(
+            att.fileContent || "",
+            att.fileName || "",
+            (content: ModalContent | null) => setModalContent(content || {}),
+            setModalOpen,
+            att.fileType
+        );
+    }, [setModalContent, setModalOpen]);
+
+    return (
+        <>
+            <FolderContainer style={{ marginTop: "var(--spacing-md)", width: "100%" }}>
+                <FolderHeader onClick={onToggle} $isOpen={isOpen}>
+                    <Folder className="folder-icon" size={20} />
+                    <span style={{ fontSize: "12px" }}>
+                        {userName} · {uniqueAttachments.length} document{uniqueAttachments.length !== 1 ? "s" : ""}
+                    </span>
+                    <ChevronDown className="chevron" size={20} />
+                </FolderHeader>
+                {isOpen && (
+                    <AttachmentsList style={{ width: "100%" }}>
+                        {uniqueAttachments.length > 0 ? (
+                            uniqueAttachments.map((att, index) => (
+                                <AttachmentItem key={att.fileName || index} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", flexWrap: "wrap", gap: "var(--spacing-sm)" }}>
+                                    <FileText size={24} style={{ color: "var(--primary-color)", minWidth: "24px" }} />
+                                    <div className="file-info" style={{ flex: 1, minWidth: 0, wordBreak: "break-word" }}>
+                                        <div className="file-name" style={{ fontWeight: "bold", fontSize: "12px" }}>{att.fileName || "Fichier sans nom"}</div>
+                                        <div className="file-size" style={{ fontSize: "12px" }}>{(att.fileSize || 0).toLocaleString()} Ko</div>
+                                    </div>
+                                    <div className="actions" style={{ display: "flex", gap: "var(--spacing-xs)" }}>
+                                        <IconButton
+                                            onClick={() => handlePreview(att)}
+                                            title="Prévisualiser"
+                                            $variant="primary"
+                                        >
+                                            <Eye size={16} />
+                                        </IconButton>
+                                        <IconButton
+                                            $download
+                                            onClick={() => handleFileDownload(att.fileContent || "", att.fileName || "")}
+                                            title="Télécharger"
+                                        >
+                                            <Download size={16} />
+                                        </IconButton>
+                                    </div>
+                                </AttachmentItem>
+                            ))
+                        ) : (
+                            <p style={{ padding: "var(--spacing-xl)", textAlign: "center", color: "var(--text-muted)", fontSize: "12px" }}>
+                                Aucune pièce jointe
+                            </p>
+                        )}
+                    </AttachmentsList>
+                )}
+            </FolderContainer>
+            <FilePreviewModal isOpen={modalOpen} onClose={() => setModalOpen(false)} content={modalContent} />
+        </>
+    );
+};
+
+interface FinancialDoughnutChartProps {
+    totalAmountMGA: number;
+    totalCompensationMGA: number;
+    refundAmount: number;
+    isNationalMission: boolean;
+}
+
+const FinancialDoughnutChart: React.FC<FinancialDoughnutChartProps> = ({ 
+    totalAmountMGA, 
+    totalCompensationMGA, 
+    refundAmount,
+    isNationalMission 
+}) => {
+    // Pour les missions nationales, le montant à rembourser = total des frais
+    // Pour les missions internationales, calculer la variance entre allocation et frais
+    const isRefundPositive = refundAmount >= 0;
+    const variance = Math.abs(refundAmount);
+    
+    // Définir les labels et données selon le type de mission
+    let labels: string[];
+    let data: number[];
+    let backgroundColors: string[];
+    let hoverBackgroundColors: string[];
+    
+    if (isNationalMission) {
+        // Mission nationale : seulement le total des frais à rembourser
+        labels = ["Total des Frais à Rembourser (en MGA)"];
+        data = [totalAmountMGA];
+        backgroundColors = ["#2563eb"]; // Bleu
+        hoverBackgroundColors = ["#1d4ed8"]; // Bleu foncé
+    } else {
+        // Mission internationale : allocation, frais, et différence
+        const varianceLabel = isRefundPositive ? "Montant à Restituer" : "Excédent";
+        labels = ["Devise Allouée (en MGA)", "Total des Frais (en MGA)", varianceLabel];
+        data = [totalCompensationMGA, totalAmountMGA, variance];
+        backgroundColors = ["#16a34a", "#2563eb", isRefundPositive ? "#10b981" : "#ef4444"];
+        hoverBackgroundColors = ["#15803d", "#1d4ed8", isRefundPositive ? "#059669" : "#dc2626"];
+    }
+
+    const chartTotal = data.reduce((sum, val) => sum + val, 0);
+
+    // Enregistrer et désenregistrer le plugin avec le cycle de vie du composant
+    useEffect(() => {
+        if (!ChartJS.registry.plugins.get('centerText')) {
+            ChartJS.register(centerTextPlugin);
+        }
+        
+        return () => {
+            // ChartJS.unregister(centerTextPlugin);
+        };
+    }, []);
+
+    const hasData = data.some((val) => val > 0);
+
+    if (!hasData) return <p style={{ textAlign: "center", color: "var(--text-muted)" }}>Données insuffisantes</p>;
+
+    const chartData = {
+        labels,
+        datasets: [
+            {
+                data,
+                backgroundColor: backgroundColors,
+                hoverBackgroundColor: hoverBackgroundColors,
+                borderColor: "#ffffff",
+                borderWidth: 3,
+            },
+        ],
+    };
+
+    const options: ChartOptions<'doughnut'> & { plugins: { centerText: { display: boolean; text: string } } } = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: "bottom" as const,
+                labels: {
+                    boxWidth: 12,
+                    padding: 15,
+                    font: { size: 12 },
+                    color: "#333",
+                },
+            },
+            tooltip: {
+                backgroundColor: "#ffffff",
+                titleColor: "#333",
+                bodyColor: "#333",
+                borderColor: "#e0e0e0",
+                borderWidth: 1,
+                callbacks: {
+                    label: function (tooltipItem: TooltipItem<'doughnut'>) {
+                        const label = (tooltipItem.label || "") as string;
+                        const value = tooltipItem.raw as number;
+                        const total = chartTotal;
+                        const percentage = total ? ((value / total) * 100).toFixed(1) : "0";
+                        return `${label}: ${formatNumber(value)},00 MGA (${percentage}%)`;
+                    },
+                },
+            },
+            centerText: {
+                display: true,
+                text: `Vue d'ensemble`,
+            },
+        },
+        cutout: "65%",
+        elements: {
+            arc: {
+                borderRadius: 4,
+            },
+        },
+    };
+
+    return (
+        <ChartCard>
+            <h4>Répartition Financière (en MGA)</h4>
+            <div className="chart-content">
+                <Doughnut data={chartData} options={options} />
+            </div>
+        </ChartCard>
+    );
+};
+
+// === COMPOSANT PRINCIPAL ===
+
+const ExpenseReportList: React.FC<Props> = ({ selectedMissionId, isLoading, onError }) => {
+    const [openFolderId, setOpenFolderId] = useState<string | null>(null);
+    const [missionData, setMissionData] = useState<Mission | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    
+    const expenseQuery = useExpenseReportsByMissionId(selectedMissionId);
+    const statusQuery = useStatusByMissionId(selectedMissionId);
+    const missionQuery = useGetMissionById(selectedMissionId || "");
+    const currenciesQuery = useCurrencies();
+
+    useEffect(() => {
+        setMissionData(missionQuery.data?.data || null);
+    }, [missionQuery.data]);
+
+    useEffect(() => {
+        if (missionQuery.error) {
+            const err = missionQuery.error as Error;
+            setError(err.message || "Erreur lors de la récupération de la mission.");
+            onError(err);
+        }
+    }, [missionQuery.error, onError]);
+
+    const expenseResponse = expenseQuery.data as ApiResponse<FullExpenseResponse> | undefined;
+    const fullExpenseData = expenseResponse?.data || { reports: [], attachments: [] };
+    const { reports: expenseReports = [], attachments = [] } = fullExpenseData as FullExpenseResponse;
+
+    useEffect(() => {
+        if (expenseQuery.error) {
+            const err = expenseQuery.error as Error;
+            setError(err.message || "Erreur lors de la récupération des notes de frais.");
+            onError(err);
+        }
+        if (statusQuery.error) {
+            const err = statusQuery.error as Error;
+            setError(err.message || "Erreur lors de la récupération des statuts.");
+            onError(err);
+        }
+        if (currenciesQuery.error) {
+            const err = currenciesQuery.error as Error;
+            setError(err.message || "Erreur lors de la récupération des taux de change.");
+            onError(err);
+        }
+    }, [expenseQuery.error, statusQuery.error, currenciesQuery.error, onError]);
+
+    const employeeInfo = useMemo(() => {
+        if (!missionData || !missionData.employee) {
+            return { id: missionData?.employeeId || null, fullName: "N/A", employeeCode: "N/A" };
+        }
+        const { employeeId, lastName, firstName, employeeCode } = missionData.employee;
+        return {
+            id: employeeId,
+            fullName: `${lastName || ""} ${firstName || ""}`.trim() || "N/A",
+            employeeCode: employeeCode || "N/A",
+        };
+    }, [missionData]);
+
+    // Déterminer si c'est une mission nationale
+    const isNationalMission = useMemo(() => {
+        return missionData?.missionType === 1; // 1 = MissionTypeEnum.National
+    }, [missionData]);
+
+    // Pour les missions nationales, pas de devise allouée
+    const totalCompensationEUR = useMemo(() => {
+        if (isNationalMission) {
+            return 0; // Pas de devise allouée pour les missions nationales
+        }
+        return missionData?.allocatedFund || 0;
+    }, [missionData, isNationalMission]);
+                                                                                                                                                                                                                                                                                                                                                                                                        
+    // Taux de change EUR vers MGA dynamique (assume base EUR, rate MGA)
+    const eurToMgaRate = currenciesQuery.data?.rates?.MGA || 1;
+    const totalCompensationMGA = totalCompensationEUR * eurToMgaRate;
+
+    const groupedData = useMemo(() => {
+        const groups: Record<string, { userName: string; attachments: Attachment[] }> = {};
+        if (!employeeInfo.id) return groups;
+        groups[employeeInfo.id] = {
+            userName: employeeInfo.fullName,
+            attachments: attachments,
+        };
+        return groups;
+    }, [attachments, employeeInfo.id, employeeInfo.fullName]);
+
+    const totalAmountMGA = useMemo(
+        () => (expenseReports || []).reduce((sum: number, report) => sum + (report.amountMGA || 0), 0),
+        [expenseReports]
+    );
+
+    // Pour les missions nationales, le montant à rembourser = total des frais
+    // Pour les missions internationales, calculer la différence entre allocation et frais
+    const refundAmount = useMemo(() => {
+        if (isNationalMission) {
+            return totalAmountMGA; // Pour les missions nationales, rembourser l'intégralité
+        } else {
+            return totalCompensationMGA - totalAmountMGA; // Pour les missions internationales
+        }
+    }, [totalAmountMGA, totalCompensationMGA, isNationalMission]);
+
+    const handleToggleFolder = useCallback((userId: string) => {
+        setOpenFolderId((prevId) => (prevId === userId ? null : userId));
+    }, []);
+
+    const isTotalLoading = isLoading || expenseQuery.isLoading || statusQuery.isLoading || missionQuery.isLoading || currenciesQuery.isLoading;
+    const hasData = expenseReports.length > 0 || attachments.length > 0;
+    const overallError = error;
+    const hasAttachments = attachments.length > 0;
+
+    return (
+        <>
+            {isTotalLoading ? (
+                <NoDataMessage>⏳ Chargement des données...</NoDataMessage>
+            ) : overallError ? (
+                <NoDataMessage style={{ color: "var(--error-color)" }}>⚠️ {overallError}</NoDataMessage>
+            ) : hasData ? (
+                <>
+                    <SectionTitle>Analyse Visuelle</SectionTitle>
+                    <ChartGrid>
+                        <FinancialDoughnutChart 
+                            totalAmountMGA={totalAmountMGA}
+                            totalCompensationMGA={totalCompensationMGA}
+                            refundAmount={refundAmount}
+                            isNationalMission={isNationalMission}
+                        />
+                        {hasAttachments && (
+                            <ChartCard>
+                                <h4>Pièces Jointes</h4>
+                                <div className="chart-content">
+                                    {Object.keys(groupedData).map((userId) => {
+                                        const employeeData = groupedData[userId];
+                                        return (
+                                            <EmployeeAttachments
+                                                key={userId}
+                                                userName={employeeData.userName}
+                                                attachments={employeeData.attachments}
+                                                isOpen={openFolderId === userId}
+                                                onToggle={() => handleToggleFolder(userId as string)}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            </ChartCard>
+                        )}
+                    </ChartGrid>
+
+                    {expenseReports.length > 0 && (
+                        <>
+                            <Separator />
+                            <SectionTitle>Détail des Frais</SectionTitle>
+                            <ResponsiveTableWrapper>
+                                <IndemnityTable>
+                                    <thead>
+                                        <tr>
+                                            <TableHeader>Titre</TableHeader>
+                                            <TableHeader>Description</TableHeader>
+                                            <TableHeader>Type</TableHeader>
+                                            <TableHeader>Devise</TableHeader>
+                                            <TableHeader>Montant</TableHeader>
+                                            <TableHeader>Montant MGA</TableHeader>
+                                            <TableHeader>Taux</TableHeader>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {expenseReports.map((report, index) => (
+                                            <tr key={report.expenseReportId || index}>
+                                                <TableCell>{report.titled || "-"}</TableCell>
+                                                <TableCell>{report.description || "-"}</TableCell>
+                                                <TableCell>
+                                                    <Badge $type={report.type || ""}>{report.type || "-"}</Badge>
+                                                </TableCell>
+                                                <TableCell>{report.currencyUnit || "MGA"}</TableCell>
+                                                <TableCell>{report.amount ? `${formatNumber(report.amount)},00` : "-"}</TableCell>
+                                                <TableCell>{report.amountMGA ? `${formatNumber(report.amountMGA)},00` : "-"}</TableCell>
+                                                <TableCell>{report.rate ? `${report.rate}` : "-"}</TableCell>
+                                            </tr>
+                                        ))}
+                                        <TotalRow>
+                                            <TableCell colSpan={5}>
+                                                <strong>Total des Frais (en MGA)</strong>
+                                            </TableCell>
+                                            <TableCell>
+                                                <strong>{totalAmountMGA ? `${formatNumber(totalAmountMGA)},00` : "0,00"}</strong>
+                                            </TableCell>
+                                            <TableCell></TableCell>
+                                        </TotalRow>
+                                        
+                                        {/* Afficher "Devise Allouée" uniquement pour les missions internationales */}
+                                        {!isNationalMission && (
+                                            <TotalRow>
+                                                <TableCell colSpan={5}>
+                                                    <strong>Devise Allouée (en MGA)</strong>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <strong>{totalCompensationMGA ? `${formatNumber(totalCompensationMGA)},00` : "0,00"}</strong>
+                                                </TableCell>
+                                                <TableCell></TableCell>
+                                            </TotalRow>
+                                        )}
+                                        
+                                        <TotalRow>
+                                            <TableCell colSpan={5}>
+                                                <strong>Montant à Rembourser (en MGA)</strong>
+                                            </TableCell>
+                                            <TableCell>
+                                                <strong style={{ color: "var(--primary-color)" }}>
+                                                    {refundAmount ? `${formatNumber(refundAmount)},00` : "0,00"}
+                                                </strong>
+                                            </TableCell>
+                                            <TableCell></TableCell>
+                                        </TotalRow>
+                                    </tbody>
+                                </IndemnityTable>
+                            </ResponsiveTableWrapper>
+                        </>
+                    )}
+                </>
+            ) : (
+                <NoDataMessage>
+                    <div style={{ textAlign: "center", padding: "40px" }}>
+                        <div style={{ fontSize: "48px", marginBottom: "16px" }}>📭</div>
+                        <p style={{ margin: 0, color: "var(--text-muted)" }}>
+                            Aucune note de frais disponible pour cette mission
+                        </p>
+                    </div>
+                </NoDataMessage>
+            )}
+        </>
+    );
+};
+
+export default ExpenseReportList;
